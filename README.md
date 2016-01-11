@@ -23,6 +23,7 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
   Leno博客提供一个文章列表，文章详情及发布页面，用户可发布博客，查看博客列表，查看博客详情
  2.Model
  file app/Model/Article.class.php
+```php
  namespace Model;
  class Article extends \Leno\Model {
  	protected $_table = "article";
@@ -65,8 +66,10 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 		))->save();
 	}
  }
+ ```
  3. Controller
   file: app/Controller/Article.class.php
+```php
   namespace Controller;
   class Article extends \Leno\Controller {
   	public function index() {
@@ -84,8 +87,10 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 		$this->success('保存文章成功');
 	}
   }
+  ```
  4. View
  	file: app/View/Article/index.lpt.php
+```php
 	<extend name="Layout.default">
 		<implement name="content">
 			<ul>
@@ -130,3 +135,4 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 			</script>
 		</implement>
 	</extend>
+	```
