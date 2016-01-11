@@ -103,7 +103,9 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 			</ul>
 		</impelement>
 	</extend>
+	```
 	file: app/View/Article/write.lpt.php
+	```php
 	<extend name="Layout.default">
 		<implement name="content">
 			<div class="cc">
