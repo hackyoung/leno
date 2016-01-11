@@ -25,54 +25,54 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
  file app/Model/Article.class.php
 ```php
  namespace Model;
- class Article extends \Leno\Model {
- 	protected $_table = "article";
+class Article extends \Leno\Model {
+protected $_table = "article";
 
-	protected $_field_prefix = "atl";
+protected $_field_prefix = "atl";
 
- 	protected $_fields = array(
-		'id'=array(
-			'type'=>'int',
-			'auto_increment'=>true,
-			'primary_key'=>true
-		),
-		'title'=>array(
-			'type'=>'nvarchar(64)',
-			'null'=>false
-		),
-		'content'=>array(
-			'type'=>'nvarchar(100000)',
-			'null'=>false
-		),
-		'created'=>array(
-			'type'=>'datetime',
-			'null'=>false
-		)
-	);
+protected $_fields = array(
+	'id'=array(
+		'type'=>'int',
+		'auto_increment'=>true,
+		'primary_key'=>true
+	),
+	'title'=>array(
+		'type'=>'nvarchar(64)',
+		'null'=>false
+	),
+	'content'=>array(
+		'type'=>'nvarchar(100000)',
+		'null'=>false
+	),
+	'created'=>array(
+		'type'=>'datetime',
+		'null'=>false
+	)
+);
 
-	public function add($title, $content) {
-		$this->data(array(
-			'title'=>$title,
-			'content'=>urlencode($content)
-		))->create();
-	}
+public function add($title, $content) {
+	$this->data(array(
+		'title'=>$title,
+		'content'=>urlencode($content)
+	))->create();
+}
 
-	public function save($id, $title, $content) {
-		$this->where(array(
-			'id'=>$id
-		))->data(array(
-			'title'=>$title,
-			'content'=>urlencode($content)
-		))->save();
-	}
- }
+public function save($id, $title, $content) {
+	$this->where(array(
+		'id'=>$id
+	))->data(array(
+		'title'=>$title,
+		'content'=>urlencode($content)
+	))->save();
+}
+}
  ```
  3. Controller
   file: app/Controller/Article.class.php
 ```php
-  namespace Controller;
-  class Article extends \Leno\Controller {
-  	public function index() {
+namespace Controller;
+class Article extends \Leno\Controller {
+	public function index() {
 		$m = $this->loadModel("Article", 'Model');
 		$articles = $m->select();
 		$this->set('articles', 'articles');
@@ -86,55 +86,73 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 		$this->Article->save($id, $title, $content);
 		$this->success('保存文章成功');
 	}
-  }
+}
   ```
  4. View
- 	file: app/View/Article/index.lpt.php
+file: app/View/Article/index.lpt.php
 ```php
-	<extend name="Layout.default">
-		<implement name="content">
-			<ul>
-			<llist name="articles" id="article">
-				<li>
-					<a href="">{$article.title}</a>
-					<span>{$article.created}</span>
-				</li>
-			</llist>
-			</ul>
-		</impelement>
-	</extend>
+<extend name="Layout.default">
+	<implement name="content">
+		<ul>
+		<llist name="articles" id="article">
+			<li>
+				<a href="">{$article.title}</a>
+				<span>{$article.created}</span>
+			</li>
+		</llist>
+		</ul>
+	</impelement>
+</extend>
 ```
-	file: app/View/Article/write.lpt.php
+file: app/View/Article/write.lpt.php
 ```php
-	<extend name="Layout.default">
-		<implement name="content">
-			<div class="cc">
-				<input name="title" data-reg="^\s{0,}\S{1,}.*" placeholder="请输入文章名" />
-				<div id="editor">
-				</div>
-				<button data-id="submit">保存</button>
+<extend name="Layout.default">
+	<implement name="content">
+		<div class="cc">
+			<input name="title" data-reg="^\s{0,}\S{1,}.*" placeholder="请输入文章名" />
+			<div id="editor">
 			</div>
-			<script>
-				$(document).ready(function() {
-					var editor = new leno.editor({
-						id: 'editor'
-					});
+			<button data-id="submit">保存</button>
+		</div>
+		<script>
+			$(document).ready(function() {
+				var editor = new leno.editor({
+					id: 'editor'
 				});
-				leno.form({
-					id: 'submit_article',
-					node: $('.cc'),
-					url: {
-						submit: 'Article/save',
-						redirectUrl: 'Article/index'
-					},
-					callback: {
-						beforeSubmit: function(data) {
-							data.content = editor.getContent();
-							return data;
-						}
+			});
+			leno.form({
+				id: 'submit_article',
+				node: $('.cc'),
+				url: {
+					submit: 'Article/save',
+					redirectUrl: 'Article/index'
+				},
+				callback: {
+					beforeSubmit: function(data) {
+						data.content = editor.getContent();
+						return data;
 					}
-				});
-			</script>
-		</implement>
-	</extend>
+				}
+			});
+		</script>
+	</implement>
+</extend>
+```
+file: app/View/Article/detail.lpt.php
+```php
+<extend name="Layout.Article.container">
+	<implement name="content">
+		{$content}
+	</implement>
+	<implement name="userinfo">
+		<view name="Element.user.info" data="user" />
+	</implement>
+	<implement name="recommand">
+		<ul>
+			<llist name="recommand" id="atl">
+				<a href="">{$atl.name}</a>
+			</llist>
+		</ul>
+	</implement>
+</extend>
 ```
