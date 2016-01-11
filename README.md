@@ -88,7 +88,7 @@ class Article extends \Leno\Controller {
 	}
 }
   ```
- 4. View
+4. View
 file: app/View/Article/index.lpt.php
 ```php
 <extend name="Layout.default">
