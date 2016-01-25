@@ -17,6 +17,7 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
   * layer,窗口，以及一个美观的富文本编辑器
  4. 可配置性极强
   你可以配置框架行为，从项目目录树至自动加载类
+
 ###实例
 基于Leno的一个简单的博客系统示例
  1.功能
@@ -26,45 +27,44 @@ Leno是一个简单的PHP框架，该框架支持模板继承，自动同步数�
 ```php
  namespace Model;
 class Article extends \Leno\Model {
-protected $_table = "article";
+	protected $_table = "article";
 
-protected $_field_prefix = "atl";
+	protected $_field_prefix = "atl";
 
-protected $_fields = array(
-	'id'=array(
-		'type'=>'int',
-		'auto_increment'=>true,
-		'primary_key'=>true
-	),
-	'title'=>array(
-		'type'=>'nvarchar(64)',
-		'null'=>false
-	),
-	'content'=>array(
-		'type'=>'nvarchar(100000)',
-		'null'=>false
-	),
-	'created'=>array(
-		'type'=>'datetime',
-		'null'=>false
-	)
-);
+	protected $_fields = array(
+		'id'=array(
+			'type'=>'int',
+			'auto_increment'=>true,
+			'primary_key'=>true
+		),
+		'title'=>array(
+			'type'=>'nvarchar(64)',
+			'null'=>false
+		),
+		'content'=>array(
+			'type'=>'nvarchar(100000)',
+			'null'=>false
+		),
+		'created'=>array(
+			'type'=>'datetime',
+			'null'=>false
+		)
+	);
+	public function add($title, $content) {
+		$this->data(array(
+			'title'=>$title,
+			'content'=>urlencode($content)
+		))->create();
+	}
 
-public function add($title, $content) {
-	$this->data(array(
-		'title'=>$title,
-		'content'=>urlencode($content)
-	))->create();
-}
-
-public function save($id, $title, $content) {
-	$this->where(array(
-		'id'=>$id
-	))->data(array(
-		'title'=>$title,
-		'content'=>urlencode($content)
-	))->save();
-}
+	public function save($id, $title, $content) {
+		$this->where(array(
+			'id'=>$id
+		))->data(array(
+			'title'=>$title,
+			'content'=>urlencode($content)
+		))->save();
+	}
 }
  ```
  3. Controller
