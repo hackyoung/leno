@@ -3,7 +3,7 @@ return array(
 /**
  * 数据库配置
  */
-	'DB_DSN'=>'mysql:dbname=lenoo;host=localhost',
+	'DB_DSN'=>'mysql:dbname=hello;host=localhost',
 	'DB_USER'=>'root',
 	'DB_PASSWORD'=>'young159357789',
 	'DB_PERSISTENT'=>true,
@@ -22,6 +22,7 @@ return array(
 	// 默认的方法
 	'DFT_ACTION'=>'index',
 	// 静态文件的根
-	'WEB_ROOT'=>'webroot'
+	'WEB_ROOT'=>'webroot',
+	'DEBUG'=>true
 );
 ?>

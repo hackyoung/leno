@@ -1,8 +1,8 @@
 <?php
 namespace Leno;
 use \Leno\App;
-App::uses('LException', 'Leno.LException');
-use \Leno\LException\LException;
+App::uses('Exception', 'Leno.Exception');
+use \Leno\Exception\Exception;
 
 class Configure {
 
@@ -22,7 +22,7 @@ class Configure {
 	public static function read($key) {
 		$key = strtoupper($key);
 		if(!self::is($key)) {
-			throw new LException('Configure ' . $key . ' not found');
+			throw new Exception('Configure ' . $key . ' not found');
 		}
 		return self::$_conf[$key];
 	}

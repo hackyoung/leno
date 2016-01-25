@@ -2,12 +2,12 @@
 namespace Leno\View;
 use Leno\App;
 use Leno\LObject;
-use Leno\LException\ViewException;
-use Leno\View\LTemplate;
+use Leno\Exception\ViewException;
+use Leno\View\Template;
 use Leno\Debugger;
 App::uses('LObject', 'Leno');
-App::uses('ViewException', 'Leno.LException');
-App::uses('LTemplate', 'Leno.View');
+App::uses('ViewException', 'Leno.Exception');
+App::uses('Template', 'Leno.View');
 /*
  * @name View
  * @description Leno的视图功能类
@@ -48,7 +48,8 @@ class View extends LObject {
 	public function __construct($file=null, $data=array()) {
 		$array = array(
 			self::$dir,
-			App::path(self::$dir, self::$common)
+			App::path(self::$dir, self::$common),
+			App::path(LIB_ROOT, 'Leno/View/view')
 		);
 		$file = str_replace('.', DS, $file);
 		foreach($array as $dir) {
@@ -62,7 +63,7 @@ class View extends LObject {
 			throw new ViewException($file, $array);
 		}
 		$this->data = $data;
-		$this->template = new LTemplate($this);
+		$this->template = new Template($this);
 	}
 
 	/*
@@ -80,7 +81,9 @@ class View extends LObject {
 	 * @description 显示当前的View
 	 */
 	public function display() {
-		extract($this->data);
+		if(gettype($this->data) === 'array') {
+			extract($this->data);
+		}
 		include $this->template->display();
 	}
 
@@ -142,6 +145,11 @@ class View extends LObject {
 			$this->e('extends')->display();
 		}
 		return $this->e('extends');
+	}
+
+	public function __toString() {
+		return file_get_contents($this->file);
+//		return $this->template->__toString();
 	}
 }
 ?>

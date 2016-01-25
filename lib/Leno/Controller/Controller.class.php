@@ -4,11 +4,13 @@ use \Leno\App;
 use \Leno\View\View;
 use \Leno\Debugger;
 use \Leno\WebRoot;
-App::uses('LObject', 'Leno');
+App::uses('Loc', 'Leno');
 
-class Controller extends \Leno\LObject {
+class Controller extends \Leno\Loc {
 
 	const suffix = '.class.php';
+ 
+	protected $paths;
 
 	protected $title = 'leno';
 
@@ -22,7 +24,7 @@ class Controller extends \Leno\LObject {
 
 	protected $view;
 
-	public function __construct() {
+	public function __construct($paths) {
 		$this->addJs(array(
 			\Leno\WebRoot::lib('leno/js/jquery.js'),
 			\Leno\WebRoot::lib('leno/js/leno.js')
@@ -30,6 +32,7 @@ class Controller extends \Leno\LObject {
 		$this->addCss(array(
 			\Leno\WebRoot::lib('leno/css/leno.css')
 		));
+		$this->paths = $paths;
 	}
 
 	protected function set($key, $val=null) {
@@ -66,23 +69,6 @@ class Controller extends \Leno\LObject {
 		);
 		$this->view = new View($view, $this->data);
 		$this->view->display();
-	}
-
-	protected function loadModel($_model, $namespace, $alias=null) {
-		App::uses($_model, $namespace);	
-		$model = str_replace('.', '\\', $namespace) . '\\' . $_model;
-		$rc = new \ReflectionClass($model);
-		$m = $rc->newInstance();
-		if($alias) {
-			$this->$alias = $m;
-		} else {
-			$this->$_model = $m;
-		}
-		return $m;
-	}
-
-	public function __set($key, $value) {
-		$this->$key = $value;
 	}
 }
 ?>

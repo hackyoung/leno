@@ -2,10 +2,14 @@
 namespace Leno\Model;
 use \Leno\App;
 use \Leno\Configure;
+use \Leno\Debugger;
+use \Leno\Exception\ModelException;
 App::uses('TableManager', 'Leno.Model');
 App::uses('FieldManager', 'Leno.Model');
+App::uses('ModelException', 'Leno.Exception');
+App::uses('LObject', 'Leno');
 
-class Model {
+class Model extends \Leno\LObject {
 
 	// 保存pdo对象
 	public static $db;
@@ -64,6 +68,11 @@ class Model {
 	// 执行sql语句的结果
 	public $result = true;
 
+	/*
+	 * @name __construct
+	 * @description 如果pdo对象为空，则读取配置，创建pdo对象，所有的Model共享一个PDO对象
+	 * @param string table 子Model继承Model，可以通过两种形式指定表明，一种是从新声明table属性，第二种是构造函数提供该参数
+	 */
 	public function __construct($table=null) {
 		// db为单例，所有的Model共享一个db
 		if(self::$db == null) {
@@ -84,7 +93,13 @@ class Model {
 		$this->fieldManager = new FieldManager($this);
 	}
 
-	public function group($group, $table=false) {
+	/*
+	 * @name group
+	 * @description 分组查询
+	 * @param 分组查询的字段
+	 * @return Model
+	 */
+	public function group($group) {
 		if(!preg_match('/`/', $group)) {
 			$group = $this->getField($group);
 		}
@@ -92,16 +107,35 @@ class Model {
 		return $this;
 	}
 
+	/*
+	 * @name field
+	 * @description 初始化Model::field属性，该属性决定select将要返回的字段
+	 * @param array _field select时要查询的字段
+	 * @return Model
+	 */
 	public function field($_field) {
 		$this->_field = $_field;
 		return $this;
 	}
 
+	/*
+	 * @name limit
+	 * @description 初始化Model::limit属性
+	 * @param int limit
+	 * @return Model
+	 */
 	public function limit($limit) {
 		$this->_limit = ' LIMIT ' . $limit;
 		return $this;
 	}
 
+	/*
+	 * @name page
+	 * @description 对查询进行分页
+	 * @param int ps 页的大小
+	 * @param int pn 页号
+	 * @return Model
+	 */
 	public function page($ps, $pn) {
 		$begin = $ps*($pn - 1);
 		$end = $ps;
@@ -109,19 +143,31 @@ class Model {
 		return $this;
 	}
 
+	/*
+	 * @name order
+	 * @description 对查询进行排序
+	 * @param array order 如 array('id'=>'desc', 'created'=>'asc')
+	 * @return Model
+	 */
 	public function order($order) {
 		$tmp = ' ORDER BY ';
 		foreach($order as $k=>$v) {
-			$tmp .= $this->getField($v) . ' ' . $k;
+			$tmp .= $this->getField($v) . ' ' . $k . ', ';
 			break;
 		}
 		$this->_order = $tmp;
 		return $this;
 	}
 
+	/*
+	 * @name where
+	 * @description 查询/删除/更新的条件
+	 * @param array where 
+	 * @return Model
+	 */
 	public function where($where) {
 		if(gettype($where) != 'array') {
-			throw new Exception('NOT SUPPORTED NO ARRAY');
+			throw new ModelException('NOT SUPPORTED NO ARRAY');
 		}
 		$this->_where = $where;
 		return $this;
@@ -132,23 +178,44 @@ class Model {
 		return $this->relate($table, $where);
 	}
 
-	// 关联其他模型
-	public function relate($table, $on) {
-		$t = $table->table();
+	/*
+	 * @name relate
+	 * @description 关联其他模型
+	 * @param Model model 待关联的其他模型名
+	 * @param array on 关联条件
+	 * @return Model
+	 */
+	public function relate($model, $on) {
+		$t = $model->table();
+		/*
 		foreach($on as $k=>$v) {
 			if(!preg_match('/\./', $v)) {
 				$on[$k] = $table->getField($v);
 			}
 		}
+		 */
 		$this->_left_join[$t] = array(
-			'model'=>$table,
+			'model'=>$model,
 			'where'=>$this->_handleWhere($on)
 		);
 		return $this;
 	}
 
-	public function data($data) {
-		$this->_data = array_merge($this->_data, $data);
+	/*
+	 * @name data
+	 * @description 待修改/添加的数据
+	 * @param array data
+	 * @return Model
+	 */
+	public function data($data=null) {
+		if($data == null) {
+			return $this->_data;
+		}
+		if(!isset($this->_data[0])) {
+			$this->_data[] = $data;
+		} else {
+			$this->_data[0] = array_merge($this->_data[0], $data);
+		}
 		return $this;
 	}
 
@@ -156,11 +223,19 @@ class Model {
 		return empty($var) ? false : true;
 	}
 
+	/*
+	 * @name distinct
+	 * @description 去重
+	 */
 	public function distinct() {
 		$this->_distinct = true;
 		return $this;
 	}
 
+	/*
+	 * @name select
+	 * @description
+	 */
 	public function select($err=true) {
 		$sql = ' SELECT ';
 		if($this->_distinct) {
@@ -205,7 +280,7 @@ class Model {
 	}
 
 	public function find() {
-		$this->select();
+		$this->limit(1)->select();
 		if(count($this->result) > 0) {
 			$this->result = $this->result[0];
 		}
@@ -213,13 +288,18 @@ class Model {
 	}
 
 	public function create($data=null, $err=true) {
-		if(isset($data)) {
+		if(!empty($data)) {
 			$this->data($data);
 		}
-		$data = $this->_handleData();
-		$sql = 'INSERT INTO `' . $this->table() .
-				'` ( ' . implode(',', $data['field']) . ' )' .
-				' VALUES( ' . implode(',', $data['value']) . ' )';
+		$sql = 'INSERT INTO `' . $this->table() . '` ';
+		foreach($this->_data as $key=>$data) {
+			$data = $this->_handleData($data);
+			if($key == 0) {
+				$sql .= '(' . implode(',', $data['field']) . ' ) ';
+			}
+			$sql .= ' VALUES( ' . implode(',', $data['value']) . ' ),';
+		}
+		$sql = substr($sql, 0, strlen($sql) - 1);
 		$this->_sql = $sql;
 		$this->exec(null, $err);
 		$this->result = self::$db->lastInsertId();
@@ -230,9 +310,10 @@ class Model {
 		$sql = 'UPDATE '. $this->table() . ' SET ';
 		$this->_sql = $sql;
 		if($data != null) {
+			$this->_data = array();
 			$this->data($data);
 		}
-		$data = $this->_handleData();
+		$data = $this->_handleData($this->_data[0]);
 		$field = $data['field'];
 		$value = $data['value'];
 		$field_len = count($field);
@@ -332,9 +413,7 @@ class Model {
 		if(!$this->right()) {
 			if(Configure::read('debug')) {
 				$errorInfo = self::$db->errorInfo();
-				throw new Exception(
-					I18n::text($errorInfo[2].':'.$this->_sql)
-				);
+				throw new ModelException($this, $this->_sql);
 			} else {
 				if($err) {
 					$this->onError(self::$db->errorInfo(), $this->_sql);
@@ -371,7 +450,7 @@ class Model {
 			return $this->_sql;
 		}
 		$this->result = array();
-		$ret = self::$db->query($this->_sql, PDO::FETCH_ASSOC);
+		$ret = self::$db->query($this->_sql, \PDO::FETCH_ASSOC);
 		if(!$this->right()) {
 			if(Configure::read('debug')) {
 				$errorInfo = self::$db->errorInfo();
@@ -404,14 +483,17 @@ class Model {
 		return $this->_fields;
 	}
 
+	public function f($f) {
+		if(!empty($this->_field_prefix)) {
+			$f = $this->_field_prefix . '_' . $f;
+		}
+		return $f;
+	}
+
 	public function getField($field, $alias=null, $table=null) {
 		if($table == null) {
 			$table = $this->_table;
 		}
-		/*
-		Debug::dump($this->_drop_prefix);
-		die;
-		 */
 		if($this->_field_prefix) {
 			$field = $this->_field_prefix . '_' . $field;
 		}
@@ -520,24 +602,20 @@ class Model {
 	}
 
 	public function handleField() {
+		$field = array();
 		if($this->_is($this->_field)) {
-			if(gettype($this->_field) == 'array') {
-				if(isset($this->_field[0])) {
-					$as = false;
+			
+			foreach($this->_field as $k=>$v) {
+				$as = !preg_match('/^\d{1,}$/', $k);
+				if($as) {
+					$field[] = $this->getField($k, $v);
 				} else {
-					$as = true;
-				}
-				foreach($this->_field as $k=>$v) {
-					if($as) {
-						$field[] = $this->getField($v, $k);
-					} else if($this->_drop_prefix) {
+					if($this->_drop_prefix) {
 						$field[] = $this->getField($v, $v);
 					} else {
 						$field[] = $this->getField($v);
 					}
 				}
-			} else {
-				return $this->_field;
 			}
 		} else {
 			foreach($this->_fields as $k=>$f) {
@@ -558,14 +636,12 @@ class Model {
 		return $str;
 	}
 
-	protected function _handleData() {
-		$data = $this->_data;
+	protected function _handleData($data) {
+//		$data = $this->_data;
 		$field = array();
 		$value = array();
 		foreach($data as $k=>$v) {
-			if($this->_field_prefix) {
-				$k = $this->_field_prefix . '_' .$k;
-			}
+			$k = $this->f($k);
 			$field[] = '`'.$k.'`';
 			if($v === '') {
 				$v = '\'\'';
@@ -586,6 +662,41 @@ class Model {
 
 	protected function onError($e, $sql) {
 		return true;
+	}
+
+	/*
+	 * @name init
+	 * @description 创建\更新模型用到的数据表
+	 */
+	public static function init($dir=null) {
+		if($dir == null) {
+			$dir = APP_ROOT;
+		}
+		$directory = dir($dir);
+		while($file = $directory->read()) {
+			if($file == '.' || $file == '..') {
+				continue;
+			}
+			$pathfile = $dir . DS . $file;
+			if(is_dir($pathfile)) {
+				self::init($pathfile);
+			} else {
+				if(preg_match('/\.class\.php$/', $file)) {
+					require_once $pathfile;
+					$class = str_replace(APP_ROOT.DS, '', $pathfile);
+					$class = str_replace('.class.php', '', $class);
+					$class = str_replace(DS, '\\', $class);
+					$rc = new \ReflectionClass($class);
+					if($rc->isAbstract()) {
+						continue;
+					}
+					$m = $rc->newInstance();
+					if($m instanceof self) {
+						$m->build();
+					}
+				}
+			}
+		}
 	}
 }
 ?>

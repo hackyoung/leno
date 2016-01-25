@@ -7,6 +7,8 @@ use \Leno\Configure;
 use \Leno\Debugger;
 use \Leno\Logger;
 use \Leno\View\View;
+use \Leno\Worker\WebWorker;
+use \Leno\Worker\CLIWorker;
 require_once dirname(__FILE__).DS."ClassLoader.class.php";
 
 class App extends Singleton {
@@ -26,6 +28,10 @@ class App extends Singleton {
 	 */
 	const M_CLI = 'cli';
 
+	public $worker;
+
+	public $dispatcher;
+
 	protected function __construct() {
 
 		// 初始化Configure
@@ -44,9 +50,25 @@ class App extends Singleton {
 		App::uses('Cacher', 'Leno');
 		Cacher::init(Configure::read('tmp').DS.'cache');
 
+		// 初始化LObject
+		switch($this->mode()) {
+			case self::M_CLI:
+				App::uses('CLIWorker', 'Leno.Worker');
+				$this->worker = new CLIWorker;
+				break;
+			default: {
+				App::uses('WebWorker', 'Leno.Worker');
+				$this->worker = new WebWorker;
+				break;
+			}
+		}
+		App::uses('LObject', 'Leno');
+		LObject::setWorker($this->worker);
+
 		// 初始化WebRoot
 		App::uses('WebRoot', 'Leno');
 		\Leno\WebRoot::init(Configure::read('WEB_ROOT'));
+
 		// 初始化View
 		App::uses('View', 'Leno.View');
 		View::init(
@@ -120,7 +142,7 @@ class App extends Singleton {
 				$dispatcher = $factory->createCliDispatcher();
 				break;
 		}
-		$dispatcher->dispatch();
+		$this->dispatcher = $dispatcher;
 	}
 
 	public static function base_url() {

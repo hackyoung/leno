@@ -5,9 +5,9 @@ namespace Leno;
  * @description 该类提供类注册功能，注册的类不需要require引入
  */
 require_once dirname(__FILE__).DS."Singleton.class.php";
-require_once dirname(__FILE__).DS.'LException'.DS.'LoaderException.class.php';
+require_once dirname(__FILE__).DS.'Exception'.DS.'LoaderException.class.php';
 
-use \Leno\LException\LoaderException;
+use \Leno\Exception\LoaderException;
 
 class ClassLoader extends Singleton {
 
