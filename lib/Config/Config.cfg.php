@@ -4,8 +4,8 @@ return array(
  * 数据库配置
  */
 	'DB_DSN'=>'mysql:dbname=hello;host=localhost',
-	'DB_USER'=>'root',
-	'DB_PASSWORD'=>'young159357789',
+	'DB_USER'=>'',
+	'DB_PASSWORD'=>'',
 	'DB_PERSISTENT'=>true,
 	'DB_PREFIX'=>'leno',
 
