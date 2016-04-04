@@ -1,10 +1,8 @@
 {
-    "name": "hackyoung/leno",
+    "name": "leno/mvc",
     "description": "A simple clean framework",
     "license": "MIT",
     "require": {
-        "monolog/monolog": "1.0.*",
-        "propel/propel": "2.0.0-alpha5",
         "guzzlehttp/psr7": "1.2.3"
     },
     "autoload": {
