@@ -5,7 +5,7 @@
     "require": {
         "monolog/monolog": "1.0.*",
         "propel/propel": "2.0.x-dev",
-        "guzzlehttp/psr7": "dev-master"
+        "guzzlehttp/psr7": "1.2.3"
     },
     "autoload": {
         "psr-4": {"Leno\\": "src"},
