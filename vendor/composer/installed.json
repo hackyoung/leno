@@ -606,43 +606,18 @@
         ]
     },
     {
-        "name": "leno/view",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hackyoung/lenoview.git",
-            "reference": "cea2accab09b3889ee7fe8e5f9a095d5a8c17da7"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/cea2accab09b3889ee7fe8e5f9a095d5a8c17da7",
-            "reference": "cea2accab09b3889ee7fe8e5f9a095d5a8c17da7",
-            "shasum": ""
-        },
-        "time": "2016-02-28 05:43:46",
-        "type": "library",
-        "installation-source": "source",
-        "autoload": {
-            "psr-4": {
-                "Leno\\View\\": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/"
-    },
-    {
         "name": "propel/propel",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/propelorm/Propel2.git",
-            "reference": "af6d5b6e1ac12370f8714a90110714ac23356ea6"
+            "reference": "4782ebdcf9f85e2f54f95d231e098a6334387b86"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/propelorm/Propel2/zipball/af6d5b6e1ac12370f8714a90110714ac23356ea6",
-            "reference": "af6d5b6e1ac12370f8714a90110714ac23356ea6",
+            "url": "https://api.github.com/repos/propelorm/Propel2/zipball/4782ebdcf9f85e2f54f95d231e098a6334387b86",
+            "reference": "4782ebdcf9f85e2f54f95d231e098a6334387b86",
             "shasum": ""
         },
         "require": {
@@ -663,7 +638,7 @@
         "suggest": {
             "monolog/monolog": "The recommended logging library to use with Propel."
         },
-        "time": "2016-02-20 17:11:31",
+        "time": "2016-03-31 18:35:19",
         "bin": [
             "bin/propel"
         ],
@@ -673,7 +648,7 @@
                 "dev-master": "2.0-dev"
             }
         },
-        "installation-source": "dist",
+        "installation-source": "source",
         "autoload": {
             "psr-0": {
                 "Propel": "src/"
@@ -698,18 +673,43 @@
         ]
     },
     {
+        "name": "leno/view",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hackyoung/lenoview.git",
+            "reference": "77c59f76aa4e1279bec844fd6fc9c529e84b9114"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/77c59f76aa4e1279bec844fd6fc9c529e84b9114",
+            "reference": "77c59f76aa4e1279bec844fd6fc9c529e84b9114",
+            "shasum": ""
+        },
+        "time": "2016-02-28 14:21:15",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "Leno\\View\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/"
+    },
+    {
         "name": "guzzlehttp/psr7",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/guzzle/psr7.git",
-            "reference": "82eb530e2ffa6a3781c5620cfd418f8a6830f81d"
+            "reference": "0edec79e2acf5df0105046af7f1eebcf31656462"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/guzzle/psr7/zipball/82eb530e2ffa6a3781c5620cfd418f8a6830f81d",
-            "reference": "82eb530e2ffa6a3781c5620cfd418f8a6830f81d",
+            "url": "https://api.github.com/repos/guzzle/psr7/zipball/0edec79e2acf5df0105046af7f1eebcf31656462",
+            "reference": "0edec79e2acf5df0105046af7f1eebcf31656462",
             "shasum": ""
         },
         "require": {
@@ -722,7 +722,7 @@
         "require-dev": {
             "phpunit/phpunit": "~4.0"
         },
-        "time": "2016-03-21 00:39:36",
+        "time": "2016-03-24 02:39:15",
         "type": "library",
         "extra": {
             "branch-alias": {
