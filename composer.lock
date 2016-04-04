@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/hackyoung/lenoview.git",
-                "reference": "77c59f76aa4e1279bec844fd6fc9c529e84b9114"
+                "reference": "042353411447923a2c45328c8dad5dc8b7ea2b75"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/77c59f76aa4e1279bec844fd6fc9c529e84b9114",
-                "reference": "77c59f76aa4e1279bec844fd6fc9c529e84b9114",
+                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/042353411447923a2c45328c8dad5dc8b7ea2b75",
+                "reference": "042353411447923a2c45328c8dad5dc8b7ea2b75",
                 "shasum": ""
             },
             "type": "library",
@@ -86,7 +86,7 @@
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "time": "2016-02-28 14:21:15"
+            "time": "2016-04-04 04:08:32"
         },
         {
             "name": "monolog/monolog",
