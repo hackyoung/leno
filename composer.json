@@ -1,12 +1,17 @@
 {
-    "name": "leno/mvc",
+    "name": "young/leno",
     "description": "A simple clean framework",
     "license": "MIT",
     "require": {
-        "guzzlehttp/psr7": "1.2.3"
+        "monolog/monolog": "1.0.*",
+        "leno/view": "dev-master",
+        "guzzlehttp/psr7": "1.2.*"
     },
     "autoload": {
-        "psr-4": {"Leno\\": "src"},
-        "files": ["src/functions.php"]
+        "psr-4": {
+            "Leno\\": "src",
+			"Test\\": "test"
+        },
+        "files": [ "src/functions.php" ]
     }
 }

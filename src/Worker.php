@@ -1,8 +1,8 @@
 <?php
 namespace Leno;
 
-use \GuzzleHttp\Psr7\Request;
-use \GuzzleHttp\Psr7\Response;
+use \Leno\Http\Request;
+use \Leno\Http\Response;
 
 class Worker
 {
@@ -23,11 +23,10 @@ class Worker
         $this->request = new Request(
             $method, $uri, getallheaders()
         );
+        $this->request->withAttribute('path', strtolower($uri));
         $this->response = new Response;
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr.'['.$errno.'] in '.$errfile.' line '.$errline);
-        });
-
+        \Leno\Configure::init();
+        $this->autoload();
         $this->exception_handler = function($e, $request, $response) {
             throw $e;
         };
@@ -48,6 +47,24 @@ class Worker
     public function setExceptionHandler(callable $handler)
     {
         $this->exception_handler = $handler;
+    }
+
+    private function autoload()
+    {
+        spl_autoload_register(function($class) {
+            $class = preg_replace('/\\$/', '', $class);
+            $classFile = strtr($class, '\\', '/') . '.php';
+            if(file_exists($classFile)) {
+                require_once $classFile;
+            }
+        });
+    }
+
+    public function errorToException()
+    {
+        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+            throw new \ErrorException($errstr.'['.$errno.'] in '.$errfile.' line '.$errline);
+        });
     }
 
     public static function setRouterClass($routerClass) {

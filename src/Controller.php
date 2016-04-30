@@ -1,23 +1,37 @@
 <?php
 namespace Leno;
 
-use \Leno\View\View as View;
+use \Leno\View as View;
 use \Leno\View\Template as Template;
 
 abstract class Controller
 {
+    protected $view_dir = ROOT . '/View';
 
     protected $request;
 
     protected $response;
 
-    protected $title;
+    protected $title = 'leno';
 
-    protected $keyword;
+    protected $keywords = '';
+
+    protected $description = '';
+
+    protected $js = [];
+
+    protected $css = [];
 
     protected $data = [];
 
     public function __construct($request, $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+        $this->initialize();
+    }
+
+    protected function initialize()
     {
     }
 
@@ -26,16 +40,58 @@ abstract class Controller
         $this->data[$key] = $val;
     }
 
-    protected function loadView($view, $data=[])
+    protected function render($view, $data=[])
     {
-        View::addViewDir(ROOT.'/View');
-        Template::setCacheDir(ROOT . '/tmp/view');
-        $data = array_merge($this->data, $data);
+        if(!isset($data['__head__'])) {
+            $data['__head__'] = [];
+        }
+        if(!empty($this->title)) {
+            $data['__head__']['title'] = $this->title;
+        }
+        if(!empty($this->description)) {
+            $data['__head__']['description'] = $this->description;
+        }
+        if(!empty($this->keywords)) {
+            $data['__head__']['keywords'] = $this->keywords;
+        }
+
+        if(!empty($this->js)) {
+            $data['__head__']['js'] = $this->js;
+        }
+
+        if(!empty($this->js)) {
+            $data['__head__']['css'] = $this->css;
+        }
+        foreach($this->data as $k=>$d) {
+            $data[$k] = $d;
+        }
         (new View($view, $data))->display();
     }
 
-    protected function checkParameters($var, $rules)
+	protected function input($key, $rule, $message = null)
+	{
+		$source_map = [
+			'GET'  => $_GET,
+			'POST' => $_POST,
+			'DELETE' => $_POST,
+			'PUT' => $_POST,
+		];
+		$method = $this->request->getMethod();
+		$source = $source_map[strtolower($method)];
+		try {
+			return (new \Leno\Validator($rule))->check($source[$key]);
+		} catch(\Exception $ex) {
+			if(!$message) {
+				$message = $ex->getMessage();
+			}
+			$this->response(400, $message);
+		}
+	}
+
+    protected function response($code, $message)
     {
-        return (new Validator)->execute($var, $rules);
+        $response = $this->response->withStatus($code);
+        $response->write($message);
+        $this->response = $response;
     }
 }

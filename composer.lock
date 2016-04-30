@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "cbaa653abfc6aef63f1005fc676e786b",
-    "content-hash": "36e6c34eeea77c0cff01a1daca093a4e",
+    "hash": "b352f58121fe1316f702842f6ef89886",
+    "content-hash": "a18eaa0c2fb48d7c9e83943edfe19427",
     "packages": [
         {
             "name": "guzzlehttp/psr7",
@@ -66,6 +66,72 @@
             "time": "2016-02-18 21:54:00"
         },
         {
+            "name": "leno/view",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hackyoung/lenoview.git",
+                "reference": "b1976c85a0d06b4497352769f607cc9cd97673bd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/b1976c85a0d06b4497352769f607cc9cd97673bd",
+                "reference": "b1976c85a0d06b4497352769f607cc9cd97673bd",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Leno\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "time": "2016-04-08 12:26:00"
+        },
+        {
+            "name": "monolog/monolog",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Seldaek/monolog.git",
+                "reference": "b704c49a3051536f67f2d39f13568f74615b9922"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/b704c49a3051536f67f2d39f13568f74615b9922",
+                "reference": "b704c49a3051536f67f2d39f13568f74615b9922",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Monolog": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Logging for PHP 5.3",
+            "homepage": "http://github.com/Seldaek/monolog",
+            "keywords": [
+                "log",
+                "logging"
+            ],
+            "time": "2011-10-24 09:39:02"
+        },
+        {
             "name": "psr/http-message",
             "version": "1.0",
             "source": {
@@ -118,7 +184,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "leno/view": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
