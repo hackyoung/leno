@@ -4,7 +4,7 @@
     "license": "MIT",
     "require": {
         "monolog/monolog": "1.0.*",
-        "leno/view": "dev-master",
+        "leno/view": "0.1.*",
         "guzzlehttp/psr7": "1.2.*"
     },
     "autoload": {
