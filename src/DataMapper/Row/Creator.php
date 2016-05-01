@@ -6,7 +6,8 @@ class Creator extends \Leno\DataMapper\Row
 	public function create()
 	{
 		var_dump($this->getSql());
-        return $this->execute();
+        $this->execute();
+		return $this;
 	}
 
     public function set($field, $val)

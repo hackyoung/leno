@@ -5,7 +5,8 @@ class Deletor extends \Leno\DataMapper\Row
 {
     public function delete()
     {
-        $this->execute($this->getSql());
+        $this->execute();
+		return $this;
     }
 
     public function getSql()

@@ -26,7 +26,7 @@ abstract class Type
     public function check($val) {
         if($val === null) {
             if($this->required) {
-                throw new \Exception(' Required');
+                throw new \Exception($this->value_name . ' Required');
             }
             return false;
         }

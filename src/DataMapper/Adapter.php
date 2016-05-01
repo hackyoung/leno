@@ -14,8 +14,8 @@ abstract class Adapter extends \PDO
 		}
 		$dsn = $this->label . ':' . implode(';', [
 			'dbname='.Configure::read('db'),
-			'port='.Configure::read('port') ?? 3306,
-			'host='.Configure::read('host') ?? 'localhost',
+			'port='. (Configure::read('port') ?? '3306'),
+			'host='. (Configure::read('host') ?? 'localhost'),
 		]);
         $user = Configure::read('user') ?? null;
         $password = Configure::read('password') ?? null;

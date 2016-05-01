@@ -17,6 +17,7 @@ class Configure
         if(isset(self::$_conf[$key])) {
 		    return self::$_conf[$key];
         }
+		return null;
 	}
 
 	public static function write($key, $value) {

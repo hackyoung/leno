@@ -5,7 +5,8 @@ class Updator extends \Leno\DataMapper\Row
 {
 	public function update($data = null)
 	{
-		return $this->execute();
+		$this->execute();
+		return $this;
 	}
 
     public function getSql()

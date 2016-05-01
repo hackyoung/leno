@@ -34,6 +34,11 @@ class Mapper
 
 	protected $fresh = true;
 
+	/**
+	 * @var [
+	 *		city : [obj]
+	 * ]
+	 */
 	protected $relation = [];
 
 	protected $data;
@@ -46,15 +51,22 @@ class Mapper
 
 	public function __call($method, $parameters = null) {
 		$series = array_filter(explode('_', unCamelCase($method, '_')));
-		if(isset($series[0]) && $series[0] === 'set') {
-			array_splice($series, 0, 1);
-			$field = implode('_', $series);
-			return $this->set($field, $parameters[0]);
+		if(!isset($series[0])) {
+			throw new \Exception(get_class() .'::'.$method . ' Not Defined');
 		}
-		if(isset($series[0]) && $series[0] === 'get') {
-			array_splice($series, 0, 1);
-			$field = implode('_', $series);
-			return $this->get($field);
+		switch($series[0]) {
+			case 'set':
+				array_splice($series, 0, 1);
+				$field = implode('_', $series);
+				return $this->set($field, $parameters[0]);
+			case 'get':
+				array_splice($series, 0, 1);
+				$field = implode('_', $series);
+				return $this->get($field);
+			case 'add':
+				array_splice($series, 0, 1);
+				$field = implode('_', $series);
+				return $this->add($field, $parameters[0]);
 		}
 		throw new \Exception(get_class() .'::'.$method . ' Not Defined');
 	}
@@ -65,26 +77,39 @@ class Mapper
 		if($data->isset($key)) {
 			return $data->get($key);
 		}
-		$foreign = self::getForeign($key);
-		if($foreign) {
-			return;
-		}
-		$theClass = $foreign['class'];
-		$selector = $theClass::selector();
-		$ret = $selector->by('eq', $foreign['foreign'], $data->get($foreign['local']))->find();
-		if(count($ret) === 1) {
-			return $ret[0];
-		}
-		return $ret;
+		return $this->getRelateObjs($key);
 	}
 
 	public function set($key, $val)
 	{
-		if($val instanceof self && $foreign = self::getForeign($key)) {
-			$this->relation[$foreign['local']] = $val;
+		$foreign = self::getForeign($key);
+		if($foreign) {
+			$this->relation[$key] = [];
+			if(is_array($val)) {
+				foreach($val as $val) {
+					$this->add($key, $val);
+				}
+			} else {
+				$this->add($key, $val);
+			}
 			return $this;
 		}
 		$this->data->set($key, $val);
+		return $this;
+	}
+
+	public function add($key, $val)
+	{
+		if(!($foreign = self::getForeign($key))) {
+			throw new \Exception('Method Not Allow');
+		}
+		if(!$val instanceof $foreign['class']) {
+			throw new \Exception('Method Not Allow');
+		}
+		if(!isset($this->relation[$key])) {
+			$this->relation[$key] = [];
+		}
+		$this->relation[$key][] = $val;
 		return $this;
 	}
 
@@ -106,11 +131,14 @@ class Mapper
 
 	public function save()
 	{
-		foreach($this->relation as $field => $mapper) {
-			$mapper->save();
-			$this->set($field, $mapper->id());
-		}
+		\Leno\DataMapper\Row::beginTransaction();
 		$primary = self::getPrimary();
+		if($this->isAutoCreate($primary)) {
+			$this->data->set($primary, uuid());
+		}
+		foreach($this->relation as $key => $obj) {
+			$this->saveRelateObjs($key, $obj);
+		}
 		if(!$this->isFresh() && $this->data->validateAll()) {
 			$updator = self::updator();
 			$updator->by('eq', $primary, $this->data->get($primary));
@@ -122,31 +150,71 @@ class Mapper
 			return $updator->update();
 		}
 		$creator = self::creator();
-		$mapper = $this;
-		$this->data->validateAll(function($k, $data) use ($mapper) {
-			if($mapper->isAutoCreate($k) && !$data->isset($k)) {
+		$this->data->validateAll(function($k, $data) {
+			if($this->isAutoCreate($k) && !$data->isset($k)) {
 				return false;
 			}
 		});
 		$this->data->each(function($key, $data) use ($creator) {
 			$creator->set($key, $data->forStore($key));
 		});
-		if($this->isAutoCreate($primary)) {
-			$uuid = uuid();
-			$this->data->set($primary, $uuid);
-			$creator->set($primary, $uuid);
-		}
-		return $creator->create();
+		$creator->create();
+		return \Leno\DataMapper\Row::commitTransaction();
 	}
 
-	public function getUniqueValue()
+	protected function saveRelateObjs($key, $objs)
 	{
-		$pks_value = [];
-		$unique = self::getUnique();
-		foreach($unique as $k) {
-			$pks_value[$k] = $this->data->get($k);
+		$foreign = self::getForeign($key);
+		if(!$foreign) {
+			return;
 		}
-		return $pks_value;
+		$primaryVal = $this->id();
+		foreach($objs as $obj) {
+			if(!$obj instanceof $foreign['class']) {
+				continue;
+			}
+			$obj->save();
+			if(!$foreign['next'] ?? true) {
+				$this->data->set($foreign['foreign'], $obj->id());
+				continue;
+			}
+			$next = $foreign['next'];
+			if($next['foreign'] !== self::getPrimary()) {
+				throw new \Exception ('Foreign Relation Define Error: '.$key);
+			}
+			$relationClass = $next['class'];
+			$relationClass::deletor()
+				->by('eq', $next['local'], $primaryVal)
+				->by('eq', $foreign['foreign'], $obj->id())
+				->delete();
+			(new $next['class'])
+				->set($foreign['foreign'], $obj->id())
+				->set($next['local'], $primaryVal)
+				->save();
+		}
+	}
+
+	protected function getRelateObjs($key) 
+	{
+		$foreign = self::getForeign($key);
+		if(!$foreign) {
+			return;
+		}
+		$theClass = $foreign['class'];
+		$selector = $theClass::selector();
+		if($foreign['next'] ?? false) {
+			$next = $foreign['next'];
+			$class = $next['class'];
+			$joinSelector = $class::selector()->field(false)
+				->on('eq', $foreign['foreign'], $selector->getFieldExpr($foreign['local']))
+				->by('eq', $next['local'], $this->get($next['foreign']));
+			$selector->join($joinSelector);
+		}
+		$ret = $selector->find();
+		if(count($ret) === 1) {
+			return $ret[0];
+		}
+		return $ret;
 	}
 
 	private function isAutoCreate($primary)
@@ -172,13 +240,16 @@ class Mapper
 	{
 		$class = get_called_class();
 		if($key) {
-			return $class::$foreign ? $class::$foreign[$key] : null;
+			return $class::$foreign ? ($class::$foreign[$key] ?? null) : null;
 		}
 		return $class::$foreign ?? null;
 	}
 
 	public static function getAttribute($key, $inner = 'type')
 	{
+		if($key  === null) {
+			return null;
+		}
 		$attributes = self::getAttributes();
 		return $attributes[$key] ? ($attributes[$key][$inner] ?? null) : null;
 	}
@@ -216,7 +287,7 @@ class Mapper
 	public static function deletor()
 	{
 		$class = get_called_class();
-		return \Leno\DataMapper\Row::creator($class::$table)
+		return \Leno\DataMapper\Row::deletor($class::$table)
 			->setMapper($class);
 	}
 
