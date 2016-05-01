@@ -7,6 +7,8 @@ abstract class Adapter extends \PDO
 {
 	protected $label;
 
+	protected $dft_port = 3306;
+
     public function __construct()
     {
 		if(empty($this->label)) {
@@ -14,7 +16,7 @@ abstract class Adapter extends \PDO
 		}
 		$dsn = $this->label . ':' . implode(';', [
 			'dbname='.Configure::read('db'),
-			'port='. (Configure::read('port') ?? '3306'),
+			'port='. (Configure::read('port') ?? $this->dft_port),
 			'host='. (Configure::read('host') ?? 'localhost'),
 		]);
         $user = Configure::read('user') ?? null;
