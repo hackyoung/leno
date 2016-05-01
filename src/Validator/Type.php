@@ -4,8 +4,8 @@ namespace Leno\Validator;
 abstract class Type
 {
     public static $types = [
-        'int' => '\Leno\Validator\Type\Number',
-        'integer' => '\Leno\Validator\Type\Number',
+        'int' => '\Leno\Validator\Type\IntNumber',
+        'integer' => '\Leno\Validator\Type\IntNumber',
         'number' => '\Leno\Validator\Type\Number',
         'enum' => '\Leno\Validator\Type\Enum',
         'string' => '\Leno\Validator\Type\Stringl',

@@ -1,7 +1,7 @@
 <?php
-namespace Leno\DataMapper\Table;
+namespace Leno\DataMapper\Row;
 
-class Deletor extends \Leno\DataMapper\Table
+class Deletor extends \Leno\DataMapper\Row
 {
     public function delete()
     {

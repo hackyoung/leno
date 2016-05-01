@@ -1,7 +1,7 @@
 <?php
-namespace Leno\DataMapper\Table;
+namespace Leno\DataMapper\Row;
 
-class Creator extends \Leno\DataMapper\Table
+class Creator extends \Leno\DataMapper\Row
 {
 	public function create()
 	{

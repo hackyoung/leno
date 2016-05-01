@@ -10,7 +10,7 @@ namespace Leno\DataMapper;
  *           ->byEqWorld('world')
  *       ->quoteEnd()->find();
  */
-abstract class Table
+abstract class Row
 {
     const R_OR = 'OR'; 
 
@@ -204,7 +204,7 @@ abstract class Table
     {
 		$key = self::getInstanceKey(self::TYPE_SELECTOR, $table);
 		if(!isset(self::$instance[$key])) {
-			self::$instance[$key] = new \Leno\DataMapper\Table\Selector($table);
+			self::$instance[$key] = new \Leno\DataMapper\Row\Selector($table);
 		}
         return self::$instance[$key];
     }
@@ -213,7 +213,7 @@ abstract class Table
     {
 		$key = self::getInstanceKey(self::TYPE_CREATOR, $table);
 		if(!isset(self::$instance[$key])) {
-			self::$instance[$key] = new \Leno\DataMapper\Table\Creator($table);
+			self::$instance[$key] = new \Leno\DataMapper\Row\Creator($table);
 		}
         return self::$instance[$key];
     }
@@ -222,7 +222,7 @@ abstract class Table
     {
 		$key = self::getInstanceKey(self::TYPE_DELETOR, $table);
 		if(!isset(self::$instance[$key])) {
-			self::$instance[$key] = new \Leno\DataMapper\Table\Deletor($table);
+			self::$instance[$key] = new \Leno\DataMapper\Row\Deletor($table);
 		}
         return self::$instance[$key];
     }
@@ -231,7 +231,7 @@ abstract class Table
     {
 		$key = self::getInstanceKey(self::TYPE_UPDATOR, $table);
 		if(!isset(self::$instance[$key])) {
-			self::$instance[$key] = new \Leno\DataMapper\Table\Updator($table);
+			self::$instance[$key] = new \Leno\DataMapper\Row\Updator($table);
 		}
         return self::$instance[$key];
     }
@@ -406,7 +406,8 @@ abstract class Table
 		if(!$sql || empty($sql)) {
 			return false;
 		}
-        return self::getDriver()->exec($sql);
+		$driver = self::getDriver();
+        return $driver->exec($sql) or die(implode(':', $driver->errorInfo()). "\n");
     }
 
     abstract public function getSql();

@@ -3,20 +3,20 @@ namespace Leno\DataMapper;
 
 class Mapper
 {
-    /**
-     * @var [
-     *      'name' => ['type' => 'string', 'extra' => ['max_length' => 2015]],
-     *      'age' => ['type' => 'integer', 'allow_empty' => true,],
-     * ];
-     */
-    public static $attributes = [];
+	/**
+	 * @var [
+	 *	  'name' => ['type' => 'string', 'extra' => ['max_length' => 2015]],
+	 *	  'age' => ['type' => 'integer', 'allow_empty' => true,],
+	 * ];
+	 */
+	public static $attributes = [];
 
-    /**
-     * @var [
-     *      'id', 'name'
-     * ]
-     */
-    public static $unique = [];
+	/**
+	 * @var [
+	 *	  'id', 'name'
+	 * ]
+	 */
+	public static $unique = [];
 
 	public static $primary;
 
@@ -30,17 +30,17 @@ class Mapper
 	 */
 	public static $foreign =[];
 
-    public static $table;
+	public static $table;
 
 	protected $fresh = true;
 
-    protected $data;
+	protected $data;
 
-    public function __construct($data = [])
-    {
+	public function __construct($data = [])
+	{
 		$class = get_called_class();
-        $this->data = new Data($data, $class::$attributes);
-    }
+		$this->data = new Data($data, $class::$attributes);
+	}
 
 	public function __call($method, $parameters = null) {
 		$series = array_filter(explode('_', unCamelCase($method, '_')));
@@ -57,8 +57,8 @@ class Mapper
 		throw new \Exception(get_class() .'::'.$method . ' Not Defined');
 	}
 
-    public function get($key)
-    {
+	public function get($key)
+	{
 		$data = $this->data;
 		if($data->isset($key)) {
 			return $data->get($key);
@@ -78,18 +78,18 @@ class Mapper
 			return $ret[0];
 		}
 		return $ret;
-    }
+	}
 
-    public function set($key, $val)
-    {
-        $this->data->set($key, $val);
+	public function set($key, $val)
+	{
+		$this->data->set($key, $val);
 		return $this;
-    }
+	}
 
-    public function isFresh()
-    {
+	public function isFresh()
+	{
 		return $this->fresh;
-    }
+	}
 
 	public function setFresh($fresh = true)
 	{
@@ -97,54 +97,84 @@ class Mapper
 		return $this;
 	}
 
-    public function save()
-    {
-        $pks = self::getUnique();
-        if(!$this->isFresh()) {
-            $updator = self::updator();
-            foreach(self::getUnique() as $k) {
-                $updator->by('eq', $k, $this->data->get($k));
-            }
-            $this->data->each(function($key, $data) use ($updator){
-				if($data->isDirty($key)) {
-                	$updator->set($key, $data->forStore($key));
-				}
-            });
-            return $updator->update();
-        }
-        $creator = self::creator();
-        $this->data->each(function($key, $data) use ($creator) {
-            $creator->set($key, $data->forStore($key));
-        });
-		foreach($pks as $pk) {
-			if($this->data->isset($pk) || $this->attributes[$pk]['type'] !== 'uuid') {
-				continue;
+	public function save()
+	{
+		$pks = self::getUnique();
+		if(!$this->isFresh()) {
+			$this->data->validateAll();
+			$updator = self::updator();
+			foreach(self::getUnique() as $k) {
+				$updator->by('eq', $k, $this->data->get($k));
 			}
-			$uuid = uuid();
-			$this->data->set($pk, $uuid);
-			$creator->set($pk, $uuid);
+			$this->data->each(function($key, $data) use ($updator){
+				if($data->isDirty($key)) {
+					$updator->set($key, $data->forStore($key));
+				}
+			});
+			return $updator->update();
 		}
-        return $creator->create();
-    }
+		$creator = self::creator();
+		$mapper = $this;
+		$this->data->validateAll(function($k, $data) use ($mapper) {
+			if($mapper->isAutoCreate($k) && !$data->isset($k)) {
+				return false;
+			}
+		});
+		$this->data->each(function($key, $data) use ($creator) {
+			$creator->set($key, $data->forStore($key));
+		});
+		$primary = self::getPrimary();
+		if($this->isAutoCreate($primary)) {
+			$uuid = uuid();
+			$this->data->set($primary, $uuid);
+			$creator->set($primary, $uuid);
+		}
+		return $creator->create();
+	}
 
-    public function getUniqueValue()
-    {
-        $pks_value = [];
+	public function getUniqueValue()
+	{
+		$pks_value = [];
 		$unique = self::getUnique();
-        foreach($unique as $k) {
-            $pks_value[$k] = $this->data->get($k);
-        }
-        return $pks_value;
-    }
+		foreach($unique as $k) {
+			$pks_value[$k] = $this->data->get($k);
+		}
+		return $pks_value;
+	}
 
-    public static function getUnique()
-    {
+	private function isAutoCreate($primary)
+	{
+		return $primary === self::getPrimary() && 
+				!$this->data->isset($primary) && 
+				self::getAttribute($primary) === 'uuid';
+	}
+
+	public static function getUnique()
+	{
 		$class = get_called_class();
-        return $class::$unique;
-    }
+		return $class::$unique ?? [];
+	}
 
-    public static function find($pk)
-    {
+	public static function getPrimary()
+	{
+		$class = get_called_class();
+		return $class::$primary ?? null;
+	}
+
+	public static function getAttribute($key, $inner = 'type')
+	{
+		$attributes = self::getAttributes();
+		return $attributes[$key] ? ($attributes[$key][$inner] ?? null) : null;
+	}
+
+	public static function getAttributes()
+	{
+		$class = get_called_class();
+		return $class::$attributes ?? [];
+	}
+
+	public static function find($pk)
+	{
 		$pks = self::getUnique();
 		if(!is_array($pk) && count($pks) == 1) {
 			$the[$pks[0]] = $pk;
@@ -152,46 +182,46 @@ class Mapper
 			$the = $pk;
 		}
 		$selector = self::selector();
-        foreach($the as $field => $value) {
-            $selector->by('eq', $field, $value);
-        }
-        return $selector->findOne();
-    }
+		foreach($the as $field => $value) {
+			$selector->by('eq', $field, $value);
+		}
+		return $selector->findOne();
+	}
 
-    public static function findOrFail($pk)
-    {
-        $entity = self::find($pk);
-        if(!$entity instanceof self) {
-            throw new \Exception('Entity Not Found');
-        }
-        return $entity;
-    }
+	public static function findOrFail($pk)
+	{
+		$entity = self::find($pk);
+		if(!$entity instanceof self) {
+			throw new \Exception('Entity Not Found');
+		}
+		return $entity;
+	}
 
-    public static function deletor()
-    {
+	public static function deletor()
+	{
 		$class = get_called_class();
-        return \Leno\DataMapper\Table::creator($class::$table)
-            ->setMapper($class);
-    }
+		return \Leno\DataMapper\Row::creator($class::$table)
+			->setMapper($class);
+	}
 
-    public static function updator()
-    {
+	public static function updator()
+	{
 		$class = get_called_class();
-        return \Leno\DataMapper\Table::updator($class::$table)
-            ->setMapper($class);
-    }
+		return \Leno\DataMapper\Row::updator($class::$table)
+			->setMapper($class);
+	}
 
-    public static function creator()
-    {
+	public static function creator()
+	{
 		$class = get_called_class();
-        return \Leno\DataMapper\Table::creator($class::$table)
-            ->setMapper($class);
-    }
+		return \Leno\DataMapper\Row::creator($class::$table)
+			->setMapper($class);
+	}
 
-    public static function selector()
-    {
+	public static function selector()
+	{
 		$class = get_called_class();
-        return \Leno\DataMapper\Table::selector($class::$table)
-            ->setMapper($class);
-    }
+		return \Leno\DataMapper\Row::selector($class::$table)
+			->setMapper($class);
+	}
 }

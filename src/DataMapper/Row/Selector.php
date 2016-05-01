@@ -1,7 +1,7 @@
 <?php
-namespace Leno\DataMapper\Table;
+namespace Leno\DataMapper\Row;
 
-class Selector extends \Leno\DataMapper\Table
+class Selector extends \Leno\DataMapper\Row
 {
     const ORDER_DESC = 'DESC';
 

@@ -59,9 +59,6 @@ class Data implements \JsonSerializable, \Iterator
         if($data && $val === $data['value']) {
             return;
         }
-        if(!$this->validate($key, $val)) {
-            return;
-        }
         $this->data[$key] = [
             'value' => $val, 'dirty' => $dirty
         ];
@@ -123,6 +120,20 @@ class Data implements \JsonSerializable, \Iterator
         $config = $this->config[$key];
         return (new \Leno\Validator($config, $key))->check($val);
     }
+
+	public function validateAll($beforeCheckKey)
+	{
+		foreach($this->config as $k=>$config) {
+			$val = $this->get($k);
+			if(is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
+				continue;
+			}
+			if(!(new \Leno\Validator($config, $k))->check($val)) {
+				throw new \Exception($k . ' Validate Failed');
+			}
+		}
+		return true;
+	}
 
 	public function type($key)
 	{

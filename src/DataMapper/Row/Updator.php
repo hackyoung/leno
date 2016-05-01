@@ -1,7 +1,7 @@
 <?php
-namespace Leno\DataMapper\Table;
+namespace Leno\DataMapper\Row;
 
-class Updator extends \Leno\DataMapper\Table
+class Updator extends \Leno\DataMapper\Row
 {
 	public function update($data = null)
 	{
