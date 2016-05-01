@@ -127,8 +127,8 @@ class Selector extends \Leno\DataMapper\Row
     public function findOne()
     {
         $this->limit(0,1);
-		$ret = $this->find() ?? ['empty'=>null];
-		return $ret[0];
+		$ret = $this->find() ?? [];
+		return $ret[0] ?? false;
     }
 
     public function execute($sql = null)
@@ -136,7 +136,7 @@ class Selector extends \Leno\DataMapper\Row
         if($sql === null) {
             $sql = $this->getSql();
         }
-        $sth = self::getDriver()->query($sql);
+        $sth = self::getAdapter()->query($sql);
 		if(!$sth || empty($sth)) {
 			return $sth;
 		}
@@ -197,7 +197,7 @@ class Selector extends \Leno\DataMapper\Row
     private function toMapper($row)
     {
         $Mapper = $this->getMapper();
-        $mapper = new $Mapper($row);
+        $mapper = (new $Mapper($row))->setFresh(false);
         return $mapper;
     }
 

@@ -34,6 +34,8 @@ class Mapper
 
 	protected $fresh = true;
 
+	protected $relation = [];
+
 	protected $data;
 
 	public function __construct($data = [])
@@ -63,17 +65,13 @@ class Mapper
 		if($data->isset($key)) {
 			return $data->get($key);
 		}
-		$class = get_called_class();
-		if($class::$foreign[$key]) {
+		$foreign = self::getForeign($key);
+		if($foreign) {
 			return;
 		}
-		$theClass = $class::$foreign[$key]['class'];
-		$relation = $class::$foreign[$key]['relation'];
+		$theClass = $foreign['class'];
 		$selector = $theClass::selector();
-		foreach($relation as $local=>$foreign) {
-			$selector->by('eq', $foreign, $data->get($local));
-		}
-		$ret = $selector->find();
+		$ret = $selector->by('eq', $foreign['foreign'], $data->get($foreign['local']))->find();
 		if(count($ret) === 1) {
 			return $ret[0];
 		}
@@ -82,6 +80,10 @@ class Mapper
 
 	public function set($key, $val)
 	{
+		if($val instanceof self && $foreign = self::getForeign($key)) {
+			$this->relation[$foreign['local']] = $val;
+			return $this;
+		}
 		$this->data->set($key, $val);
 		return $this;
 	}
@@ -97,15 +99,21 @@ class Mapper
 		return $this;
 	}
 
+	public function id()
+	{
+		return $this->get(self::getPrimary());
+	}
+
 	public function save()
 	{
-		$pks = self::getUnique();
-		if(!$this->isFresh()) {
-			$this->data->validateAll();
+		foreach($this->relation as $field => $mapper) {
+			$mapper->save();
+			$this->set($field, $mapper->id());
+		}
+		$primary = self::getPrimary();
+		if(!$this->isFresh() && $this->data->validateAll()) {
 			$updator = self::updator();
-			foreach(self::getUnique() as $k) {
-				$updator->by('eq', $k, $this->data->get($k));
-			}
+			$updator->by('eq', $primary, $this->data->get($primary));
 			$this->data->each(function($key, $data) use ($updator){
 				if($data->isDirty($key)) {
 					$updator->set($key, $data->forStore($key));
@@ -123,7 +131,6 @@ class Mapper
 		$this->data->each(function($key, $data) use ($creator) {
 			$creator->set($key, $data->forStore($key));
 		});
-		$primary = self::getPrimary();
 		if($this->isAutoCreate($primary)) {
 			$uuid = uuid();
 			$this->data->set($primary, $uuid);
@@ -159,6 +166,15 @@ class Mapper
 	{
 		$class = get_called_class();
 		return $class::$primary ?? null;
+	}
+
+	public static function getForeign($key = null)
+	{
+		$class = get_called_class();
+		if($key) {
+			return $class::$foreign ? $class::$foreign[$key] : null;
+		}
+		return $class::$foreign ?? null;
 	}
 
 	public static function getAttribute($key, $inner = 'type')

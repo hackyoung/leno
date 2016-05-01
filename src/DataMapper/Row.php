@@ -42,6 +42,8 @@ abstract class Row
 
 	protected static $instance = [];
 
+	public static $adapter = '\Leno\DataMapper\Adapter\Mysql';
+
     protected $table;
 
     protected $where = [];
@@ -177,7 +179,8 @@ abstract class Row
 
 	public function quote($str)
 	{
-		return '`'.$str.'`';
+		$Adapter = self::$adapter;
+		return $Adapter::keyQuote($str);
 	}
 
     public function getOn()
@@ -236,9 +239,9 @@ abstract class Row
         return self::$instance[$key];
     }
 
-    public static function getDriver()
+    public static function getAdapter()
     {
-        return new \Leno\DataMapper\Driver\PdoDriver;
+        return new self::$adapter;
     }
 
 	public static function getInstanceKey($type, $table)
@@ -406,7 +409,7 @@ abstract class Row
 		if(!$sql || empty($sql)) {
 			return false;
 		}
-		$driver = self::getDriver();
+		$driver = self::getAdapter();
         return $driver->exec($sql) or die(implode(':', $driver->errorInfo()). "\n");
     }
 

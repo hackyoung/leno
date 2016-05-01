@@ -1,17 +1,26 @@
 <?php
-namespace Leno\DataMapper\Driver;
+namespace Leno\DataMapper;
+
 use \Leno\Configure;
-class PdoDriver extends \PDO
+
+abstract class Adapter extends \PDO
 {
+	protected $label;
+
     public function __construct()
     {
-        $dsn = Configure::read('dsn');
-        if(!$dsn) { 
-            throw new \Exception('DSN Not Found');
-        }
+		if(empty($this->label)) {
+			throw new \Exception('You Miss A Label of PDO');
+		}
+		$dsn = $this->label . ':' . implode(';', [
+			'dbname='.Configure::read('db'),
+			'port='.Configure::read('port') ?? 3306,
+			'host='.Configure::read('host') ?? 'localhost',
+		]);
         $user = Configure::read('user') ?? null;
         $password = Configure::read('password') ?? null;
         $options = array_merge([
+			\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
         ], Configure::read('options') ?? []);
         try {
             parent::__construct($dsn, $user, $password, $options);
