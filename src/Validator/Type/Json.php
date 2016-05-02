@@ -10,10 +10,9 @@ class Json extends \Leno\Validator\Type implements \Leno\DataMapper\TypeStorage
 
 	public function toStore($value)
 	{
-		if(is_array($value)) {
+		if(is_array($value) || $value instanceof \JsonSerializable) {
 			return json_encode($value);
-		}
-		if(is_string($value)) {
+		} elseif(is_string($value)) {
 			return $value;
 		}
 		throw new \Exception('Invalid Type');

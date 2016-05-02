@@ -16,10 +16,12 @@ class Worker
 
     protected static $Router = '\Leno\Routing\Router';
 
+	protected static $log_path = ROOT . '/tmp/log';
+
     protected function __construct()
     {
-        $uri = $_SERVER['REQUEST_URI'];
-        $method = $_SERVER['REQUEST_METHOD'];
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'get';
         $this->request = new Request(
             $method, $uri, getallheaders()
         );
@@ -43,6 +45,15 @@ class Worker
             );
         }
     }
+
+	public function logger($name = 'default')
+	{
+		$log = new \Monolog\Logger($name);
+		$log->pushHandler(new \Monolog\Handler\StreamHandler(
+			self::$log_path . '/' .$name.'.log', \Monolog\Logger::DEBUG
+		));
+		return $log;
+	}
 
     public function setExceptionHandler(callable $handler)
     {

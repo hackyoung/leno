@@ -92,7 +92,7 @@ class Validator extends \Leno\Validator\Type
                 );
                 break;
             case 'enum':
-                $type = new $Type($enum_list ?? null);
+                $type = new $Type($enum_list ?? []);
                 break;
             default:
                 $type = new $Type;

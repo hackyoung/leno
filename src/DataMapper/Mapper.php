@@ -224,18 +224,27 @@ class Mapper
 				self::getAttribute($primary) === 'uuid';
 	}
 
+	/**
+	 * @description 获取mapper的唯一键信息
+	 */
 	public static function getUnique()
 	{
 		$class = get_called_class();
 		return $class::$unique ?? [];
 	}
 
+	/**
+	 * @description 获取mapper的主键信息
+	 */
 	public static function getPrimary()
 	{
 		$class = get_called_class();
 		return $class::$primary ?? null;
 	}
 
+	/**
+	 * @description 获取一个mapper的外键关联信息
+	 */
 	public static function getForeign($key = null)
 	{
 		$class = get_called_class();
@@ -245,6 +254,9 @@ class Mapper
 		return $class::$foreign ?? null;
 	}
 
+	/**
+	 * @description 获取一个mapper的具体字段的属性
+	 */
 	public static function getAttribute($key, $inner = 'type')
 	{
 		if($key  === null) {
@@ -254,12 +266,21 @@ class Mapper
 		return $attributes[$key] ? ($attributes[$key][$inner] ?? null) : null;
 	}
 
+	/**
+	 * @description 获得一个mapper的属性(行信息)
+	 */
 	public static function getAttributes()
 	{
 		$class = get_called_class();
 		return $class::$attributes ?? [];
 	}
 
+	/**
+	 * @description 通过唯一键查找一个mapper实例
+	 * @param string|array pk 唯一键
+	 * @return Mapper
+	 */
+	public static function findOrFail($pk)
 	public static function find($pk)
 	{
 		$pks = self::getUnique();
@@ -275,6 +296,11 @@ class Mapper
 		return $selector->findOne();
 	}
 
+	/**
+	 * @description 通过唯一键查找一个mapper实例,没有找到则抛异常
+	 * @param string|array pk 唯一键
+	 * @return Mapper
+	 */
 	public static function findOrFail($pk)
 	{
 		$entity = self::find($pk);
@@ -284,6 +310,9 @@ class Mapper
 		return $entity;
 	}
 
+	/**
+	 * @description 返回一个关联到该mapper的行删除器
+	 */
 	public static function deletor()
 	{
 		$class = get_called_class();
@@ -291,6 +320,9 @@ class Mapper
 			->setMapper($class);
 	}
 
+	/**
+	 * @description 返回一个关联到该mapper的行更新器
+	 */
 	public static function updator()
 	{
 		$class = get_called_class();
@@ -298,6 +330,9 @@ class Mapper
 			->setMapper($class);
 	}
 
+	/**
+	 * @description 返回一个关联到该mapper的行创建器
+	 */
 	public static function creator()
 	{
 		$class = get_called_class();
@@ -305,6 +340,9 @@ class Mapper
 			->setMapper($class);
 	}
 
+	/**
+	 * @description 返回一个关联到该mapper的行选择器
+	 */
 	public static function selector()
 	{
 		$class = get_called_class();
