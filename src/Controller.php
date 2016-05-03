@@ -68,7 +68,10 @@ abstract class Controller
         (new View($view, $data))->display();
     }
 
-	protected function input($key, $rule, $message = null)
+	/**
+	 * @description 获取前端传递上来的参数
+	 */
+	protected function input($rule, $key=null, $message = null)
 	{
 		$source_map = [
 			'GET'  => $_GET,
@@ -77,9 +80,12 @@ abstract class Controller
 			'PUT' => $_POST,
 		];
 		$method = $this->request->getMethod();
-		$source = $source_map[strtolower($method)];
+		$source = $source_map[strtoupper($method)];
+		$val = $key ? ($source[$key] ?? null) : $source;
 		try {
-			return (new \Leno\Validator($rule))->check($source[$key]);
+			if((new \Leno\Validator($rule, $key ?? 'input'))->check($val)) {
+				return $source[$key];
+			}
 		} catch(\Exception $ex) {
 			if(!$message) {
 				$message = $ex->getMessage();
