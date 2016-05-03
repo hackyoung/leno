@@ -11,9 +11,25 @@ class Stringl extends \Leno\Validator\Type
 
     public function __construct($regexp=null, $min_length=null, $max_length=null)
     {
-        $this->max_length = $max_length;
-        $this->min_length = $min_length;
-        $this->regexp = $regexp;
+        if($min_length !== null) {
+            $this->min_length = $min_length;
+        }
+        if($max_length !== null) {
+            $this->max_length = $max_length;
+        }
+        if($regexp !== null) {
+            $this->regexp = $regexp;
+        }
+    }
+
+    public function getMinLength()
+    {
+        return $this->min_length;
+    }
+
+    public function getMaxLength()
+    {
+        return $this->max_length;
     }
 
     public function check($val)
