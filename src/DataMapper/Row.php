@@ -342,6 +342,11 @@ abstract class Row
 		}
 	}
 
+    public static function rollback()
+    {
+        self::getAdapter()->rollback();
+    }
+
     public static function selector($table)
     {
 		$key = self::getInstanceKey(self::TYPE_SELECTOR, $table);

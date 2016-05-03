@@ -14,6 +14,7 @@ abstract class Type
         'url' => '\Leno\Validator\Type\Url',
         'ip' => '\Leno\Validator\Type\Ipv4',
         'ipv4' => '\Leno\Validator\Type\Ipv4',
+        'email' => '\Leno\Validator\Type\Email',
         'datetime' => '\Leno\Validator\Type\Datetime',
     ];
 

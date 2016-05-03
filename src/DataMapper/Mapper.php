@@ -132,34 +132,36 @@ class Mapper
 	public function save()
 	{
 		\Leno\DataMapper\Row::beginTransaction();
-		$primary = self::getPrimary();
-		if($this->isAutoCreate($primary)) {
-			$this->data->set($primary, uuid());
-		}
-		foreach($this->relation as $key => $obj) {
-			$this->saveRelateObjs($key, $obj);
-		}
-		if(!$this->isFresh() && $this->data->validateAll()) {
-			$updator = self::updator();
-			$updator->by('eq', $primary, $this->data->get($primary));
-			$this->data->each(function($key, $data) use ($updator){
-				if($data->isDirty($key)) {
-					$updator->set($key, $data->forStore($key));
-				}
-			});
-			return $updator->update();
-		}
-		$creator = self::creator();
-		$this->data->validateAll(function($k, $data) {
-			if($this->isAutoCreate($k) && !$data->isset($k)) {
-				return false;
-			}
-		});
-		$this->data->each(function($key, $data) use ($creator) {
-			$creator->set($key, $data->forStore($key));
-		});
-		$creator->create();
-		return \Leno\DataMapper\Row::commitTransaction();
+        try {
+            $primary = self::getPrimary();
+            if($this->isAutoCreate($primary)) {
+                $this->data->set($primary, uuid());
+            }
+            foreach($this->relation as $key => $obj) {
+                $this->saveRelateObjs($key, $obj);
+            }
+            if(!$this->data->validateAll()) {
+                return;
+            }
+            if(!$this->isFresh()) {
+                $updator = self::updator();
+                $updator->by('eq', $primary, $this->data->get($primary));
+                $this->data->each(function($key, $data) use ($updator){
+                    if($data->isDirty($key)) {
+                        $updator->set($key, $data->forStore($key));
+                    }
+                });
+                return $updator->update();
+            }
+            $creator = self::creator();
+            $this->data->each(function($key, $data) use ($creator) {
+                $creator->set($key, $data->forStore($key));
+            });
+            $creator->create();
+            return \Leno\DataMapper\Row::commitTransaction();
+        } catch(\Exception $e) {
+            \Leno\DataMapper\Row::rollback();
+        }
 	}
 
 	protected function saveRelateObjs($key, $objs)
@@ -183,17 +185,18 @@ class Mapper
 				throw new \Exception ('Foreign Relation Define Error: '.$key);
 			}
 			$relationClass = $next['class'];
-			$relationClass::deletor()
-				->by('eq', $next['local'], $primaryVal)
-				->by('eq', $foreign['foreign'], $obj->id())
-				->delete();
-			(new $next['class'])
-				->set($foreign['foreign'], $obj->id())
-				->set($next['local'], $primaryVal)
-				->save();
+            try {
+			    (new $next['class'])->set($foreign['foreign'], $obj->id())
+                    ->set($next['local'], $primaryVal)
+                    ->save();
+            } catch(\Exception $ex) {
+            }
 		}
 	}
 
+    /**
+     * @description 获取该mapper对象关联的mapper对象，依赖于maper配置的foreign属性
+     */
 	protected function getRelateObjs($key) 
 	{
 		$foreign = self::getForeign($key);
@@ -217,6 +220,9 @@ class Mapper
 		return $ret;
 	}
 
+    /**
+     * @description 判断是否可以自动生成uuid
+     */
 	private function isAutoCreate($primary)
 	{
 		return $primary === self::getPrimary() && 
@@ -275,24 +281,16 @@ class Mapper
 		return $class::$attributes ?? [];
 	}
 
-	/**
-	 * @description 通过唯一键查找一个mapper实例
-	 * @param string|array pk 唯一键
-	 * @return Mapper
-	 */
-	public static function findOrFail($pk)
 	public static function find($pk)
 	{
-		$pks = self::getUnique();
-		if(!is_array($pk) && count($pks) == 1) {
-			$the[$pks[0]] = $pk;
-		} else {
-			$the = $pk;
-		}
 		$selector = self::selector();
-		foreach($the as $field => $value) {
-			$selector->by('eq', $field, $value);
-		}
+        if(is_array($pk)) {
+            foreach($the as $field => $value) {
+                $selector->by('eq', $field, $value);
+            }
+        } else {
+            $selector->by('eq', self::getPrimary(), $pk);
+        }
 		return $selector->findOne();
 	}
 

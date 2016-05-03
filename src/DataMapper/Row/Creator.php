@@ -5,7 +5,6 @@ class Creator extends \Leno\DataMapper\Row
 {
 	public function create()
 	{
-		var_dump($this->getSql());
         $this->execute();
 		return $this;
 	}
@@ -37,9 +36,6 @@ class Creator extends \Leno\DataMapper\Row
         }, array_keys($this->data[0]));
         foreach($this->data as $data) {
             $values[] = '('.implode(',', array_map(function($value) {
-				if($value instanceof \Datetime) {
-					$value = $value->format('Y-m-d H:i:s');
-				}
                 return $this->valueQuote($value);
             }, array_values($data))).')';
         }
