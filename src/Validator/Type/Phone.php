@@ -9,9 +9,4 @@ class Phone extends \Leno\Validator\String1
     {
         parent::__construct(null, 0, 11);
     }
-
-    public function check($value)
-    {
-        return parent::check($value);
-    }
 }

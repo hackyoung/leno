@@ -37,13 +37,11 @@ class Worker
     public function execute()
     {
         try {
-            (new self::$Router($this->request, $this->response))->route();
+            $this->response = (new self::$Router($this->request, $this->response))->route();
         } catch(\Exception $e) {
-            call_user_func(
-                $this->exception_handler, $e,
-                $this->request, $this->response
-            );
+            $this->response = $this->exception_handler($e, $this->response);
         }
+        $this->response->send();
     }
 
 	public function logger($name = 'default')

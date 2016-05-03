@@ -53,36 +53,20 @@ class Router
             }
         }
 		if($this->mode === self::MOD_MIX) {
-			$this->mode = self::MOD_RESTFUL;
-			$target = $this->getTarget();
+			$target = $this->getTarget(self::MOD_RESTFUL);
 			try {
 				$this->response = $this->invoke($target);
 			} catch(\Exception $e) {
-				$this->mode = self::MOD_NORMAL;
-				$target = $this->getTarget();
-				try {
-					$this->response = $this->invoke($target);
-				} catch(\Exception $e) {
-					$response = $this->response->withStatus($target->getCode());
-					$response->getBody()->write('<h1><center> '.$target->getCode() .' ' . $response->getReasonPhrase().'</center></h1>');
-        			$this->response = $response;
-				}
+				$target = $this->getTarget(self::MOD_NORMAL);
+                $this->resolvTarget($target);
 			}
-			$this->mode = self::MOD_MIX;
 		} else {
 			$target = $this->getTarget();
-			try {
-				$this->response = $this->invoke($target);
-			} catch(\Leno\Exception\HttpException $e) {
-				$response = $this->response->withStatus($e->getCode());
-				$response->getBody()->write('<h1><center> '.$e->getCode() .' ' . $response->getReasonPhrase().'</center></h1>');
-				$this->response = $response;
-			}
+            $this->resolvTarget();
 		}
         $this->afterRoute();
-        $this->send($this->response);
+        return $this->response;
     }
-
 
     protected function handleResult($response)
     {
@@ -95,7 +79,7 @@ class Router
         } elseif(is_string($response)) {
             $this->response->write($reponse);
         } else {
-            throw new \Leno\Exception\DataTypeException('Controller returned a "'.gettype($response).'" but not supported.');
+            throw new \Leno\Exception('Controller returned a "'.gettype($response).'" but not supported.');
         }
         return true;
     }
@@ -121,34 +105,6 @@ class Router
         return $ret;
     }
 
-    private function send($response)
-    {
-        if (!headers_sent()) {
-            $code = $response->getStatusCode();
-            $version = $response->getProtocolVersion();
-            if ($code !== 200 || $version !== '1.1') {
-                header(sprintf('HTTP/%s %d %s', $version, $code, $response->getReasonPhrase()));
-            }
-
-            $header = $response->getHeaders();
-            foreach ($header as $key => $value) {
-                $key = ucwords(strtolower($key), '-');
-                if (is_array($value)) {
-                    $value = implode(',', $value);
-                }
-                header(sprintf('%s: %s', $key, $value));
-            }
-        }
-
-        $body = $response->getBody();
-        if ($body instanceof \Owl\Http\IteratorStream) {
-            foreach ($body->iterator() as $string) {
-                echo $string;
-            }
-        } else {
-            echo (string)$body;
-        }
-    }
 
     private function getPath()
     {
@@ -166,8 +122,9 @@ class Router
         return $path;
     }
 
-    private function getTarget()
+    private function getTarget($mode = null)
     {
+        $mode = $mode ?? $this->mode;
         $patharr = array_merge(
             explode('/', $this->base),
             explode('/', $this->path)
@@ -175,7 +132,7 @@ class Router
         $path = array_filter(array_map(function($p) {
             return \camelCase($p, true, '-');
         }, $patharr));
-        if($this->mode == self::MOD_RESTFUL) {
+        if($mode === self::MOD_RESTFUL) {
             return $this->getRestFulTarget($path);
         } else {
             $target = [
@@ -195,10 +152,7 @@ class Router
 
     private function getRestfulTarget($path)
     {
-        $method =strtoupper(
-            isset($_POST['_method']) ? 
-            $_POST['_method'] : $this->request->getMethod()
-        );
+        $method =strtoupper($_POST['_method'] ?? $this->request->getMethod());
         if(!isset($this->restful[$method])) {
             throw new \Leno\Exception($method . ' not supported!');
         }
@@ -212,7 +166,7 @@ class Router
 
     private function _404()
     {
-		throw new \Leno\Exception\HttpException('not found', 404);
+		throw new \Leno\Http\Exception(404);
     }
 
     private function handleRule($regexp, $rule)
@@ -230,7 +184,7 @@ class Router
                     'router:'.$rule['target'].' not found'
                 );
             }
-            $rc->getMethod('route')->invoke(
+            return $rc->getMethod('route')->invoke(
                 $rc->newInstance($request, $this->response)
             );
         }
@@ -270,5 +224,17 @@ class Router
         if($this->handleResult($response)) {
             $this->response->write($content);
         }
+    }
+
+    private function resolvTarget($target)
+    {
+        try {
+            $this->response = $this->invoke($target);
+        } catch(\Leno\Http\Exception $e) {
+            $response = $this->response->withStatus($e->getCode());
+            $response->getBody()->write($e->getMessage());
+            $this->response = $response;
+        }
+        return $this->response;
     }
 }
