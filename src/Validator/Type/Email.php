@@ -9,9 +9,4 @@ class Email extends \Leno\Validator\String1
     {
         parent::__construct(null, 0, 256);
     }
-
-    public function check($value)
-    {
-        return parent::check($value);
-    }
 }
