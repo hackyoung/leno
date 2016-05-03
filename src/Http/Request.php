@@ -12,6 +12,7 @@ class Request extends \GuzzleHttp\Psr7\Request
     public function withAttribute($attr, $val)
     {
         $this->attribute[$attr] = $val;
+		return $this;
     }
 
     public function getAttribute($attr)

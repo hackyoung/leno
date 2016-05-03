@@ -62,7 +62,7 @@ class Router
 			}
 		} else {
 			$target = $this->getTarget();
-            $this->resolvTarget();
+            $this->resolvTarget($target);
 		}
         $this->afterRoute();
         return $this->response;

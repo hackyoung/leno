@@ -1,5 +1,5 @@
 <?php
-namespace \Leno\Http;
+namespace Leno\Http;
 
 class Exception extends \Leno\Exception
 {
@@ -9,6 +9,6 @@ class Exception extends \Leno\Exception
         if(!in_array($code, $http_code)) {
             throw new \Leno\Exception('HTTP CODE Invalid:'.$code);
         }
-        parent::__construct($code, $message ?? \Leno\Http::$phrases[$code]);
+        parent::__construct( $message ?? \Leno\Http::$phrases[$code], $code);
     }
 }
