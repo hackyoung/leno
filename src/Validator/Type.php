@@ -17,6 +17,7 @@ abstract class Type
         'email' => '\Leno\Validator\Type\Email',
         'phone' => '\Leno\Validator\Type\Phone',
         'datetime' => '\Leno\Validator\Type\Datetime',
+        'json' => '\Leno\Validator\Type\Json',
     ];
 
     protected $allow_empty = false;

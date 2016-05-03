@@ -16,6 +16,8 @@ $user->setCity($city)
  */
 
 $user = \Test\Model\Entity::find('b903bd69-eee8-de17-686f-7ae6c3f27a92');
+var_dump(json_encode($user->getCity()));
+
 // var_dump($user);
-var_dump($user->getCity());
+var_dump(json_encode($user));
 

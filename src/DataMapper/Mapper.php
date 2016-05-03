@@ -1,7 +1,7 @@
 <?php
 namespace Leno\DataMapper;
 
-class Mapper
+class Mapper implements \JsonSerializable
 {
 	/**
 	 * @var [
@@ -30,8 +30,14 @@ class Mapper
 	 */
 	public static $foreign =[];
 
+	/**
+	 * @var 存储在哪张表中
+	 */
 	public static $table;
 
+	/**
+	 * @var 数据是否在数据库中已经有记录
+	 */
 	protected $fresh = true;
 
 	/**
@@ -54,18 +60,15 @@ class Mapper
 		if(!isset($series[0])) {
 			throw new \Exception(get_class() .'::'.$method . ' Not Defined');
 		}
-		switch($series[0]) {
+		$type = $series[0];
+		array_splice($series, 0, 1);
+		$field = implode('_', $series);
+		switch($type) {
 			case 'set':
-				array_splice($series, 0, 1);
-				$field = implode('_', $series);
 				return $this->set($field, $parameters[0]);
 			case 'get':
-				array_splice($series, 0, 1);
-				$field = implode('_', $series);
 				return $this->get($field);
 			case 'add':
-				array_splice($series, 0, 1);
-				$field = implode('_', $series);
 				return $this->add($field, $parameters[0]);
 		}
 		throw new \Exception(get_class() .'::'.$method . ' Not Defined');
@@ -212,6 +215,8 @@ class Mapper
 				->on('eq', $foreign['foreign'], $selector->getFieldExpr($foreign['local']))
 				->by('eq', $next['local'], $this->get($next['foreign']));
 			$selector->join($joinSelector);
+		} else {
+			$selector->by('eq', $foreign['local'], $this->get($foreign['foreign']));
 		}
 		$ret = $selector->find();
 		if(count($ret) === 1) {
@@ -346,5 +351,10 @@ class Mapper
 		$class = get_called_class();
 		return \Leno\DataMapper\Row::selector($class::$table)
 			->setMapper($class);
+	}
+
+	public function jsonSerialize()
+	{
+		return $this->data->jsonSerialize();
 	}
 }

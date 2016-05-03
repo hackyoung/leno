@@ -159,12 +159,24 @@ class Data implements \JsonSerializable, \Iterator
     {
         $data = [];
         foreach($this->data as $k=>$val) {
-			$type = \Leno\Validator\Type::get($this->config[$k]);
+			$type = $this->type($k);
+			if($type === 'array') {
+				$data[$k] = $val;
+				continue;
+			}
+			if($type === 'json') {
+				if(is_string($val)) {
+					$val = json_decode($val, true);
+				}
+				$data[$k] = $val;
+				continue;
+			}
+			$type = \Leno\Validator\Type::get($this->type($k));
             if($type instanceof \Leno\DataMapper\TypeStorage) {
-				$data[] = $type->toStore($val['value']);
+				$data[$k] = $type->toStore($val['value']);
                 continue;
             }
-            $data[] = $val['value'];
+            $data[$k] = $val['value'];
         }
 		return $data;
     }

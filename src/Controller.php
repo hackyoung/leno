@@ -31,13 +31,40 @@ abstract class Controller
         $this->initialize();
     }
 
+	protected function __call($method, $parameters = null)
+	{
+		$series = array_filter(explode('_', unCamelCase($method)));
+		if(empty($series[0])) {
+			throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+		}
+		switch($series[0]) {
+			case 'set':
+				array_splice($series, 0, 1);
+				$key = implode('_', $series);
+				return $this->set($key, $parameters[0]);
+				break;
+			case 'get':
+				array_splice($series, 0, 1);
+				$key = implode('_', $series);
+				return $this->get($key);
+				break;
+		}
+		throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+	}
+
     protected function initialize()
     {
     }
 
+	protected function get($key)
+	{
+		return $this->data[$key] ?? null;
+	}
+
     protected function set($key, $val)
     {
         $this->data[$key] = $val;
+		return $this;
     }
 
     protected function render($view, $data=[])
@@ -86,18 +113,8 @@ abstract class Controller
 			if((new \Leno\Validator($rule, $key ?? 'input'))->check($val)) {
 				return $source[$key];
 			}
-		} catch(\Exception $ex) {
-			if(!$message) {
-				$message = $ex->getMessage();
-			}
-			$this->response(400, $message);
+		} catch(\Exception $e) {
+			throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());
 		}
 	}
-
-    protected function response($code, $message)
-    {
-        $response = $this->response->withStatus($code);
-        $response->write($message);
-        $this->response = $response;
-    }
 }

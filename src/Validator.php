@@ -28,6 +28,7 @@ class Validator extends \Leno\Validator\Type
     {
         $array = ['array', 'json'];
         if(in_array($this->rules['type'], $array)) {
+			$value = is_string($value) ? json_decode($value, true) : $value;
             return $this->checkArray($value);
         } else {
             return $this->checkSimple($value);
