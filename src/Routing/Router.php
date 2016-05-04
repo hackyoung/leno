@@ -63,11 +63,11 @@ class Router
 				$this->response = $this->invoke($target);
 			} catch(\Exception $e) {
 				$target = $this->getTarget(self::MOD_NORMAL);
-				$this->resolvTarget($target);
+				$this->invoke($target);
 			}
 		} else {
 			$target = $this->getTarget();
-			$this->resolvTarget($target);
+			$this->invoke($target);
 		}
 		$this->afterRoute();
 		return $this->response;
@@ -229,17 +229,5 @@ class Router
 		if($this->handleResult($response)) {
 			$this->response->write($content);
 		}
-	}
-
-	private function resolvTarget($target)
-	{
-		try {
-			$this->response = $this->invoke($target);
-		} catch(\Leno\Http\Exception $e) {
-			$response = $this->response->withStatus($e->getCode());
-			$response->getBody()->write($e->getMessage());
-			$this->response = $response;
-		}
-		return $this->response;
 	}
 }

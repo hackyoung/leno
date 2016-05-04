@@ -16,8 +16,6 @@ class Worker
 
     protected $response;
 
-    protected $exception_handler;
-
     protected static $Router = '\Leno\Routing\Router';
 
 	protected static $log_path = ROOT . '/tmp/log';
@@ -32,10 +30,7 @@ class Worker
         $this->request->withAttribute('path', strtolower($uri));
         $this->response = new Response;
         \Leno\Configure::init();
-        $this->autoload();
-        $this->exception_handler = function($e, $request, $response) {
-            throw $e;
-        };
+		self::autoload();
     }
 
     public function execute()
@@ -43,7 +38,7 @@ class Worker
         try {
             $this->response = (new self::$Router($this->request, $this->response))->route();
         } catch(\Exception $e) {
-            $this->response = $this->exception_handler($e, $this->response);
+            $this->response = $this->handleException($e);
         }
         $this->response->send();
     }
@@ -62,12 +57,7 @@ class Worker
 		return $log;
 	}
 
-    public function setExceptionHandler(callable $handler)
-    {
-        $this->exception_handler = $handler;
-    }
-
-    private function autoload()
+    public static function autoload()
     {
         spl_autoload_register(function($class) {
             $class = preg_replace('/\\$/', '', $class);
@@ -77,6 +67,15 @@ class Worker
             }
         });
     }
+
+	public function handleException($e)
+	{
+		if($e instanceof \Leno\Http\Exception) {
+			return $this->response->withStatus($e->getCode())
+				->write($e->getMessage());
+		}
+		throw $e;
+	}
 
     public function errorToException()
     {
