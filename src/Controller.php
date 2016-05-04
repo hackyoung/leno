@@ -103,7 +103,7 @@ abstract class Controller
         $source = $this->getInputSource();
         if(!empty($rule)) {
             try {
-                (new \Leno\Validator($rule, $key))->check($source[$k] ?? null);
+                (new \Leno\Validator($rule, $key))->check($source[$key] ?? null);
             } catch(\Exception $e) {
                 throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
             }
