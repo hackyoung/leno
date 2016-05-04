@@ -101,6 +101,14 @@ class Mapper implements \JsonSerializable
 		return $this;
 	}
 
+	public function setAll($data)
+	{
+		foreach($data as $field => $value) {
+			$this->data->set($field, $value);
+		}
+		return $this;
+	}
+
 	public function add($key, $val)
 	{
 		if(!($foreign = self::getForeign($key))) {
