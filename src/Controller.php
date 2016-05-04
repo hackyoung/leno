@@ -31,40 +31,40 @@ abstract class Controller
         $this->initialize();
     }
 
-	protected function __call($method, $parameters = null)
-	{
-		$series = array_filter(explode('_', unCamelCase($method)));
-		if(empty($series[0])) {
-			throw new \Leno\Exception('Controller::'.$method.' Not Defined');
-		}
-		switch($series[0]) {
-			case 'set':
-				array_splice($series, 0, 1);
-				$key = implode('_', $series);
-				return $this->set($key, $parameters[0]);
-				break;
-			case 'get':
-				array_splice($series, 0, 1);
-				$key = implode('_', $series);
-				return $this->get($key);
-				break;
-		}
-		throw new \Leno\Exception('Controller::'.$method.' Not Defined');
-	}
+    public function __call($method, $parameters = null)
+    {
+        $series = array_filter(explode('_', unCamelCase($method)));
+        if(empty($series[0])) {
+            throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+        }
+        switch($series[0]) {
+            case 'set':
+                array_splice($series, 0, 1);
+                $key = implode('_', $series);
+                return $this->set($key, $parameters[0]);
+                break;
+            case 'get':
+                array_splice($series, 0, 1);
+                $key = implode('_', $series);
+                return $this->get($key);
+                break;
+        }
+        throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+    }
 
     protected function initialize()
     {
     }
 
-	protected function get($key)
-	{
-		return $this->data[$key] ?? null;
-	}
+    protected function get($key)
+    {
+        return $this->data[$key] ?? null;
+    }
 
     protected function set($key, $val)
     {
         $this->data[$key] = $val;
-		return $this;
+        return $this;
     }
 
     protected function render($view, $data=[])
@@ -95,26 +95,47 @@ abstract class Controller
         (new View($view, $data))->display();
     }
 
-	/**
-	 * @description 获取前端传递上来的参数
-	 */
-	protected function input($rule, $key=null, $message = null)
-	{
-		$source_map = [
-			'GET'  => $_GET,
-			'POST' => $_POST,
-			'DELETE' => $_POST,
-			'PUT' => $_POST,
-		];
-		$method = $this->request->getMethod();
-		$source = $source_map[strtoupper($method)];
-		$val = $key ? ($source[$key] ?? null) : $source;
-		try {
-			if((new \Leno\Validator($rule, $key ?? 'input'))->check($val)) {
-				return $source[$key];
-			}
-		} catch(\Exception $e) {
-			throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());
-		}
-	}
+    /**
+     * @description 获取前端传递上来的参数
+     */
+    protected function input($key, $rule=null, $message = null)
+    {
+        $source = $this->getInputSource();
+        if(!empty($rule)) {
+            try {
+                (new \Leno\Validator($rule, $key))->check($source[$key] ?? null);
+            } catch(\Exception $e) {
+                throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
+            }
+        }
+        return $source[$key] ?? null;
+    }
+
+    protected function inputs($rules)
+    {
+        $source = $this->getInputSource();
+        $ret = [];
+        foreach($rules as $k=>$rule) {
+            try {
+                (new \Leno\Validator($rule, $k))->check($source[$k] ?? null);
+                $ret[$k] = $source[$k] ?? null;
+            } catch(\Exception $e) {
+                $message = $rule['message'] ?? $e->getMessage();
+                throw new \Leno\Http\Exception(400, $message);
+            }
+        }
+        return $ret;
+    }
+
+    private function getInputSource()
+    {
+        $source_map = [
+            'GET'  => $_GET,
+            'POST' => $_POST,
+            'DELETE' => $_POST,
+            'PUT' => $_POST,
+        ];
+        $method = $this->request->getMethod();
+        return $source_map[strtoupper($method)];
+    }
 }
