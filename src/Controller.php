@@ -98,8 +98,37 @@ abstract class Controller
 	/**
 	 * @description 获取前端传递上来的参数
 	 */
-	protected function input($rule, $key=null, $message = null)
+	protected function input($key, $rule=null, $message = null)
 	{
+        $source = $this->getInputSource();
+        if(!empty($rule)) {
+            try {
+                (new \Leno\Http\Validator($rule, $key))->check($source[$k] ?? null);
+            } catch(\Exception $e) {
+                throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
+            }
+        }
+        return $source[$key] ?? null;
+	}
+
+    protected function inputs($rules)
+    {
+        $source = $this->getInputSource();
+        $ret = [];
+        foreach($rules as $k=>$rule) {
+            try {
+                (new \Leno\Validator($rule, $k))->check($source[$k] ?? null);
+                $ret[$k] = $source[$k] ?? null;
+            } catch(\Exception $e) {
+                $message = $rule['message'] ?? $e->getMessage();
+                throw new \Leno\Http\Exception(400, $message);
+            }
+        }
+        return $ret;
+    }
+
+    private function getInputSource()
+    {
 		$source_map = [
 			'GET'  => $_GET,
 			'POST' => $_POST,
@@ -107,14 +136,6 @@ abstract class Controller
 			'PUT' => $_POST,
 		];
 		$method = $this->request->getMethod();
-		$source = $source_map[strtoupper($method)];
-		$val = $key ? ($source[$key] ?? null) : $source;
-		try {
-			if((new \Leno\Validator($rule, $key ?? 'input'))->check($val)) {
-				return $source[$key];
-			}
-		} catch(\Exception $e) {
-			throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());
-		}
-	}
+		return $source_map[strtoupper($method)];
+    }
 }

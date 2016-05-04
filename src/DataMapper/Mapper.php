@@ -357,4 +357,9 @@ class Mapper implements \JsonSerializable
 	{
 		return $this->data->jsonSerialize();
 	}
+
+    public function getData()
+    {
+        return $this->data;
+    }
 }

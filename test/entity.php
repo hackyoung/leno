@@ -10,4 +10,4 @@ $ret = $entity->setName('young')
 	->setHomePage('/home/young')
 	->save();
 
-vac0407688-09a8-e2d1-ab66-c66f1e126a72r_dump(\Leno\DataMapper\Row::creator('user')->getSql());
+var_dump(\Leno\DataMapper\Row::creator('user')->getSql());
