@@ -8,6 +8,10 @@ class Worker
 {
     use \Leno\Singleton;
 
+    protected $uri;
+
+    protected $method;
+
     protected $request;
 
     protected $response;
@@ -42,6 +46,11 @@ class Worker
             $this->response = $this->exception_handler($e, $this->response);
         }
         $this->response->send();
+    }
+
+    public function getResponse()
+    {
+        return $this->response;
     }
 
 	public function logger($name = 'default')

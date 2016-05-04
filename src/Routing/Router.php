@@ -40,9 +40,14 @@ class Router
 	{
 		$this->request = $request;
 		$this->response = $response;
-		$this->path = $this->getPath();
+		$this->path = $this->initPath();
 	}
 
+
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
 
 	public function route()
 	{
@@ -106,7 +111,7 @@ class Router
 	}
 
 
-	private function getPath()
+	private function initPath()
 	{
 		if($this->request->hasAttribute('path')) {
 			$tmpath = $this->request->getAttribute('path');
