@@ -7,6 +7,6 @@ class Test extends \Leno\Controller
     {
         echo $hello . "\n";
         echo $world . "\n";
-        var_dump('hello world');
+        $this->getService('hello', ['hello world'])->output();
     }
 }

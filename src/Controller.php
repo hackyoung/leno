@@ -127,6 +127,11 @@ abstract class Controller
         return $ret;
     }
 
+    protected function getService($name, $args=[])
+    {
+        return \Leno\Service::getService($name, $args);
+    }
+
     private function getInputSource()
     {
         $source_map = [
