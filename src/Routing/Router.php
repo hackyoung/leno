@@ -7,10 +7,6 @@ namespace Leno\Routing;
  */
 class Router
 {
-	const TYPE_ROUTER = 'Router';
-
-	const TYPE_CONTROLLER = 'Controller';
-
 	const MOD_NORMAL = 0;
 
 	const MOD_RESTFUL = 1;
@@ -21,8 +17,16 @@ class Router
 
 	protected $response;
 
+    /**
+     * namespace/class/method/${param1}/${param2}
+     */
 	protected $path;
 
+    /**
+     * @var [
+     *      'regexp' => Router|callable
+     * ]
+     */
 	protected $rules = [];
 
 	protected $base = 'controller';
@@ -43,7 +47,6 @@ class Router
 		$this->path = $this->initPath();
 	}
 
-
     public function setPath($path)
     {
         $this->path = $path;
@@ -52,11 +55,10 @@ class Router
 	public function route()
 	{
 		$this->beforeRoute();
-		foreach($this->rules as $reg => $rule) {
-			if(preg_match($reg, $this->path)) {
-				return $this->handleRule($reg, $rule);
-			}
-		}
+        $result = $this->handleRule();
+        if($result instanceof self) {
+            return $result->route();
+        }
 		if($this->mode === self::MOD_MIX) {
 			$target = $this->getTarget(self::MOD_RESTFUL);
 			try {
@@ -89,28 +91,6 @@ class Router
 		return true;
 	}
 
-	protected function beforeRoute()
-	{
-	}
-
-	protected function afterRoute()
-	{
-	}
-
-	private function normalizeRule($rule)
-	{
-		if(!isset($rule['type'])) {
-			$ret = [
-				'type' => self::TYPE_CONTROLLER,
-				'target' => $rule
-			];
-		} else {
-			$ret = $rule;
-		}
-		return $ret;
-	}
-
-
 	private function initPath()
 	{
 		if($this->request->hasAttribute('path')) {
@@ -130,104 +110,112 @@ class Router
 	private function getTarget($mode = null)
 	{
 		$mode = $mode ?? $this->mode;
+        $parameters = [];
+        $path = preg_replace_callback('/\/\${.*}/U', 
+        function($matches) use (&$parameters) {
+            $parameters[] = preg_replace('/\/|\$|\{|\}/', '', $matches[0]);
+            return '';
+        }, $this->path);
 		$patharr = array_merge(
 			explode('/', $this->base),
-			explode('/', $this->path)
+			explode('/', $path)
 		);
 		$path = array_filter(array_map(function($p) {
 			return \camelCase($p, true, '-');
 		}, $patharr));
 		if($mode === self::MOD_RESTFUL) {
-			return $this->getRestFulTarget($path);
-		} else {
-			$target = [
-				'controller' => false,
-				'action' => false,
-				'parameters' => [],
-			];
-			$target['action'] = preg_replace_callback('/^[A-Z]/', function($matches) {
+            $method =strtoupper($_POST['_method'] ?? $this->request->getMethod());
+            if(!isset($this->restful[$method])) {
+                throw new \Leno\Http\Exception(501);
+            }
+            $action = $this->restful[$method];
+        } else {
+			$action = preg_replace_callback('/^[A-Z]/', function($matches) {
 				if(isset($matches[0])) {
 					return strtolower($matches[0]);
 				}
 			}, preg_replace('/\..*$/', '', array_pop($path)));
-			$target['controller'] = implode('\\', $path);
-			return $target;
 		}
+        try {
+            return (new \Leno\Routing\Target(implode('\\', $path)))
+                ->setMethod($action)
+                ->setParameters($parameters);
+        } catch(\Exception $ex) {
+            throw new \Leno\Http\Exception(404);
+        }
 	}
 
-	private function getRestfulTarget($path)
+	private function handleRule()
 	{
-		$method =strtoupper($_POST['_method'] ?? $this->request->getMethod());
-		if(!isset($this->restful[$method])) {
-			throw new \Leno\Exception($method . ' not supported!');
-		}
-		$target = [
-			'controller' => implode('\\', $path),
-			'action' => $this->restful[$method],
-			'parameters' => [],
-		];
-		return $target;
-	}
-
-	private function _404()
-	{
-		throw new \Leno\Http\Exception(404);
-	}
-
-	private function handleRule($regexp, $rule)
-	{
-		$rule = $this->normalizeRule($rule);
-		if($rule['type'] == self::TYPE_ROUTER) {
-			$request = clone $this->request;
-			$request->withAttribute('path', preg_replace(
-				$regexp, '', $this->path
-			));
-			try {
-				$rc = new \ReflectionClass($rule['target']);
-			} catch(\Exception $e) {
-				throw new \Leno\Exception(
-					'router:'.$rule['target'].' not found'
-				);
+		foreach($this->rules as $reg => $rule) {
+            $regexp = preg_replace('/\$\{.*\}/U', '.*', $reg);
+            $regexp = preg_replace('/^\/|\/$/', '', $regexp);
+            $regexp = '/'.preg_replace('/\//', '\/', $regexp).'/';
+			if(!preg_match($regexp, $this->path)) {
+                continue;
 			}
-			return $rc->getMethod('route')->invoke(
-				$rc->newInstance($request, $this->response)
-			);
+            if(preg_match('/Router/', $rule)) {
+                return $this->resolvRouter($rule);
+            }
+            return $this->resolvPath($reg, $rule);
 		}
 	}
+
+    private function resolvPath($reg, $rule)
+    {
+        $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
+        $reg = '/('.implode('\/)|(', explode('|', $reg)).')/';
+        $parameters = explode('/', preg_replace($reg, '', $this->path));
+        $idx = 0;
+        return preg_replace_callback('/\$\{.*\}/U', 
+        function($matches) use (&$idx, $parameters) {
+            return '${'.$parameters[$idx].'}';
+            $idx++;
+        }, $rule);
+    }
+
+    private function resolvRouter($class)
+    {
+        try {
+            $rc = new \ReflectionClass($class);
+        } catch(\Exception $e) {
+            throw new \Leno\Exception(
+                'router:'.$rule.' not found'
+            );
+        }
+        $request = clone $this->request;
+        $request->withAttribute('path', preg_replace(
+            $regexp, '', $this->path
+        ));
+        return $rc->newInstance($request, $this->response);
+    }
 
 	private function invoke($target)
 	{
-		try {
-			$rs = new \ReflectionClass($target['controller']);
-		} catch(\Exception $e) {
-			return $this->_404();
+        $instance = $target->setConstructParameters([
+            $this->request, $this->response
+        ])->getInstance();
+		if($target->hasMethod('beforeExecute')) {
+            $target->invoke('beforeExecute', $instance);
 		}
-		$controller = $rs->newInstance($this->request, $this->response);
-		if(!$rs->hasMethod($target['action'])) {
-			return $this->_404();
-		}
-		if($rs->hasMethod('beforeExecute')) {
-			$rs->getMethod('beforeExecute')->invoke($controller);
-		}
-		$this->invokeMethod(
-			$controller, 
-			$rs->getMethod($target['action']),
-			$target['parameters']
-		);
-		if($rs->hasMethod('afterExecute')) {
-			$rs->getMethod('afterExecute')->invoke($controller);
-		}
-		return $this->response;
-	}
-
-	private function invokeMethod($controller, $action, $parameters)
-	{
 		ob_start();
-		$response = $action->invoke($controller, $parameters);
+        $response = $target->invoke(null, $instance);
 		$content = ob_get_contents();
 		ob_end_clean();
 		if($this->handleResult($response)) {
 			$this->response->write($content);
 		}
+		if($target->hasMethod('afterExecute')) {
+            $this->response = $target->invoke('afterExecute', $instance);
+		}
+		return $this->response;
+	}
+
+	protected function beforeRoute()
+	{
+	}
+
+	protected function afterRoute()
+	{
 	}
 }
