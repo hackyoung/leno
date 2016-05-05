@@ -1,3 +1,4 @@
 vendor/*
 test/tmp/*
+test/config/*
 *.swp

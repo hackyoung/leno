@@ -3,12 +3,10 @@ namespace Test\Controller;
 
 class Test extends \Leno\Controller
 {
-    public function index()
+    public function index($hello, $world)
     {
-        $this->inputs([
-            'hlo' => ['type' => 'string', 'message' => '请上传hello'],
-            'world' => ['type' => 'string']
-        ]);
+        echo $hello . "\n";
+        echo $world . "\n";
         var_dump('hello world');
     }
 }

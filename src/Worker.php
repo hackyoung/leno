@@ -59,13 +59,7 @@ class Worker
 
     public static function autoload()
     {
-        spl_autoload_register(function($class) {
-            $class = preg_replace('/\\$/', '', $class);
-            $classFile = strtr($class, '\\', '/') . '.php';
-            if(file_exists($classFile)) {
-                require_once $classFile;
-            }
-        });
+        \Leno\AutoLoader::instance()->execute();
     }
 
 	public function handleException($e)
