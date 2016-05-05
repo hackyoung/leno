@@ -1,4 +1,4 @@
 vendor/*
 test/tmp/*
-test/config/default.php
+test/config/*
 *.swp
