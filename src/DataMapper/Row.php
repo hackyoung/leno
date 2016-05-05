@@ -288,6 +288,18 @@ abstract class Row
         return $this;
     }
 
+	public function onOr()
+	{
+        $this->on[] = self::R_OR;
+        return $this;
+	}
+
+	public function onAnd()
+	{
+        $this->on[] = self::R_OR;
+        return $this;
+	}
+
     public function quoteBegin()
     {
 		$this->attachAdd();
@@ -295,11 +307,24 @@ abstract class Row
         return $this;
     }
 
+	public function onQuoteBegin()
+	{
+		$this->attachAdd();
+        $this->on[] = self::EXP_QUOTE_BEGIN;
+        return $this;
+	}
+
     public function quoteEnd()
     {
         $this->where[] = self::EXP_QUOTE_END;
         return $this;
     }
+
+	public function onQuoteEnd()
+	{
+        $this->on[] = self::EXP_QUOTE_END;
+        return $this;
+	}
 
 	public function quote($str)
 	{
@@ -551,11 +576,12 @@ abstract class Row
 		];
 		if(isset($like[$item['expr']])) {
 			return sprintf('%s %s %%s%', 
-				$this->quote($this->table) .'.'. $this->quote($item['field']),
+				$this->getFieldExpr($item['field']),
 				$like[$item['expr']],
 				$item['value']
 			);
 		}
+		// TODO implement
 		if(isset($in[$item['expr']])) {
 			return '';
 		}
