@@ -7,14 +7,31 @@ namespace Leno\Routing;
  */
 class Router
 {
+    /**
+     * 通常的路由模式 path类型为namespace/controller/method/{$param1}/{$param2}/...
+     */
 	const MOD_NORMAL = 0;
 
+    /**
+     * restful路由模式 path类型为namespace/controller/{$param1}/{$param2}/...
+     */
 	const MOD_RESTFUL = 1;
 
+    /**
+     * 混合路由模式 Router会先以restful模式查找controller，失败则使用普通模式查找
+     * 如果都失败，404
+     * 不推荐使用这种模式，性能吃力
+     */
 	const MOD_MIX = 2;
 
+    /**
+     * @var 传入的request参数
+     */
 	protected $request;
 
+    /**
+     * @var 传入的response参数
+     */
 	protected $response;
 
     /**
@@ -24,15 +41,24 @@ class Router
 
     /**
      * @var [
-     *      'regexp' => Router|callable
+     *      'regexp' => 'router_class_name|target_path'
      * ]
      */
 	protected $rules = [];
 
+    /**
+     * @var 查找类的跟路径
+     */
 	protected $base = 'controller';
 
+    /**
+     * @var 当前路由器的模式
+     */
 	protected $mode = self::MOD_RESTFUL;
 
+    /**
+     * @var restful模式下各种http method对应请求的方法
+     */
 	protected $restful = [
 		'GET' => 'index',
 		'POST' => 'add',
@@ -155,13 +181,13 @@ class Router
                 continue;
 			}
             if(preg_match('/Router/', $rule)) {
-                return $this->resolvRouter($rule);
+                return $this->resolvRouterRule($rule);
             }
-            return $this->resolvPath($reg, $rule);
+            return $this->resolvPathRule($reg, $rule);
 		}
 	}
 
-    private function resolvPath($reg, $rule)
+    private function resolvPathRule($reg, $rule)
     {
         $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
         $reg = '/('.implode('\/)|(', explode('|', $reg)).')/';
@@ -174,7 +200,7 @@ class Router
         }, $rule);
     }
 
-    private function resolvRouter($class)
+    private function resolvRouterRule($class)
     {
         try {
             $rc = new \ReflectionClass($class);
