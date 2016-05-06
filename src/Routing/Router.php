@@ -186,7 +186,7 @@ class Router
             }
             return $this->resolvPathRule($reg, $rule);
         }
-        return false;
+        return $this->path;
     }
 
     private function resolvPathRule($reg, $rule)
