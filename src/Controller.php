@@ -122,18 +122,31 @@ abstract class Controller
         return $source[$key] ?? null;
     }
 
+    /**
+     * @description 获取一组输入
+     * @param array rules = [
+     *      'hello', // 不验证可用性
+     *      'world', // 不验证可用性
+     *      'hell' => ['type' => 'string'], // 通过规则检查其可用性
+     *      'password'=> ['type' => 'password'] // 通过规则检查其可用性
+     * ];
+     */
     protected function inputs($rules)
     {
         $source = $this->getInputSource();
         $ret = [];
         foreach($rules as $k=>$rule) {
+            if(is_int($k)) {
+                $ret[$rule] = $source[$rule] ?? null;
+                continue;
+            }
             try {
                 (new \Leno\Validator($rule, $k))->check($source[$k] ?? null);
-                $ret[$k] = $source[$k] ?? null;
             } catch(\Exception $e) {
                 $message = $rule['message'] ?? $e->getMessage();
                 throw new \Leno\Http\Exception(400, $message);
             }
+            $ret[$k] = $source[$k] ?? null;
         }
         return $ret;
     }
