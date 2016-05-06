@@ -27,7 +27,7 @@ class Worker
         $this->request = new Request(
             $method, $uri, getallheaders()
         );
-        $this->request->withAttribute('path', strtolower($uri));
+        $this->request->withAttribute('path', strtolower(preg_replace('/\?.*/', '', $uri)));
         $this->response = new Response;
         \Leno\Configure::init();
 		self::autoload();
