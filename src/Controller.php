@@ -81,13 +81,13 @@ abstract class Controller
 
     protected function render($view, $data=[])
     {
-        !isset($data['__head__']) ?? $data['__head__'] = [];
+        isset($data['__head__']) ?? $data['__head__'] = [];
         $head = &$data['__head__'];
-        !empty($this->title) ?? $head['title'] = $this->title;
-        !empty($this->description) ?? $head['description'] = $this->description;
-        !empty($this->keywords) ?? $head['keywords'] = $this->keywords;
-        !empty($this->js) ?? $head['js'] = $this->js;
-        !empty($this->css) ?? $head['css'] = $this->css;
+        empty($this->title) ?? $head['title'] = $this->title;
+        empty($this->description) ?? $head['description'] = $this->description;
+        empty($this->keywords) ?? $head['keywords'] = $this->keywords;
+        empty($this->js) ?? $head['js'] = $this->js;
+        empty($this->css) ?? $head['css'] = $this->css;
         foreach($this->data as $k=>$d) {
             $data[$k] = $d;
         }

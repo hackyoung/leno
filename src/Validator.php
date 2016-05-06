@@ -41,7 +41,7 @@ class Validator extends \Leno\Validator\Type
 			$value = is_string($value) ? json_decode($value, true) : $value;
             return $this->checkArray($value);
         } else {
-            return $this->checkSimple($value, $this->rules);
+            return $this->checkSimple($value);
         }
     }
 
@@ -49,15 +49,17 @@ class Validator extends \Leno\Validator\Type
     {
         if(isset($this->rules['custom'])) {
             try {
-                return $this->rules['custom']($value, $this->rules);
+                return call_user_func_array($this->rules['custom'], $this->rules);
             } catch(\Exception $ex) {
                 if(isset($this->rules['onError'])) {
-                    return $this->rules['onError']($value, $this->rules, $ex);
+                    return call_user_func_array(
+                        $this->rules['onError'], $value, $this->rules, $ex
+                    );
                 }
                 throw $ex;
             }
         }
-        return $this->typeToCheck($value);
+        return $this->typeToCheck($value, $this->rules);
     }
 
     protected function checkArray($value)
@@ -87,7 +89,7 @@ class Validator extends \Leno\Validator\Type
 
     protected function typeToCheck($value, $rule)
     {
-        extract($this->rules['extra'] ?? []);
+        extract($rule['extra'] ?? []);
         $Type = self::get($rule['type']);
         switch($rule['type']) {
             case 'int':
@@ -108,13 +110,13 @@ class Validator extends \Leno\Validator\Type
             default:
                 $type = new $Type;
         }
-        isset($rule['allow_empty']) ?? $type->setAllowEmpty($rule['allow_empty']);
-        isset($this->rules['required']) ?? $type->setRequired($rule['required']);
+        !isset($rule['allow_empty']) ?? $type->setAllowEmpty($rule['allow_empty']);
+        !isset($rule['required']) ?? $type->setRequired($rule['required']);
         try {
             return $type->setValueName($this->value_name)->check($value);
         } catch(\Exception $ex) {
-            if(isset($this->rules['onError'])) {
-                return $this->rules['onError']($value, $this->rules, $ex);
+            if(isset($rule['onError'])) {
+                return call_user_func_array($rule['onError'], $value, $rule, $ex);
             }
             throw $ex;
         }
