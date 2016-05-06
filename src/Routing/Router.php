@@ -85,7 +85,7 @@ class Router
         if($result instanceof self) {
             return $result->route();
         }
-        $result ?? $this->path = $result;
+        $this->path = $result;
         if($this->mode === self::MOD_MIX) {
             $target = $this->getTarget(self::MOD_RESTFUL);
             try {
