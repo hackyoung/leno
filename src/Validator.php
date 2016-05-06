@@ -67,12 +67,8 @@ class Validator extends \Leno\Validator\Type
         if(!is_array($value)) {
             throw new \Exception($this->value_name . ' Not A Array');
         }
-        if(isset($this->rules['allow_empty'])) {
-            $this->setAllowEmpty($this->rules['allow_empty']);   
-        }
-        if(isset($this->rules['required'])) {
-            $this->setRequired($this->rules['required']);
-        }
+        $this->setAllowEmpty($this->rules['allow_empty'] ?? null);   
+        $this->setRequired($this->rules['required'] ?? null);
 		if(!parent::check($value)) {
 			return true;
 		}
@@ -110,8 +106,8 @@ class Validator extends \Leno\Validator\Type
             default:
                 $type = new $Type;
         }
-        !isset($rule['allow_empty']) ?? $type->setAllowEmpty($rule['allow_empty']);
-        !isset($rule['required']) ?? $type->setRequired($rule['required']);
+        $type->setAllowEmpty($rule['allow_empty'] ?? null);
+        $type->setRequired($rule['required'] ?? null);
         try {
             return $type->setValueName($this->value_name)->check($value);
         } catch(\Exception $ex) {
