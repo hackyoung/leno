@@ -1,12 +1,12 @@
 <?php
-namespace \Leno\DataMapper\Adapter
+namespace \Leno\DataMapper\Adapter;
 
 class Pgsql extends \Leno\DataMapper\Adapter
 {
-	protected $label = 'pgsql';
+    protected $label = 'pgsql';
 
-	public static function keyQuote($str)
-	{
-		return '"'.$str.'"';
-	}
+    public static function keyQuote($str)
+    {
+        return '"'.$str.'"';
+    }
 }

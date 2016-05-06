@@ -37,9 +37,9 @@ class Stringl extends \Leno\Validator\Type
         if(!parent::check($val)) {
             return true;
         }
-		if(!is_string($val)) {
+        if(!is_string($val)) {
             throw new \Exception($this->value_name . ' Not A String');
-		}
+        }
         if(isset($this->regexp) && !preg_match($this->regexp, $val)) {
             throw new \Exception($this->value_name . ' Not Matched '. $this->regexp);
         }

@@ -3,11 +3,11 @@ namespace Leno\DataMapper\Row;
 
 class Creator extends \Leno\DataMapper\Row
 {
-	public function create()
-	{
+    public function create()
+    {
         $this->execute();
-		return $this;
-	}
+        return $this;
+    }
 
     public function set($field, $val)
     {
@@ -29,7 +29,7 @@ class Creator extends \Leno\DataMapper\Row
     {
         $values = [];
         if(!isset($this->data[0])) {
-			return false;
+            return false;
         }
         $field = array_map(function($field) {
             return $this->getFieldExpr($field);
@@ -45,9 +45,9 @@ class Creator extends \Leno\DataMapper\Row
     public function getSql()
     {
         $data = $this->useData();
-		if(empty($data)) {
-			return false;
-		}
+        if(empty($data)) {
+            return false;
+        }
         return sprintf('INSERT INTO %s (%s) VALUES %s',
             $this->quote($this->table), $data['field'],
             $data['values']

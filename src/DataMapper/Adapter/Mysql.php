@@ -3,10 +3,10 @@ namespace Leno\DataMapper\Adapter;
 
 class Mysql extends \Leno\DataMapper\Adapter
 {
-	protected $label = 'mysql';
+    protected $label = 'mysql';
 
-	public static function keyQuote($str)
-	{
-		return '`'.$str.'`';
-	}
+    public static function keyQuote($str)
+    {
+        return '`'.$str.'`';
+    }
 }

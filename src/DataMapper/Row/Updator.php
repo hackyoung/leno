@@ -3,18 +3,18 @@ namespace Leno\DataMapper\Row;
 
 class Updator extends \Leno\DataMapper\Row
 {
-	public function update($data = null)
-	{
-		$this->execute();
-		return $this;
-	}
+    public function update($data = null)
+    {
+        $this->execute();
+        return $this;
+    }
 
     public function getSql()
     {
-		$data = $this->useData();
-		if(!$data) {
-			return false;
-		}
+        $data = $this->useData();
+        if(!$data) {
+            return false;
+        }
         return sprintf('UPDATE %s %s %s WHERE %s',
             $this->getName(), $data,
             $this->useJoin(), $this->useWhere()
@@ -30,9 +30,9 @@ class Updator extends \Leno\DataMapper\Row
                 $this->valueQuote($value)
             );
         }
-		if(empty($ret)) {
-			return false;
-		}
+        if(empty($ret)) {
+            return false;
+        }
         return 'SET ' . implode(', ', $ret);
     }
 }

@@ -18,7 +18,7 @@ class Worker
 
     protected static $Router = '\Leno\Routing\Router';
 
-	protected static $log_path = ROOT . '/tmp/log';
+    protected static $log_path = ROOT . '/tmp/log';
 
     protected function __construct()
     {
@@ -30,7 +30,7 @@ class Worker
         $this->request->withAttribute('path', strtolower(preg_replace('/\?.*/', '', $uri)));
         $this->response = new Response;
         \Leno\Configure::init();
-		self::autoload();
+        self::autoload();
     }
 
     public function execute()
@@ -48,28 +48,28 @@ class Worker
         return $this->response;
     }
 
-	public function logger($name = 'default')
-	{
-		$log = new \Monolog\Logger($name);
-		$log->pushHandler(new \Monolog\Handler\StreamHandler(
-			self::$log_path . '/' .$name.'.log', \Monolog\Logger::DEBUG
-		));
-		return $log;
-	}
+    public function logger($name = 'default')
+    {
+        $log = new \Monolog\Logger($name);
+        $log->pushHandler(new \Monolog\Handler\StreamHandler(
+            self::$log_path . '/' .$name.'.log', \Monolog\Logger::DEBUG
+        ));
+        return $log;
+    }
 
     public static function autoload()
     {
         \Leno\AutoLoader::instance()->execute();
     }
 
-	public function handleException($e)
-	{
-		if($e instanceof \Leno\Http\Exception) {
-			return $this->response->withStatus($e->getCode())
-				->write($e->getMessage());
-		}
-		throw $e;
-	}
+    public function handleException($e)
+    {
+        if($e instanceof \Leno\Http\Exception) {
+            return $this->response->withStatus($e->getCode())
+                ->write($e->getMessage());
+        }
+        throw $e;
+    }
 
     public function errorToException()
     {
@@ -78,7 +78,8 @@ class Worker
         });
     }
 
-    public static function setRouterClass($routerClass) {
+    public static function setRouterClass($routerClass)
+    {
         self::$Router = $routerClass;
     }
 }

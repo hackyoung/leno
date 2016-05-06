@@ -38,7 +38,7 @@ class Validator extends \Leno\Validator\Type
             }
             return true;
         } elseif(in_array($type, $array)) {
-			$value = is_string($value) ? json_decode($value, true) : $value;
+            $value = is_string($value) ? json_decode($value, true) : $value;
             return $this->checkArray($value);
         } else {
             return $this->checkSimple($value);
@@ -69,9 +69,9 @@ class Validator extends \Leno\Validator\Type
         }
         $this->setAllowEmpty($this->rules['allow_empty'] ?? null);   
         $this->setRequired($this->rules['required'] ?? null);
-		if(!parent::check($value)) {
-			return true;
-		}
+        if(!parent::check($value)) {
+            return true;
+        }
         foreach($value as $key => $val) {
             if(isset($this->rules['__each__'])) {
                 (new \Leno\Validator($this->rules['__each__'], $key))->check($val);
@@ -80,7 +80,7 @@ class Validator extends \Leno\Validator\Type
                 (new \Leno\Validator($this->rules['extra'][$key], $key))->check($val);
             }
         }
-		return true;
+        return true;
     }
 
     protected function typeToCheck($value, $rule)

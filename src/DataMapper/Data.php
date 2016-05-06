@@ -64,30 +64,30 @@ class Data implements \JsonSerializable, \Iterator
         ];
     }
 
-	public function forStore($key)
-	{
-		$data = isset($this->data[$key]) ? $this->data[$key]['value'] : null;
-		if($data && isset($this->config[$key])) {
-			$Type = \Leno\Validator\Type::get($this->type($key));
-			$type = new $Type;
-			if($type instanceof \Leno\DataMapper\TypeStorage) {
-				$data = $type->toStore($data);
-			}
-		}
-		return $data;
-	}
+    public function forStore($key)
+    {
+        $data = isset($this->data[$key]) ? $this->data[$key]['value'] : null;
+        if($data && isset($this->config[$key])) {
+            $Type = \Leno\Validator\Type::get($this->type($key));
+            $type = new $Type;
+            if($type instanceof \Leno\DataMapper\TypeStorage) {
+                $data = $type->toStore($data);
+            }
+        }
+        return $data;
+    }
 
     public function get($key)
     {
-		$data = isset($this->data[$key]) ? $this->data[$key]['value'] : null;
-		if($data && isset($this->config[$key])) {
-			$Type = \Leno\Validator\Type::get($this->type($key));
-			$type = new $Type;
-			if($type instanceof \Leno\DataMapper\TypeStorage) {
-				$data = $type->fromStore($data);
-			}
-		}
-		return $data;
+        $data = isset($this->data[$key]) ? $this->data[$key]['value'] : null;
+        if($data && isset($this->config[$key])) {
+            $Type = \Leno\Validator\Type::get($this->type($key));
+            $type = new $Type;
+            if($type instanceof \Leno\DataMapper\TypeStorage) {
+                $data = $type->fromStore($data);
+            }
+        }
+        return $data;
     }
 
     public function isset($key)
@@ -121,64 +121,64 @@ class Data implements \JsonSerializable, \Iterator
         return (new \Leno\Validator($config, $key))->check($val);
     }
 
-	public function validateAll($beforeCheckKey)
-	{
-		foreach($this->config as $k=>$config) {
-			$val = $this->get($k);
-			if(is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
-				continue;
-			}
-			if(!(new \Leno\Validator($config, $k))->check($val)) {
-				throw new \Exception($k . ' Validate Failed');
-			}
-		}
-		return true;
-	}
+    public function validateAll($beforeCheckKey)
+    {
+        foreach($this->config as $k=>$config) {
+            $val = $this->get($k);
+            if(is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
+                continue;
+            }
+            if(!(new \Leno\Validator($config, $k))->check($val)) {
+                throw new \Exception($k . ' Validate Failed');
+            }
+        }
+        return true;
+    }
 
-	public function type($key)
-	{
-		return $this->config($key, 'type');
-	}
+    public function type($key)
+    {
+        return $this->config($key, 'type');
+    }
 
     public function config($key, $idx = null)
     {
         $config = $this->config[$key] ?? [];
-		if(isset($config[$idx])) {
-			$config = $config[$idx];
-		}
-		return $config;
+        if(isset($config[$idx])) {
+            $config = $config[$idx];
+        }
+        return $config;
     }
 
     public function configs()
     {
         return $this->config;
     }
-	
+    
     /**实现json**/
     public function jsonSerialize()
     {
         $data = [];
         foreach($this->data as $k=>$val) {
-			$type = $this->type($k);
-			if($type === 'array') {
-				$data[$k] = $val;
-				continue;
-			}
-			if($type === 'json') {
-				if(is_string($val)) {
-					$val = json_decode($val, true);
-				}
-				$data[$k] = $val;
-				continue;
-			}
-			$type = \Leno\Validator\Type::get($this->type($k));
+            $type = $this->type($k);
+            if($type === 'array') {
+                $data[$k] = $val;
+                continue;
+            }
+            if($type === 'json') {
+                if(is_string($val)) {
+                    $val = json_decode($val, true);
+                }
+                $data[$k] = $val;
+                continue;
+            }
+            $type = \Leno\Validator\Type::get($this->type($k));
             if($type instanceof \Leno\DataMapper\TypeStorage) {
-				$data[$k] = $type->toStore($val['value']);
+                $data[$k] = $type->toStore($val['value']);
                 continue;
             }
             $data[$k] = $val['value'];
         }
-		return $data;
+        return $data;
     }
 
     /**实现iterator**/
