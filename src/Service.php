@@ -1,7 +1,7 @@
 <?php
 namespace Leno;
 
-class Service
+abstract class Service
 {
     protected static $base = 'model.service';
 
@@ -11,12 +11,20 @@ class Service
         $class = preg_replace_callback('/^\w|\.\w/', function($matches) {
             return strtoupper(str_replace('.', '\\', $matches[0]));
         }, $name);
-        $reflector = new \ReflectionClass($class);
-        return $reflector->newInstanceArgs($args);
+        if(!class_exists($class)) {
+            throw new \Leno\Service\Exception('service \''.$service_name.'\' Not Found');
+        }
+        $service = (new \ReflectionClass($class))->newInstanceArgs($args);
+        if(!$service instanceof self) {
+            throw new \Leno\Service\Exception('\''.$service_name.'\' Not A Service');
+        }
+        return $service;
     }
 
     public static function setBase($base)
     {
         self::$base = $base;
     }
+
+    abstract function execute();
 }

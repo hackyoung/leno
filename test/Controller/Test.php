@@ -13,6 +13,6 @@ class Test extends \Leno\Controller
         ], 'world']);
         var_dump($param);
          */
-        $this->getService('hello', ['hello world'])->output();
+        $this->getService('hello')->setParam('hello world')->execute();
     }
 }

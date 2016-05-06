@@ -3,9 +3,10 @@ namespace Leno;
 
 class Exception extends \Exception
 {
-    public function __tostring()
+    protected $messageTemplate = 'leno: %s';
+
+    public function __construct($message = '', $code = null)
     {
-        echo "<pre>";
-        return parent::__tostring();
+        parent::__construct(sprintf($this->messageTemplate, $message), $code);
     }
 }

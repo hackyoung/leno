@@ -5,12 +5,13 @@ class Hello extends \Leno\Service
 {
     protected $str;
 
-    public function __construct($str)
+    public function setParam($str)
     {
         $this->str = $str;
+        return $this;
     }
 
-    public function output()
+    public function execute()
     {
         echo $this->str . "\n";
     }
