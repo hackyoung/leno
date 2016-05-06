@@ -81,25 +81,13 @@ abstract class Controller
 
     protected function render($view, $data=[])
     {
-        if(isset($data['__head__'])) {
-           $data['__head__'] = [];
-        }
+        !isset($data['__head__']) && $data['__head__'] = [];
         $head = &$data['__head__'];
-        if(!empty($this->title)) {
-           $head['title'] = $this->title;
-        }
-        if(!empty($this->description)) {
-           $head['description'] = $this->description;
-        }
-        if(!empty($this->keywords)) {
-           $head['keywords'] = $this->keywords;
-        }
-        if(!empty($this->js)) {
-           $head['js'] = $this->js;
-        }
-        if(!empty($this->css)) {
-           $head['css'] = $this->css;
-        }
+        !empty($this->title) && $head['title'] = $this->title;
+        !empty($this->description) && $head['description'] = $this->description;
+        !empty($this->keywords) && $head['keywords'] = $this->keywords;
+        !empty($this->js) && $head['js'] = $this->js;
+        !empty($this->css) && $head['css'] = $this->css;
         foreach($this->data as $k=>$d) {
             $data[$k] = $d;
         }
