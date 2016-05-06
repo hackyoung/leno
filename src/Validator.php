@@ -27,11 +27,18 @@ class Validator extends \Leno\Validator\Type
     public function check($value)
     {
         $array = ['array', 'json'];
-        if(in_array($this->rules['type'], $array)) {
+        if(is_array($this->rules)) {
+            foreach($this->rules['type'] as $type) {
+                $rule = $this->rules;
+                $rule['type'] = $type;
+                $this->checkSimple($value, $rule);
+            }
+            return true;
+        } elseif(in_array($this->rules['type'], $array)) {
 			$value = is_string($value) ? json_decode($value, true) : $value;
             return $this->checkArray($value);
         } else {
-            return $this->checkSimple($value);
+            return $this->checkSimple($value, $this->rules);
         }
     }
 
@@ -75,11 +82,11 @@ class Validator extends \Leno\Validator\Type
 		return true;
     }
 
-    protected function typeToCheck($value)
+    protected function typeToCheck($value, $rule)
     {
         extract($this->rules['extra'] ?? []);
-        $Type = self::get($this->rules['type']);
-        switch($this->rules['type']) {
+        $Type = self::get($rule['type']);
+        switch($rule['type']) {
             case 'int':
             case 'integer':
             case 'number':
@@ -98,12 +105,8 @@ class Validator extends \Leno\Validator\Type
             default:
                 $type = new $Type;
         }
-        if(isset($this->rules['allow_empty'])) {
-            $type->setAllowEmpty($this->rules['allow_empty']);   
-        }
-        if(isset($this->rules['required'])) {
-            $type->setRequired($this->rules['required']);
-        }
+        isset($rule['allow_empty']) ?? $type->setAllowEmpty($rule['allow_empty']);
+        isset($this->rules['required']) ?? $type->setRequired($rule['required']);
         try {
             return $type->setValueName($this->value_name)->check($value);
         } catch(\Exception $ex) {

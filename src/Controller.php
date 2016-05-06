@@ -67,28 +67,27 @@ abstract class Controller
         return $this;
     }
 
+    protected function addJs($js)
+    {
+        $this->js[] = $js;
+        return $this;
+    }
+
+    protected function addCss($css)
+    {
+        $this->css[] = $css;
+        return $this;
+    }
+
     protected function render($view, $data=[])
     {
-        if(!isset($data['__head__'])) {
-            $data['__head__'] = [];
-        }
-        if(!empty($this->title)) {
-            $data['__head__']['title'] = $this->title;
-        }
-        if(!empty($this->description)) {
-            $data['__head__']['description'] = $this->description;
-        }
-        if(!empty($this->keywords)) {
-            $data['__head__']['keywords'] = $this->keywords;
-        }
-
-        if(!empty($this->js)) {
-            $data['__head__']['js'] = $this->js;
-        }
-
-        if(!empty($this->js)) {
-            $data['__head__']['css'] = $this->css;
-        }
+        !isset($data['__head__']) ?? $data['__head__'] = [];
+        $head = &$data['__head__'];
+        !empty($this->title) ?? $head['title'] = $this->title;
+        !empty($this->description) ?? $head['description'] = $this->description;
+        !empty($this->keywords) ?? $head['keywords'] = $this->keywords;
+        !empty($this->js) ?? $head['js'] = $this->js;
+        !empty($this->css) ?? $head['css'] = $this->css;
         foreach($this->data as $k=>$d) {
             $data[$k] = $d;
         }
@@ -140,7 +139,7 @@ abstract class Controller
             'DELETE' => $_POST,
             'PUT' => $_POST,
         ];
-        $method = $this->request->getMethod();
-        return $source_map[strtoupper($method)];
+        $method = strtoupper($this->request->getMethod());
+        return $source_map[$method];
     }
 }

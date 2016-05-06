@@ -3,6 +3,22 @@ namespace Leno\Http;
 
 class Response extends \GuzzleHttp\Psr7\Response
 {
+    public function redirect($url, $params = [])
+    {
+        if(!empty($params)) {
+            $thep = [];
+            foreach($params as $k=>$v) {
+                $thep[] = $k .'='.$v;
+            }
+            $url .= '?'.implode('&', $thep);
+        }
+        (new \Leno\Validator([
+            'type' => ['uri', 'url']
+        ], 'redirect_url'))->check($url);
+        header('location: '.$url);
+        exit;
+    }
+
     public function write($string)
     {
         $this->getBody()->write($string);

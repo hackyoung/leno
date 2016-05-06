@@ -5,8 +5,9 @@ class Request extends \GuzzleHttp\Psr7\Request
 {
     private $attribute = [];
 
-    public function redirect($url)
+    public function input()
     {
+        return file_get_contents('php://input', 'r');
     }
 
     public function withAttribute($attr, $val)
