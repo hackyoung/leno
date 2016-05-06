@@ -151,6 +151,23 @@ abstract class Controller
         return $ret;
     }
 
+    /**
+     * @description 输出数据,采用该方法包裹所有需要界面展示的数据都应该用该方法包裹
+     * 方便以后拓展国际化
+     */
+    protected function output(string $output)
+    {
+        return $output;
+    }
+
+    /**
+     * @description 输出数组
+     */
+    protected function outputs(array $outputs)
+    {
+        return $outputs;
+    }
+
     protected function getService($name, $args=[])
     {
         return \Leno\Service::getService($name, $args);
