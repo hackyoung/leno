@@ -85,7 +85,7 @@ class Router
         if($result instanceof self) {
             return $result->route();
         }
-        $this->path = $result;
+        $result ?? $this->path = $result;
 		if($this->mode === self::MOD_MIX) {
 			$target = $this->getTarget(self::MOD_RESTFUL);
 			try {
@@ -186,6 +186,7 @@ class Router
             }
             return $this->resolvPathRule($reg, $rule);
 		}
+        return false;
 	}
 
     private function resolvPathRule($reg, $rule)

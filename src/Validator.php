@@ -27,14 +27,17 @@ class Validator extends \Leno\Validator\Type
     public function check($value)
     {
         $array = ['array', 'json'];
-        if(is_array($this->rules)) {
-            foreach($this->rules['type'] as $type) {
+        $type = $this->rules['type'] ?? false;
+        if(!$type) {
+            throw new \Exception('Rule Error: Type Not Found');
+        } else if(is_array($type)) {
+            foreach($type as $t) {
                 $rule = $this->rules;
-                $rule['type'] = $type;
+                $rule['type'] = $t;
                 $this->checkSimple($value, $rule);
             }
             return true;
-        } elseif(in_array($this->rules['type'], $array)) {
+        } elseif(in_array($type, $array)) {
 			$value = is_string($value) ? json_decode($value, true) : $value;
             return $this->checkArray($value);
         } else {
