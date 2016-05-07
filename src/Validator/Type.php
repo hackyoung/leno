@@ -50,7 +50,7 @@ abstract class Type
 
     public function setRequired($required)
     {
-        $this->required = $required ?? $this->allow_required;
+        $this->required = $required ?? $this->required;
         return $this;
     }
 
