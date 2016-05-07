@@ -5,7 +5,8 @@ abstract class Service
 {
     protected static $map = [
         'user' => 'model.service',
-        'leno' => 'leno.service',
+        'leno.remote' => 'leno.service.remote.helper',
+        'leno.local' => 'leno.service.local'
     ];
 
     public static function getService($service_name, $args = [])

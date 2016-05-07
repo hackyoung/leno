@@ -3,7 +3,7 @@ namespace Leno;
 
 class Exception extends \Exception
 {
-    protected $messageTemplate = 'leno: %s';
+    protected $messageTemplate = '%s';
 
     public function __construct($message = '', $code = null)
     {

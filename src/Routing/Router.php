@@ -111,7 +111,7 @@ class Router
         } elseif($response instanceof \Psr\Http\Message\StreamInterface) {
             $this->response = $this->response->withBody($response);
         } elseif(is_string($response)) {
-            $this->response->write($reponse);
+            $this->response->write($response);
         } else {
             throw new \Leno\Exception('Controller returned a "'.gettype($response).'" but not supported.');
         }
