@@ -5,7 +5,7 @@
     "require": {
         "monolog/monolog": "1.0.*",
 		"leno/view": "dev-master",
-        "guzzlehttp/psr7": "1.2.*"
+        "guzzlehttp/guzzle": "6.2.*"
     },
     "autoload": {
         "psr-4": {

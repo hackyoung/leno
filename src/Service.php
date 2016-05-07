@@ -3,11 +3,20 @@ namespace Leno;
 
 abstract class Service
 {
-    protected static $base = 'model.service';
+    protected static $map = [
+        'user' => 'model.service',
+        'leno' => 'leno.service',
+    ];
 
     public static function getService($service_name, $args = [])
     {
-        $name = self::$base . '.' . $service_name;
+        foreach(self::$map as $prefix => $base) {
+            if(preg_match('/^'.$prefix.'\./', $service_name)) {
+                $service_name = preg_replace('/^'.$prefix.'\./', '', $service_name);
+                break;
+            }
+        }
+        $name = $base . '.' . $service_name;
         $class = preg_replace_callback('/^\w|\.\w/', function($matches) {
             return strtoupper(str_replace('.', '\\', $matches[0]));
         }, $name);
@@ -21,10 +30,10 @@ abstract class Service
         return $service;
     }
 
-    public static function setBase($base)
+    public static function register($prefix, $base)
     {
-        self::$base = $base;
+        self::$map[$prefix] = $base;
     }
 
-    abstract function execute();
+    abstract public function execute();
 }

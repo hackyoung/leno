@@ -194,11 +194,10 @@ class Router
         $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
         $reg = '/('.implode('\/)|(', explode('|', $reg)).')/';
         $parameters = explode('/', preg_replace($reg, '', $this->path));
-        $idx = 0;
         return preg_replace_callback('/\$\{.*\}/U', 
         function($matches) use (&$idx, $parameters) {
+            $idx = (int)preg_replace('/\$|\{|\}/', '', $matches[0]) - 1;
             return '${'.$parameters[$idx].'}';
-            $idx++;
         }, $rule);
     }
 

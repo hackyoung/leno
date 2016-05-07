@@ -12,6 +12,6 @@ class Router extends \Leno\Routing\Router
 
     public function beforeRoute()
     {
-        $this->setPath('test/123/hello/123');
+        $this->setPath('test/123/hello/abc');
     }
 }
