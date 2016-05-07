@@ -143,6 +143,10 @@ class Router
             $parameters[] = preg_replace('/\/|\$|\{|\}/', '', $matches[0]);
             return '';
         }, $this->path);
+        $path = !empty($path) ? $path : (
+            ($this->mode === self::MOD_RESTFUL) ?
+            'index' : 'index/index'
+        );
         $patharr = array_merge(
             explode('/', $this->base),
             explode('/', $path)
