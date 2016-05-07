@@ -44,13 +44,13 @@ abstract class Type
 
     public function setAllowEmpty($allow)
     {
-        $this->allow_empty = $allow ?? $this->allow_empty;
+        $this->allow_empty = $allow;
         return $this;
     }
 
     public function setRequired($required)
     {
-        $this->required = $required ?? $this->required;
+        $this->required = $required;
         return $this;
     }
 
