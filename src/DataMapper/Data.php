@@ -121,11 +121,11 @@ class Data implements \JsonSerializable, \Iterator
         return (new \Leno\Validator($config, $key))->check($val);
     }
 
-    public function validateAll($beforeCheckKey)
+    public function validateAll($beforeCheckKey = null)
     {
         foreach($this->config as $k=>$config) {
             $val = $this->get($k);
-            if(is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
+	        if(isset($beforeCheckKey) && is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
                 continue;
             }
             if(!(new \Leno\Validator($config, $k))->check($val)) {

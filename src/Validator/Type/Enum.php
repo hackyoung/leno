@@ -11,7 +11,7 @@ class Enum extends \Leno\Validator\Type
 
     public function __construct($val_list = [])
     {
-        $this->val_list = $val_list
+        $this->val_list = $val_list;
     }
 
     public function check($val)
