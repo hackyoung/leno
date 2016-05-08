@@ -101,7 +101,7 @@ class Mapper implements \JsonSerializable
         return $this;
     }
 
-    public function setAll($data)
+    public function setAll(array $data)
     {
         foreach($data as $field => $value) {
             $this->data->set($field, $value);
@@ -109,6 +109,12 @@ class Mapper implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * @description 添加一个关系实体, 如$user->addBook($book);
+     * @param string key 
+     * @param mapper val
+     * @return this
+     */
     public function add($key, $val)
     {
         if(!($foreign = self::getForeign($key))) {
@@ -140,10 +146,16 @@ class Mapper implements \JsonSerializable
         return $this->get(self::getPrimary());
     }
 
+    /**
+     * @description 将一个实体持久化存储,会保存其有关系的其他实体信息
+     */
     public function save()
     {
         \Leno\DataMapper\Row::beginTransaction();
         try {
+            if($this->beforeSave() === false) {
+                return false;
+            }
             $primary = self::getPrimary();
             if($this->isAutoCreate($primary)) {
                 $this->data->set($primary, uuid());
@@ -151,10 +163,10 @@ class Mapper implements \JsonSerializable
             foreach($this->relation as $key => $obj) {
                 $this->saveRelateObjs($key, $obj);
             }
-            if(!$this->data->validateAll()) {
-                return;
-            }
             if(!$this->isFresh()) {
+                if($this->beforeUpdate() === false || !$this->data->validateAll()) {
+                    return false;
+                }
                 $updator = self::updator();
                 $updator->by('eq', $primary, $this->data->get($primary));
                 $this->data->each(function($key, $data) use ($updator){
@@ -164,6 +176,10 @@ class Mapper implements \JsonSerializable
                 });
                 return $updator->update();
             }
+            $this->beforeInsert();
+            if($this->beforeInsert() === false || !$this->data->validateAll()) {
+                return false;
+            }
             $creator = self::creator();
             $this->data->each(function($key, $data) use ($creator) {
                 $creator->set($key, $data->forStore($key));
@@ -172,9 +188,15 @@ class Mapper implements \JsonSerializable
             return \Leno\DataMapper\Row::commitTransaction();
         } catch(\Exception $e) {
             \Leno\DataMapper\Row::rollback();
+            throw $e;
         }
     }
 
+    /**
+     * @description 在该实体被保存前，该方法会保存与该实体有关系的其他实体
+     * @param string key 关联的外键
+     * @param [] objs 一系列通过key关联的对象
+     */
     protected function saveRelateObjs($key, $objs)
     {
         $foreign = self::getForeign($key);
@@ -193,15 +215,12 @@ class Mapper implements \JsonSerializable
             }
             $next = $foreign['next'];
             if($next['foreign'] !== self::getPrimary()) {
-                throw new \Exception ('Foreign Relation Define Error: '.$key);
+                throw new \Leno\Exception ('Foreign Relation Define Error: '.$key);
             }
             $relationClass = $next['class'];
-            try {
-                (new $next['class'])->set($foreign['foreign'], $obj->id())
-                    ->set($next['local'], $primaryVal)
-                    ->save();
-            } catch(\Exception $ex) {
-            }
+            (new $next['class'])->set($foreign['foreign'], $obj->id())
+                ->set($next['local'], $primaryVal)
+                ->save();
         }
     }
 
@@ -231,6 +250,18 @@ class Mapper implements \JsonSerializable
             return $ret[0];
         }
         return $ret;
+    }
+
+    protected function beforeSave()
+    {
+    }
+
+    protected function beforeInsert()
+    {
+    }
+
+    protected function beforeUpdate()
+    {
     }
 
     /**
