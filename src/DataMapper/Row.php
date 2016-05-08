@@ -568,7 +568,7 @@ abstract class Row
             'like' => 'LIKE', 'not_like' => 'NOT LIKE',
         ];
         $in = [
-            'in' => '', 'not_in' => '',
+            'in' => 'IN', 'not_in' => 'NOT IN',
         ];
         $expr = [
             'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
@@ -581,9 +581,21 @@ abstract class Row
                 $item['value']
             );
         }
-        // TODO implement
         if(isset($in[$item['expr']])) {
-            return '';
+            if($item['value'] instanceof \Leno\DataMapper\Row) {
+                return sprintf('%s %s (%s)', 
+                    $this->getFieldExpr($item['field']),
+                    $in[$item['expr']],
+                    $item['value']->getSql()
+                );
+            }
+            $expr = self::getAdapter()->in(
+                $this->getFieldExpr($item['field']), $item['value']
+            );
+            if($item['expr'] == 'not_in') {
+                return '!'.$expr;
+            }
+            return $expr;
         }
         if(isset($expr[$item['expr']])) {
             return sprintf('%s %s %s', 
