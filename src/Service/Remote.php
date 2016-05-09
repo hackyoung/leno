@@ -3,76 +3,29 @@ namespace Leno\Service;
 
 class Remote extends \Leno\Service
 {
+    const GET = 'GET';
+
+    const POST = 'POST';
+
     protected $url;
 
-    protected $method = 'POST';
-
-    protected $async = false;
-
-    protected $after_async;
-
-    protected $base_uri;
+    protected $method = self::GET;
 
     protected $timeout;
 
-    protected $post = [];
+    protected $result;
 
-    protected $result = new \Leno\Service\Remote\Parameter;
+    protected $parameter;
 
-    protected $parameter = new \Leno\Service\Remote\Result;
-
-    public function setMethod($method)
+    public function setParameter(\Leno\Service\Remote\Parameter $parameter)
     {
-        $this->method = $method;
+        $this->parameter = $parameter;
         return $this;
     }
 
-    public function setResult($result)
+    public function setResult(\Leno\Service\Remote\Result $result)
     {
         $this->result = $result;
-        return $this;
-    }
-
-    public function setAsync(bool $async = true)
-    {
-        $this->async = $async;
-        return $this;
-    }
-
-    protected setAfterAsync($callback)
-    {
-        if(is_callable($callback)) {
-            trigger_error('callback Is Not A Cabllable Will Be Ignore', E_USER_WARNING);
-            return $this;
-        }
-        $this->after_async = $callback;
-        return $this;
-    }
-
-    protected function afterAsync($response)
-    {
-        if(is_callable($this->after_async)) {
-            return call_user_func($this->after_async, $response);
-        }
-    }
-
-    public function setOptions(array $opts)
-    {
-        $this->options = $opts;
-        return $this;
-    }
-
-    public function setPostParameters(array $params)
-    {
-        $this->post = $params;
-        return $this;
-    }
-
-    public function setParameter($parameter)
-    {
-        if(!$parameter instanceof \Leno\Service\Parameter) {
-            $this->parameter
-        }
         return $this;
     }
 
@@ -82,23 +35,30 @@ class Remote extends \Leno\Service
         return $this;
     }
 
-    public function setBaseUri($uri)
-    {
-        $this->base_uri = $uri;
-        return $this;
-    }
-
     public function execute()
     {
-        $options = [];
-        if($this->method === 'POST') {
-            $options = $this->options ?? [];
-            if($options['form_params']) && $old = $options['form_params'];
-            $options['form_params'] = array_merge_recursive($old ?? [], $this->post);
+        $options = [
+            'timeout' => $this->timeout ?? null
+        ];
+        $url = $this->url;
+        if($this->method === self::POST && $this->parameter) {
+            $options['form_params'] = array_merge_recursive(
+                $options['form_params'] ?? [], $this->parameter->useIt()
+            );
         }
-        $client = new GuzzleHttp\Client([
-            'base_uri' => $this->base_uri,
-            'timeout' => $this->timeout,
-        ]);
+        if($this->method === self::GET && $this->parameter) {
+            $params = $this->parameter->useIt();
+            $p = [];
+            foreach($params as $key => $val) {
+                $p[] = $key .'='. $val;
+            }
+            $url = $url . '?' . implode('&', $p);
+        }
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request($this->method, $url, $options);
+        if($this->result) {
+            return $this->result->getResult($response);
+        }
+        return $response;
     }
 }

@@ -1,18 +1,16 @@
 <?php
 namespace Test\Service;
 
-class Hello extends \Leno\Service
+class Hello extends \Leno\Service\Remote
 {
-    protected $str;
+    protected $url = 'hello.world';
 
-    public function setParam($str)
-    {
-        $this->str = $str;
-        return $this;
-    }
+    protected $method = self::POST;
 
-    public function execute()
+    public function __construct()
     {
-        echo $this->str . "\n";
+        $this->setParameter((new \Leno\Service\Remote\Parameter)->setData([
+            'hello' => 'world'
+        ]));
     }
 }
