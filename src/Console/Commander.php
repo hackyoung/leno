@@ -75,6 +75,11 @@ EOF;
         echo "\n";
     }
 
+    public function description()
+    {
+        return 'hello world';
+    }
+
     private function getTarget()
     {
         foreach(self::$namespaces as $namespace) {

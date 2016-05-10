@@ -50,9 +50,11 @@ class ArgParser
 
     public function getSubCommand()
     {
+        return $this->sub_command;
     }
 
     public function getArgs()
     {
+        return $this->args;
     }
 }

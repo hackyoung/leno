@@ -5,8 +5,10 @@ abstract class Node
 {
     public static $map = [
         'info' => '\\Leno\\Console\\Formatter\\Node\\Info',
-        'description' => '\\Leno\\Console\\Formatter\\Node\\Description',
-        'title' => '\\Leno\\Console\\Formatter\\Node\\Title',
+        'notice' => '\\Leno\\Console\\Formatter\\Node\\Notice',
+        'error' => '\\Leno\\Console\\Formatter\\Node\\Error',
+        'warn' => '\\Leno\\Console\\Formatter\\Node\\Warning',
+        'debug' => '\\Leno\\Console\\Formatter\\Node\\Debug',
         'keyword' => '\\Leno\\Console\\Formatter\\Node\\Keyword',
         'text' => '\\Leno\\Console\\Formatter\\Node\\Text',
         'root' => '\\Leno\\Console\\Formatter\\Node\\Root',
