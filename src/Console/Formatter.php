@@ -15,7 +15,7 @@ class Formatter
 
     protected $token_list = [];
 
-    protected $token_tree = [];
+    protected $node_stack = [];
 
     public function setInput($input)
     {
@@ -29,11 +29,59 @@ class Formatter
             $this->setInput($input);
         }
         $this->getToken();
-        $this->getTokenTree($this->token_list);
+        foreach($this->token_list as $token) {
+            if($this->isNodeEnd($token)) {
+                $name = $this->getNameFromToken($token);
+                $children = [];
+                do {
+                    $elem = array_pop($this->node_stack);
+                    $children[] = $elem;
+                } while ( $elem instanceof \Leno\Console\Formatter\Node);
+                array_pop($children);
+                if($this->isNodeBegin($elem, $name)) {
+                    $node = \Leno\Console\Formatter\Node::getNode($name);
+                    while(count($children) > 0) {
+                        $node->addChild(array_pop($children));
+                    }
+                    $this->node_stack[] = $node;
+                }
+            } elseif($this->isNodeBegin($token)) {
+                $this->node_stack[] = $token;
+            } else {
+                $this->node_stack[] = new \Leno\Console\Formatter\Node\Text($token);
+            }
+        }
+        $text = [];
+        foreach($this->node_stack as $node) {
+            $text[] = $node->format();
+        }
+        echo implode('', $text);
+    }
+
+    protected function isNodeEnd($token, $name = null)
+    {
+        if($name) {
+            return $token === '</'.$name.'>';
+        }
+        return preg_match('/^<\/\w+>/', $token);
+    }
+
+    protected function isNodeBegin($token, $name = null)
+    {
+        if($name) {
+            return $token === '<'.$name.'>';
+        }
+        return preg_match('/^<\w+>/', $token);
+    }
+
+    protected function getNameFromToken($token)
+    {
+        return preg_replace('/<|>|\//', '', $token);
     }
 
     protected function getToken()
     {
+        $this->token_list[] = '<root>';
         while(($char = $this->getChar()) !== false) {
             switch($char) {
             case '<':
@@ -48,56 +96,7 @@ class Formatter
                 $this->token .= $char;
             }
         }
-    }
-
-    protected function getTokenTree($list)
-    {
-        $the_list = [];
-        foreach($list as $k => $token) {
-            if(true) {
-                $name = preg_replace('/<|>/', '', $token);
-                if($list[$k + 2] && $list[$k + 2] === '</'.$name.'>') {
-                    $the_list[$name] = $list[$k + 1];
-                    $list[$k + 1] = false;
-                }
-            } elseif($token !== false && !preg_match('/^<\/\w+/', $token)) {
-                $the_list[] = $list[$k];
-            }
-        }
-        return $the_list;
-    }
-
-    protected function getPare($list)
-    {
-        $ret = [];
-        foreach($list as $k => $token) {
-            if(preg_match('/^<\w+>/', $token)) {
-                $name = preg_replace('/<|>/', '', $token);
-                $idx = $this->findInArray($ret, $name);
-                if($idx === false) {
-                    $ret[] = [
-                        'name' => $name,
-                        'begin' => $k,
-                    ];
-                } else {
-
-                }
-            }
-        }
-        if($begin && $end) {
-            return array_splice($list, $begin, $end - $begin + 1);
-        }
-    }
-
-    protected function findInArray($array, $name)
-    {
-        $idx = false;
-        foreach($array as $k=>$val) {
-            if($val['name'] === $name) {
-                $idx = $name;
-            }   
-        }
-        return $idx;
+        $this->token_list[] = '</root>';
     }
 
     protected function getChar()

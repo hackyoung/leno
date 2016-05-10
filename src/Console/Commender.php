@@ -41,6 +41,9 @@ class Commender extends \Leno\Shell
 
     public function help($commend = null)
     {
+        $info = "用法: <info><keyword>leno</keyword> <keyword>commend</keyword> <keyword>[sub-commend]</keyword> <keyword>[[param]]</keyword></info>";
+        (new \Leno\Console\Formatter)->format($info);
+        echo "\n";
     }
 
     private function getTarget()
