@@ -37,8 +37,8 @@ class Formatter
                     $elem = array_pop($this->node_stack);
                     $children[] = $elem;
                 } while ( $elem instanceof \Leno\Console\Formatter\Node);
-                array_pop($children);
-                if($this->isNodeBegin($elem, $name)) {
+                $begin = array_pop($children);
+                if($this->isNodeBegin($begin, $name)) {
                     $node = \Leno\Console\Formatter\Node::getNode($name);
                     while(count($children) > 0) {
                         $node->addChild(array_pop($children));
@@ -96,6 +96,7 @@ class Formatter
                 $this->token .= $char;
             }
         }
+        $this->token_list[] = $this->token;
         $this->token_list[] = '</root>';
     }
 

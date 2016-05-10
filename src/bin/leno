@@ -2,49 +2,8 @@
 <?php
 /**
  *      namespace class   method
- * leno namespace commend [sub-commend] [option]
+ * leno namespace command [sub-command] [option]
  */
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-$commender = new \Leno\Console\Commender;
-
-$args = $_SERVER['argv'];
-array_splice($args, 0, 1);
-if(count($args) < 1) {
-    $commender->help();
-    return;
-}
-$commend = $args[0];
-$action = 'main';
-array_splice($args, 0, 1);
-if(count($args) > 0 && !preg_match('/^\-{1,2}/', $args[0])) {
-    $action = $args[0];   
-    array_splice($args, 0, 1);
-}
-$prev = false;
-$the_arg = [];
-foreach($args as $arg) {
-    if(preg_match('/=/', $arg)) {
-        $arg = explode('=', $arg);
-        $the_arg[preg_replace('/^\-{1,2}/', '', $arg[0])] = $arg[1];
-        $prev = false;
-        continue;
-    }
-    if(preg_match('/^\-{1,2}\w/', $arg)) {
-        $prev = preg_replace('/^\-{1,2}/', '', $arg);
-        $the_arg[$prev] = true;
-        continue;
-    }
-    if($prev !== false) {
-        $the_arg[$prev] = $arg;
-    }
-}
-
-try {
-    $commender->setCommend($commend)
-        ->setAction($action)
-        ->setArgs($the_arg)
-        ->execute();
-} catch(\Exception $e) {
-    \Leno\Console\Stdout::error($commend . ': ' . $e->getMessage());
-    return;
-}
+$commander = new \Leno\Console\Commander;
+$commander->execute();
