@@ -68,8 +68,11 @@ class Commander extends \Leno\Shell
         $info = 
 <<<EOF
 用法: <keyword>leno</keyword> <keyword>command</keyword> <keyword>[sub-command]</keyword> <keyword>[param...]</keyword>
-支持的命令：
-hello
+支持的命令<keyword>(command)</keyword>：
+<keyword>hello</keyword>\t\t这是一个测试的<keyword>HELLO WORLD</keyword>信息
+<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
+<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
+<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
 EOF;
         (new \Leno\Console\Formatter)->format($info);
         echo "\n";

@@ -30,11 +30,6 @@ abstract class Node
         return implode('', $text);
     }
 
-    public function formatText(\Leno\Console\Formatter\Node\Text $textNode)
-    {
-        return sprintf($this->format, $textNode->getText());
-    }
-
     public function getChildren()
     {
         return $this->children;
@@ -53,5 +48,10 @@ abstract class Node
         }
         $class = self::$map[$name];
         return new $class;
+    }
+
+    public static function register($name, $class)
+    {
+        self::$map[$name] = $class;
     }
 }
