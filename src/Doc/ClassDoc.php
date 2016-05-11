@@ -20,7 +20,7 @@ class ClassDoc
         if(!class_exists($className)) {
             throw new \Leno\Exception($className . ' Not Found');
         }
-        $this->class_parser = new ClassParser($className);
+        $this->class = new \ReflectionClass($className);
     }
 
     public function setOutType($out_type)
@@ -43,14 +43,11 @@ class ClassDoc
 
     public function execute()
     {
-        $parser = $this->class_parser;
+        $class = $this->class;
         $out = Out::get($this->out_type)
             ->setDir($this->out_dir)
-            ->setName($this->out_name)
-            ->setClassName($parser->getName())
-            ->setNamespace($parser->getNamespace())
-            ->setClassComment($parser->getComment())
-            ->setMethods($parser->getMethods())
+            ->setFileName($this->out_name)
+            ->setClass($class)
             ->execute();
     }
 }

@@ -1,6 +1,9 @@
 <?php
 namespace Test\Model;
-
+/**
+ * 这是一个Book实体
+ * @name Book
+ */
 class Book extends \Leno\DataMapper\Mapper
 {
     public static $attributes = [
