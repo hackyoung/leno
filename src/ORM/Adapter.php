@@ -30,4 +30,9 @@ abstract class Adapter extends \PDO
             echo 'Connection DataBase failed: ' . $e->getMessage();
         }
     }
+
+    public static function get()
+    {
+        return new \Leno\ORM\Adapter\Mysql;
+    }
 }

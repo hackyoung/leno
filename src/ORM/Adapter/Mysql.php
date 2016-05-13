@@ -10,6 +10,17 @@ class Mysql extends \Leno\ORM\Adapter
         return '`'.$str.'`';
     }
 
+    public function getFieldsInfo($table)
+    {
+        $result = $this->exec('DESCRIBE '.$table);
+        $fields = [];
+        do {
+            $row = $result->fetch(self::FETCH_ASSOC);
+            $fields[] = $row;
+        }while($row);
+        return $fields;
+    }
+
     public function in($val, $set)
     {
         $val = $this->normalizeSet($val);
