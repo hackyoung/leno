@@ -1,7 +1,7 @@
 <?php
 namespace Leno\Validator\Type;
 
-class Datetime extends \Leno\Validator\Type implements \Leno\DataMapper\TypeStorage
+class Datetime extends \Leno\Validator\Type implements \Leno\Validator\TypeStorage
 {
     protected $format = 'Y-m-d H:i:s';
 

@@ -1,7 +1,7 @@
 <?php
 namespace Leno\Validator\Type;
 
-class Json extends \Leno\Validator\Type implements \Leno\DataMapper\TypeStorage
+class Json extends \Leno\Validator\Type implements \Leno\Validator\TypeStorage
 {
     public function check($value)
     {
