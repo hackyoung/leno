@@ -4,7 +4,7 @@ namespace Test\Model;
  * 这是一个Book实体
  * @name Book
  */
-class Book extends \Leno\DataMapper\Mapper
+class Book extends \Leno\ORM\Mapper
 {
     public static $attributes = [
         'book_id' => ['type' => 'uuid'],

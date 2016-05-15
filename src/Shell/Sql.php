@@ -3,7 +3,7 @@ namespace Leno\Shell;
 
 class Sql extends \Leno\Shell
 {
-    public function main($hello = null)
+    public function main()
     {
         echo $hello. "\n";
     }

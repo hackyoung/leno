@@ -1,7 +1,7 @@
 <?php
 namespace Test\Model;
 
-class UserBook extends \Leno\DataMapper\Mapper
+class UserBook extends \Leno\ORM\Mapper
 {
     public static $attributes = [
         'book_id' => ['type' => 'uuid'],

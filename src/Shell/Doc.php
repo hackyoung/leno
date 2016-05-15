@@ -5,15 +5,27 @@ use \Leno\Doc\Out;
 
 class Doc extends \Leno\Shell
 {
-    public function main($inputdir, $outputdir, $namespace = "")
+    protected $needed_args = [ 'main' => [
+        'inputdir' => [ 'inputdir', 'i'],
+        'outputdir' => [ 'outputdir', 'o'],
+        'namespace' => [ 'namespace', 'n']
+    ]];
+
+    public function main()
     {
-        $input = $inputdir; //realpath($inputdir);
+        $input = $this->input('inputdir');
+        $output = $this->input('outputdir');
+        $namespace = $this->input('namespace') ?? "";
+        $this->generateDoc($input, $output, $namespace);
+    }
+
+    private function generateDoc($input, $output, $namespace = "")
+    {
         if(!is_dir($input)) {
-            throw new \Exception ($inputdir . " Is Not A Directory");
+            $this->error($input . " Is Not A Directory");
+            return;
         }
         $dir_handler = opendir($input);
-        $output = $outputdir; //realpath($outputdir) ?? $outputdir;
-        $this->debug($output);
         if(!is_dir($output)) {
             mkdir($output, 0755, true);
         }
@@ -25,8 +37,7 @@ class Doc extends \Leno\Shell
             if(is_dir($pathfile)) {
                 $outputdir = $output . $filename;
                 $namespace = implode('\\', [$namespace, camelCase($filename)]);
-                $this->debug($outputdir);
-                $this->main($pathfile, $outputdir, $namespace);
+                $this->generateDoc($pathfile, $outputdir, $namespace);
                 continue;
             }
             if(preg_match('/\.php$/', $filename)) {

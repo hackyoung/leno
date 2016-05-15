@@ -10,13 +10,19 @@ class Table
     protected $db_info;
 
     /**
-     * stract = [
-     *      'sample' => ['type' => '', 'size' => null, 'default' => null, 'null' => null],
-     *      'sample' => ['type' => '', 'size' => null, 'default' => null, 'null' => null],
-     *      'sample' => ['type' => '', 'size' => null, 'default' => null, 'null' => null],
+     * struct = [
+     *      'sample' => [
+     *          'type' => '', 
+     *          'default' => null, 
+     *          'null' => null, 
+     *          'key' => null, 
+     *          'extra' => null
+     *      ],
      * ];
      */
     protected $fields = [];
+
+    protected $sql;
 
     protected $unique_keys = [];
 
@@ -63,18 +69,18 @@ class Table
         return $this;
     }
 
-    public function addColumn($column, $attr)
+    public function setField($field, $attr)
     {
-        $this->fields[$column] = array_merge(
-            $this->fields[$column] ?? [], $attr
+        $this->fields[$field] = array_merge(
+            $this->fields[$field] ?? [], $attr
         );
         return $this;
     }
 
-    public function removeColumn($column)
+    public function unsetField($field)
     {
-        if(isset($this->fields[$column])) {
-            unset($this->fields[$column]);
+        if(isset($this->fields[$field])) {
+            unset($this->fields[$field]);
         }
         return $this;
     }
@@ -85,44 +91,116 @@ class Table
         return $adapter->getFieldsInfo($this->name);
     }
 
+    public function lastSql()
+    {
+        return $this->sql;
+    }
+
     protected function alterTable()
     {
         $dbInfo = $this->getDbAttr();
         $add = [];
-        $remove = [];
+        $alter = [];
         foreach($this->fields as $field=>$attr) {
             if(!isset($dbInfo[$field])) {
                 $add[$field] = $attr;
                 continue;
             }
-            if(!$this->isFieldEqual($attr, $dbInfo[$attr])) {
+            if(!$this->isFieldEqual($attr, $dbInfo[$field])) {
                 $alter[$field] = $attr;
                 unset($dbInfo[$field]);
                 continue;
             }
             unset($dbInfo[$field]);
         }
-        $alter = $dbInfo;
+        $remove = $dbInfo;
+        if(empty($add) && empty($alter) && empty($remove)) {
+            return true;
+        }
+        $fixed_part = [];
+        if(!empty($add)) {
+            $fixed_part[] = $this->handleAdd($add);
+        }
+        if(!empty($alter)) {
+            $fixed_part[] = $this->handleAlter($alter);
+        }
+        if(!empty($remove)) {
+            $fixed_part[] = $this->handleRemove($remove);
+        }
+        $this->sql = sprintf('ALTER TABLE %s %s', $this->name,
+            implode(', ', $fixed_part)
+        );
+        $adapter = self::getAdapter();
+        $result = $adapter->exec($this->sql);
+        if($result === false) {
+            throw new \Exception($adapter->errorInfo()[2]);
+        }
+        return $result;
+    }
+
+    protected function addTable()
+    {
+        $tmp = 'CREATE TABLE %s (%s)';
+        $fields = [];
+        foreach($this->fields as $field => $attr) {
+            $fields[] = $field . ' ' .implode(' ', array_values($attr)) ;
+        }
+        $this->sql = sprintf($tmp, $this->name, implode(', ', $fields));
+        $adapter = self::getAdapter();
+        $result = $adapter->exec($this->sql);
+        if(!$result) {
+            throw new \Exception($adapter->errorInfo()[2]);
+        }
+        return $result;
     }
 
     private function isFieldEqual($field1, $field2)
     {
-        foreach($field1 as $attr => $val) {
-            if($val === $field2[$attr] ?? false) {
-                unset($field2[$attr]);
-                continue;
-            }
+        if($field1['type'] !== $field2['type']) {
             return false;
         }
-        return count($field2) === 0;
+        $null1 = $field1['null'] ?? 'NULL';
+        $null2 = $field2['null'] ?? 'NULL';
+        if($null1 !== $null2) {
+            return false;
+        } 
+        $dft1 = $field1['default'] ?? false;
+        $dft2 = $field2['default'] ?? false;
+        if($dft1 !== $dft2) {
+            return false;
+        }
+        return true;
     }
 
     private function handleAdd($add_set)
     {
-        $sql_arr = ['ADD'];
+        $ret = [];
         foreach($add_set as $field => $attr) {
-
+            $ret[] = sprintf('ADD COLUMN %s %s', $field, 
+                implode(' ', array_values($attr))
+            );
         }
+        return implode(', ', $ret);
+    }
+
+    private function handleAlter($alter_set)
+    {
+        $ret = [];
+        foreach($alter_set as $field => $attr) {
+            $ret[] = sprintf('CHANGE %s %s %s', $field, $field,
+                implode(' ', array_values($attr))
+            );
+        }
+        return implode(', ', $ret);
+    }
+
+    private function handleRemove($remove_set)
+    {
+        $ret = [];
+        foreach($remove_set as $field => $attr) {
+            $ret[] = sprintf('DROP %s', $field);
+        }
+        return implode(', ', $ret);
     }
 
     public static function getAdapter()

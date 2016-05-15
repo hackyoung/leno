@@ -12,11 +12,28 @@ class Mysql extends \Leno\ORM\Adapter
 
     public function getFieldsInfo($table)
     {
-        $result = $this->exec('DESCRIBE '.$table);
+        $result = $this->query('describe '.$table);
+        if($result === false) {
+            return false;
+        }
         $fields = [];
         do {
             $row = $result->fetch(self::FETCH_ASSOC);
-            $fields[] = $row;
+            $attr = [
+                'type' => $row['Type'],
+            ];
+            if($row['Null'] === 'NO') {
+                $attr['null'] = 'NOT NULL';
+            }
+            if($row['Default']) {
+                $attr['default'] = $row['Default'];
+            }
+            if($row['Key'] === 'Pri') {
+                $attr['key'] = $row['primary key'];
+            }
+            if(!empty($row['Field'])) {
+                $fields[$row['Field']] = $attr;
+            }
         }while($row);
         return $fields;
     }

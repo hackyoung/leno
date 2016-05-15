@@ -1,9 +1,12 @@
 #!/usr/bin/php -f
 <?php
+
 /**
  *      namespace class   method
  * leno namespace command [sub-command] [option]
  */
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+define ('ROOT', dirname(dirname(__DIR__)) . '/test');
+\Leno\Configure::init();
 $commander = new \Leno\Console\Commander;
 $commander->execute();

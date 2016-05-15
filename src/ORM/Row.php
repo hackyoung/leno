@@ -140,7 +140,7 @@ abstract class Row
     private $mapper;
 
     /**
-     * @description 构造函数
+     *  构造函数
      * @param string table 表明
      */
     public function __construct($table)
@@ -149,7 +149,7 @@ abstract class Row
     }
 
     /**
-     * @description __call方法，该方法提供by系列函数，on系列函数, set系列函数,get系列函数的入口
+     *  __call方法，该方法提供by系列函数，on系列函数, set系列函数,get系列函数的入口
      * @param string method 方法名
      * @param array|null parameters 调用参数
      */
@@ -175,7 +175,7 @@ abstract class Row
     }
 
     /**
-     * @description __get魔术方法，返回其字段对应值
+     *  __get魔术方法，返回其字段对应值
      * @return mixed
      */
     public function __get($key)
@@ -189,7 +189,7 @@ abstract class Row
     }
 
     /**
-     * @description 设置该行操作器的mapper
+     *  设置该行操作器的mapper
      * @param string mapper mapper类名
      * @return this
      */
@@ -200,7 +200,7 @@ abstract class Row
     }
 
     /**
-     * @description 开始事务
+     *  开始事务
      * @return this
      */
     public function begin()
@@ -210,7 +210,7 @@ abstract class Row
     }
 
     /**
-     * @description 结束事务
+     *  结束事务
      * @return this
      */
     public function end()
@@ -220,7 +220,7 @@ abstract class Row
     }
 
     /**
-     * @description join其他行操作器
+     *  join其他行操作器
      */
     public function join($row, $type = self::JOIN_LEFT)
     {
@@ -474,27 +474,31 @@ abstract class Row
         return $this->mapper;
     }
 
-    private function callCondition($where, $value, $type=self::TYPE_CONDI_BY)
+    /**
+     * call魔术方法调用该方法，处理$row->by..., $row->on...系列函数
+     * @param array series 通过__call 传递的参数名得到的
+     */
+    private function callCondition($series, $value, $type=self::TYPE_CONDI_BY)
     {
         $exprs = [
             'gt', 'lt', 'gte', 'lte', 'in', 'eq', 'like',
         ];
-        if(isset($where[0]) && $where[0] === 'not') {
+        if(isset($series[0]) && $series[0] === 'not') {
             $not = true;
-            array_splice($where, 0, 1);
+            array_splice($series, 0, 1);
         } else {
             $not = false;
         }
-        if(!isset($where[0]) || !in_array($where[0], $exprs)) {
+        if(!isset($series[0]) || !in_array($series[0], $exprs)) {
             return false;
         }
         if($not) {
-            $expr = 'not_'.$where[0];
+            $expr = 'not_'.$series[0];
         } else {
-            $expr = $where[0];
+            $expr = $series[0];
         }
-        array_splice($where, 0, 1);
-        $field = implode('_', $where);
+        array_splice($series, 0, 1);
+        $field = implode('_', $series);
         switch($type) {
             case self::TYPE_CONDI_ON:
                 return $this->on($expr, $field, $value[0]);
@@ -504,7 +508,7 @@ abstract class Row
     }
 
     /**
-     * @description 补齐默认的and关系
+     * 补齐默认的and关系
      */
     private function attachAdd()
     {
@@ -520,7 +524,7 @@ abstract class Row
     }
 
     /**
-     * @description 构造查询条件,该方法可构造where条件以及join的on条件
+     * 构造查询条件,该方法可构造where条件以及join的on条件
      * @param string type self::TYPE_CONDI_BY|self::TYPE_CONDI_ON
      * @return array 查询条件的序列
      */
@@ -554,7 +558,7 @@ abstract class Row
     }
 
     /**
-     * @description 将表达式描述转换为SQL可识别的字符串
+     * 将表达式描述转换为SQL可识别的字符串
      * @param array item [
      *        'field' => 'field',
      *        'expr' => 'expr',

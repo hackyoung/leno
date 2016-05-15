@@ -3,6 +3,26 @@ namespace Leno;
 
 abstract class Shell
 {
+    private $args = [];
+
+    protected $needed_args = [];
+
+    public function setArg($idx, $val)
+    {
+        $this->args[$idx] = $val;
+        return $this;
+    }
+
+    public function getArgsNeeded($method)
+    {
+        return $this->needed_args[$method] ?? [];
+    }
+
+    public function input($idx)
+    {
+        return $this->args[$idx] ?? false;
+    }
+
     public function error($msg)
     {
         \Leno\Console\Io\Stdout::error($msg);

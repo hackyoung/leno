@@ -58,21 +58,26 @@ class Commander extends \Leno\Shell
             \Leno\Console\Stdout::error($ex->getMessage());
             return;
         }
-        $target->getMethod($this->action)->invokeArgs(
-            $target->newInstance(), $this->args
-        );
+        $shell = $target->newInstance();
+        $needed = $shell->getArgsNeeded($this->action);
+        foreach($needed as $key => $need) {
+            foreach($this->args as $arg => $val) {
+                if(in_array($arg, $need)) {
+                    $shell->setArg($key, $val);
+                }
+            }
+        }
+        $target->getMethod($this->action)->invoke($shell);
     }
 
     public function help($command = null)
     {
         $info = 
 <<<EOF
-用法: <keyword>leno</keyword> <keyword>command</keyword> <keyword>[sub-command]</keyword> <keyword>[param...]</keyword>
+用法: <keyword>leno command [sub-command] [param...]</keyword>
 支持的命令<keyword>(command)</keyword>：
-<keyword>hello</keyword>\t\t这是一个测试的<keyword>HELLO WORLD</keyword>信息
-<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
-<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
-<keyword>hello</keyword>\t\t这是一个测试的HELLO WORLD信息
+<keyword>doc</keyword>\t\t生成文档
+<keyword>build</keyword>\t\t建立项目(生成数据库)
 EOF;
         (new \Leno\Console\Formatter)->format($info);
         echo "\n";

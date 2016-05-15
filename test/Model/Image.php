@@ -1,7 +1,7 @@
 <?php
 namespace Test\Model;
 
-class Image extends \Leno\DataMapper\Mapper
+class Image extends \Leno\ORM\Mapper
 {
     const TYPE_JPG = 'image/jpg';
 
@@ -13,7 +13,7 @@ class Image extends \Leno\DataMapper\Mapper
 
     public static $attributes = [
         'image_id' => ['type' => 'uuid'],
-        'app_id' => ['type' => 'string'],
+        'app_id' => ['type' => 'uuid'],
         'name' => ['type' => 'string', 'extra' => ['max_length' => 128]],
         'md5' => ['type' => 'string', 'extra' => ['max_length' => 128]],
         'path_file' => ['type' => 'string', 'extra' => ['max_length' => 128]],
