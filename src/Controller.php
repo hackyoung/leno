@@ -79,8 +79,12 @@ abstract class Controller
         return $this;
     }
 
+    /**
+     * 呈现一个HTML页面
+     */
     protected function render($view, $data=[])
     {
+        $this->beforeRender();
         !isset($data['__head__']) && $data['__head__'] = [];
         $head = &$data['__head__'];
         !empty($this->title) && $head['title'] = $this->title;
@@ -159,6 +163,10 @@ abstract class Controller
     protected function getService($name, $args=[])
     {
         return \Leno\Service::getService($name, $args);
+    }
+
+    protected function beforeRender()
+    {
     }
 
     private function getInputSource()
