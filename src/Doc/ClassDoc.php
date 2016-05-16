@@ -6,7 +6,6 @@ use \Leno\Doc\Out;
 
 class ClassDoc
 {
-
     protected $out_type;
 
     protected $out_dir;

@@ -28,12 +28,12 @@ class ArgParser
         foreach($args as $arg) {
             if(preg_match('/=/', $arg)) {
                 $arg = explode('=', $arg);
-                $this->args[preg_replace('/^\-{1,2}/', '', $arg[0])] = $arg[1];
+                $this->args[$arg[0]] = $arg[1];
                 $prev = false;
                 continue;
             }
             if(preg_match('/^\-{1,2}\w/', $arg)) {
-                $prev = preg_replace('/^\-{1,2}/', '', $arg);
+                $prev = $arg;
                 $this->args[$prev] = true;
                 continue;
             }

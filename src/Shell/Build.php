@@ -6,13 +6,16 @@ class Build extends \Leno\Shell
     protected $needed_args = [
         'main' => [],
         'db' => [
-            'entitydir' => [
-                'ed',
-                'entity-dir'
-            ],
-            'namespace' => [
-                'n',
-                'namespace'
+            'description' => '通过Entity建立数据库',
+            'args' => [
+                'entitydir' => [
+                    'description' => 'Entity目录',
+                    'looks' => [ '-ed', '--entity-dir' ],
+                ],
+                'namespace' => [
+                    'description' => 'Entity的名字空间',
+                    'looks' => [ '-n', '--namespace' ],
+                ]
             ]
         ]
     ];
@@ -25,6 +28,9 @@ class Build extends \Leno\Shell
     public function db()
     {
         $entity_dir = $this->input('entitydir');
+        if(!$entity_dir) {
+            return $this->handleHelp('db');
+        }
         $namespace = $this->input('namespace') ?? '';
         $this->synDb($entity_dir, $namespace);
     }
@@ -48,7 +54,7 @@ class Build extends \Leno\Shell
             }
             if(preg_match('/\.php$/', $filename)) {
                 $className = $namespace .'\\'. preg_replace('/\.php$/', '', $filename);
-                $this->notice('找到Entity: <keyword>'.$className.'</keyword>');
+                $this->info('找到Entity: <keyword>'.$className.'</keyword>');
                 if(!class_exists($className)) {
                     $this->warn('class: <error>'.$className.'</error> Not Found');
                     continue;
@@ -101,9 +107,10 @@ class Build extends \Leno\Shell
             }
             $table->setField($field, $attr);
         }
+        sleep(1);
         $table->save();
         if($table->lastSql()) {
-            $this->notice('执行SQL：'.$table->lastSql());
+            $this->info('执行SQL：'.$table->lastSql());
         } else {
             $this->notice('不需要更新');
         }
@@ -135,11 +142,8 @@ class Build extends \Leno\Shell
         return $type;
     }
 
-    public function help($commend = null)
+    public function describe()
     {
-    }
-
-    public function description()
-    {
+        return "建立数据库，Controller以及其他项目初始化信息";
     }
 }

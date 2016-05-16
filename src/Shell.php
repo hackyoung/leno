@@ -15,7 +15,13 @@ abstract class Shell
 
     public function getArgsNeeded($method)
     {
-        return $this->needed_args[$method] ?? [];
+        $command = $this->needed_args[$method] ?? [];
+        $args = $this->getArgsInfo($method);
+        $needed = [];
+        foreach($args as $key => $arg) {
+            $needed[$key] = $arg['looks'] ?? [];
+        }
+        return $needed;
     }
 
     public function input($idx)
@@ -53,7 +59,55 @@ abstract class Shell
         return $this;
     }
 
-    abstract function help($commend = null);
+    public function output($msg)
+    {
+        \Leno\Console\Io\Stdout::output($msg);
+        return $this;
+    }
 
-    abstract function description();
+    function help($command = null)
+    {
+        if($command) {
+            $this->handleHelp($command);
+            return;
+        }
+        $this->output("\n".$this->describe()."\n");
+        foreach($this->needed_args as $command => $args) {
+            $this->handleHelp($command);
+        }
+    }
+
+    protected function handleHelp($command)
+    {
+        $this->output(sprintf('用法:<keyword>leno %s %s %s </keyword>',
+            strtolower(preg_replace('/^.*\\\/', '', get_called_class())),
+            $command, '[参数]'
+        ));
+        $this->output("\n".$this->describeCommand($command)."\n");
+        $this->output('支持的参数：');
+        $opts = $this->getArgsInfo($command);
+        foreach($opts as $opt) {
+            $this->output(sprintf("<keyword>  %s\t\t</keyword>%s", 
+                implode(",", $opt['looks']), $opt['description']
+            ));
+        }
+    }
+
+    protected function getArgsInfo($command)
+    {
+        if(!isset($this->needed_args[$command])) {
+            return [];
+        }
+        return $this->needed_args[$command]['args'] ?? [];
+    }
+
+    abstract public function describe();
+
+    public function describeCommand($command)
+    {
+        if(!isset($this->needed_args[$command])) {
+            return '';
+        }
+        return $this->needed_args[$command]['description'] ?? '';
+    }
 }

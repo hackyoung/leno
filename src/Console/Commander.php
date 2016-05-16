@@ -83,9 +83,9 @@ EOF;
         echo "\n";
     }
 
-    public function description()
+    public function describe()
     {
-        return 'hello world';
+        return "";
     }
 
     private function getTarget()
