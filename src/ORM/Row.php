@@ -157,7 +157,7 @@ abstract class Row
     {
         $series = explode('_', unCamelCase($method, '_'));
         if(!isset($series[0])) {
-            throw new \Exception(get_class() . '::' . $method . ' Not Found');
+            throw new \Exception(get_called_class() . '::' . $method . ' Not Found');
         }
         $type = $series[0];
         array_splice($series, 0, 1);

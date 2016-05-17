@@ -26,9 +26,9 @@ class Table
 
     protected $unique_keys = [];
 
-    protected $foreign_key = [];
+    protected $foreign_keys = [];
 
-    protected $primary_key = [];
+    protected $primary_key;
 
     public function __construct($name, $fields = [])
     {
