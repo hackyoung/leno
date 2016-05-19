@@ -93,11 +93,6 @@ abstract class Row
     protected static $instance = [];
 
     /**
-     * @var 该行操作器所使用的adapter
-     */
-    public static $adapter = '\Leno\ORM\Adapter\Mysql';
-
-    /**
      * @var 该行操作器所使用的adapter实例
      */
     private static $adapter_instance;
@@ -410,8 +405,8 @@ abstract class Row
 
     public static function getAdapter()
     {
-        if(!self::$adapter_instance instanceof self::$adapter) {
-            self::$adapter_instance = new self::$adapter;
+        if(!self::$adapter_instance) {
+            self::$adapter_instance = \Leno\ORM\Connector::get();
         }
         return self::$adapter_instance;
     }
@@ -568,47 +563,39 @@ abstract class Row
      */
     private function expr($item)
     {
-        $like = [
-            'like' => 'LIKE', 'not_like' => 'NOT LIKE',
-        ];
-        $in = [
-            'in' => 'IN', 'not_in' => 'NOT IN',
-        ];
-        $expr = [
-            'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
-            'lt' => '<', 'gte' => '>=', 'lte' => '<=',
-        ];
+        $like = [ 'like' => 'LIKE', 'not_like' => 'NOT LIKE', ];
+        $in = [ 'in' => 'IN', 'not_in' => 'NOT IN', ];
+        $expr = [ 'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
+            'lt' => '<', 'gte' => '>=', 'lte' => '<=', ];
         if(isset($like[$item['expr']])) {
             return sprintf('%s %s %%s%', 
                 $this->getFieldExpr($item['field']),
                 $like[$item['expr']],
                 $item['value']
             );
-        }
-        if(isset($in[$item['expr']])) {
-            if($item['value'] instanceof \Leno\ORM\Row) {
-                return sprintf('%s %s (%s)', 
-                    $this->getFieldExpr($item['field']),
-                    $in[$item['expr']],
-                    $item['value']->getSql()
-                );
+        } elseif (isset($in[$item['expr']])) {
+            $format = '%s %s (%s)';
+            $field = $this->getFieldExpr($item['field']);
+            $expr = $in[$item['expr']];
+            if ($item['value'] instanceof \Leno\ORM\Row) {
+                $value = $item['value']->getSql();
+            } elseif (is_array($item['value'])) {
+                $value = implode(',', array_map(function($it) {
+                    return $this->valueQuote($it);
+                }, $item['value']));
+            } else {
+                $value = $item['value'];
             }
-            $expr = self::getAdapter()->in(
-                $this->getFieldExpr($item['field']), $item['value']
-            );
-            if($item['expr'] == 'not_in') {
-                return '!'.$expr;
-            }
-            return $expr;
-        }
-        if(isset($expr[$item['expr']])) {
+            return sprintf($format, $field, $expr, $value);
+        } elseif (isset($expr[$item['expr']])) {
             return sprintf('%s %s %s', 
-                $this->quote($this->table) . '.' . $this->quote($item['field']),
+                $this->getFieldExpr($item['field']),
                 $expr[$item['expr']],
                 $this->valueQuote($item['value'])
             );
+        } else {
+            throw new \Exception($item['expr'] . ' Not Supported');
         }
-        throw new \Exception($item['expr'] . ' Not Supported');
     }
 
     /**
