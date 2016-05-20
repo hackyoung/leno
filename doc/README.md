@@ -86,4 +86,5 @@ class User extends Model\Entity
 ```shell
 vendor/bin/leno build db --entity-dir model/Entity --namespace Model\\Entity
 ```
+
 回车之后，你的数据库就帮你自动创建好了
