@@ -109,7 +109,7 @@ class Collect extends \Model\Service
 
     public function execute(callable $callable = null)
     {
-        $selector = Blog::selector()->limit($page, $page_size);
+        $selector = Blog::selector()->limit($this->page, $this->page_size);
         if($this->name) {
             $selector->byLikeName($this->name);
         }
