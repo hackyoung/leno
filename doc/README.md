@@ -26,7 +26,7 @@ cd path/to/project_dir && vendor/bin/leno build init
 #例子
 好吧,喝完一杯咖啡之后发现,还是先描述我们的例子比较靠谱
 我们的例子[后文统统叫sample,别问我为什么,任性]是一个宇宙无敌巨简单的博客系统，有一个列表页，详情页，以及撰写页。提供展示列表，查看详情，撰写功能（这是废话）
->放心，我不会设计数据库，因为我们用不着设计数据库，我们仅仅需要设计Entity。在project_dir/model/Entity/下面创建一个PHP文件，名为Blog.php,然后写如下内容
+放心，我不会设计数据库，因为我们用不着设计数据库，我们仅仅需要设计Entity。在project_dir/model/Entity/下面创建一个PHP文件，名为Blog.php,然后写如下内容
 ```PHP
 namespace Model\Entity;
 
