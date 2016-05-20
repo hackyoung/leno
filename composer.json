@@ -13,5 +13,6 @@
 			"Test\\": "test"
         },
         "files": [ "src/functions.php" ]
-    }
+    },
+    "bin" : [ "src/bin/leno" ]
 }
