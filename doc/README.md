@@ -88,3 +88,111 @@ vendor/bin/leno build db --entity-dir model/Entity --namespace Model\\Entity
 ```
 
 回车之后，你的数据库就帮你自动创建好了
+##业务逻辑分析
+个人人物，controller部分应该是轻量级的，它的作用是把各个业务逻辑组合起来为前端提供特定接口功能的一个层。当开发一个系统我们应该关注接口，更应该关注实现接口的功能，在设计这个框架之初，我就开始把业务逻辑封装到service中。
+对于sample来说，它需要支持三个功能，列表，详情，撰写。下面我们对业务逻辑进行抽象
+在model/Service目录下创建一个Blog的目录,在Blog里面创建三个文件，分别为Collect.php, Detail.php, Write.php
+
+Collect.PHP
+```PHP
+namespace Model\Service\Blog;
+
+use \Model\Entity\Blog;
+
+class Collect extends \Model\Service
+{
+    protected $name;
+
+    protected $page;
+
+    protected $page_size;
+
+    public function execute(callable $callable = null)
+    {
+        $selector = Blog::selector()->limit($page, $page_size);
+        if($this->name) {
+            $selector->byLikeName($this->name);
+        }
+        return $selector->get();
+    }
+}
+```
+
+Detail.php
+```php
+namespace Model\Service\Blog;
+
+use \Model\Entity\Blog;
+
+class Detail extends \Model\Service
+{
+    protected $id;
+
+    public function execute(callable $callable = null)
+    {
+        if(!$this->id) {
+            throw new \Leno\Exception('setId before');
+        }
+        return Blog::findOrFail($this->id);
+    }
+}
+```
+
+Write.php
+```php
+namespace Model\Service\Blog;
+
+use \Model\Entity\Blog;
+
+class Write extends \Model\Service
+{
+    public function execute(callable $callable)
+    {
+        return call_user_func($callable);
+    }
+}
+```
+
+业务逻辑也写好了，然后我们需要提供页面和接口,我们使用restful的风格来提供我们的接口(资源)
+在controller目录下面新建两个文件, Blog.php, Blogs.php
+Blog.php
+```php
+namespace Controller;
+
+class Blog extends Controller\App
+{
+    public function index()
+    {
+        $page = $this->input('page', [
+            'type' => 'int', 'extra' => [
+                'min' => 0
+            ], 'required' => false
+        ]) ?? 1;
+        $page_size = $this->input('page_size', [
+            'type' => 'int', 'extra' => [
+                'min' => 0
+            ], 'required' => false
+        ]) ?? 10;
+        $name = $this->input('name') ?? false;
+        $blogs = $this->getService('user.blog.collect')
+            ->setPage($page)
+            ->setPageSize($page_size)
+            ->setName($name)
+            ->execute();
+        $this->set('blogs', $blogs);
+        $this->render();
+    }
+
+    public function modify()
+    {
+    }
+
+    public function add()
+    {
+    }
+
+    public function remove()
+    {
+    }
+}
+```
