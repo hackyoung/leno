@@ -159,6 +159,9 @@ Blog.php
 ```php
 namespace Controller;
 
+use \Leno\Http\Exception as HttpException;
+use \Model\Entity\Blog;
+
 class Blog extends Controller\App
 {
     public function index()
@@ -180,19 +183,68 @@ class Blog extends Controller\App
             ->setName($name)
             ->execute();
         $this->set('blogs', $blogs);
-        $this->render();
+        $this->render('blog.index');
     }
 
     public function modify()
     {
+        $id = $this->input('id', [
+            'type' => 'uuid'
+        ], '错误的请求，id无效');
+        $data = $this->inputs([
+            'name' => ['type' => 'string', 'extra' => [
+                'max_length' => 64
+            ], 'message' => '名字太长或者忘了给我'],
+            'content' => ['type' => 'string'],
+            'description',
+        ]);
+        try {
+            $blog = Blog::findOrFail($id);
+        } catch(\Exception $ex) {
+            throw new HttpException(500, '没有找到博客');
+        }
+        try {
+            $blog->setAll($data)->save();
+        } catch(\Exception $ex) {
+            throw new HttpException(500, '博客保存失败');
+        }
+        return '操作成功';
     }
 
     public function add()
     {
+        $data = $this->inputs([
+            'name' => ['type' => 'string', 'extra' => [
+                'max_length' => 64
+            ], 'message' => '名字太长或者忘了给我'],
+            'content' => ['type' => 'string'],
+            'description',
+        ]);
+        $blog = new Blog;
+        try {
+            $blog->setAll($data)->save();
+        } catch(\Exception $ex) {
+            throw new HttpException(500, '博客保存失败');
+        }
+        return '操作成功';
     }
 
     public function remove()
     {
+        $id = $this->input('id', [
+            'type' => 'uuid'
+        ], '错误的请求，id无效');
+        try {
+            $blog = Blog::findOrFail($id);
+        } catch(\Exception $ex) {
+            throw new HttpException(500, '没有找到博客');
+        }
+        try {
+            $blog->remove();
+        } catch(\Exception $ex) {
+            throw new HttpException(500, '操作失败');
+        }
+        return '操作成功';
     }
 }
 ```
