@@ -1,0 +1,341 @@
+body {
+/*	background-image:url("https://dn-proceson.qbox.me/login.jpg");*/
+	background-size: 100% 100%;
+	background-position: fixed;
+}
+/**container**/
+	.tc-container {
+		display: flex;
+		display: -webkit-flex;
+		flex-wrap: nowrap;
+		flex-directory: row;
+		content-justify: space-between;
+		align-items: flex-start;
+	}
+	.tc-cell {
+		display: inline-block;
+	}
+	.tc-two {
+		width: 40%;
+	}
+/**container end**/
+/**header**/
+    .glb-header {
+        background-color: rgba(255, 255, 255, 0.8);
+        height: 51px;
+        box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+        -moz-box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+        -webkit-box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
+    }
+    .no-decaration-ul {
+        display: inline-block;
+        padding: 0px;
+        margin: 0px;
+        position: absolute;
+    }
+    .no-decaration-ul>li {
+        list-style: none;
+        display: inline-block;
+        vertical-align: text-top;
+    }
+    .glb-header .menu>li, .glb-header .person>li {
+        line-height: 50px;
+        height: 100%;
+        padding: 0px 20px;
+    }
+    .glb-header .menu>.item:hover,
+    .glb-header .menu>.item.active {
+        background-color: #ddd;
+        cursor: pointer;
+    }
+    .glb-header .menu>li {
+        vertical-align: text-top;
+    }
+    .glb-header .menu .search-wrapper {
+        margin-top: 9px;
+    }
+    .glb-header .menu .search:active,
+    .glb-header .menu .search:focus {
+        width: 300px;
+    }
+    .glb-header .menu {
+        left: 10%;
+    }
+    .glb-header .person {
+        right: 10%;
+    }
+    .glb-header .person>li:first-child {
+        margin-top: 1px;
+        border-radius: 50px;
+        width: 50px;
+        height: 50px;
+        padding: 0px;
+        box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.3) inset;
+        -moz-box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.3) inset;
+        -webkit-box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.3) inset;
+        border: 1px solid #999;
+        overflow: hidden;
+    }
+    .glb-header .person img {
+        width: 42px;
+        height: 42px;
+        border-radius: 42px;
+        background-color: white;
+        margin-left: 3px;
+        margin-top: 3px;
+    }
+    .glb-header .person img:hover {
+        cursor: pointer;
+    }
+/**header end**/
+
+/**user-header**/
+    .user-header {
+        width: 100%;
+        height: 400px;
+        background-image: url('http://pic.58pic.com/58pic/15/27/11/90G58PICzET_1024.gif');
+        background-repeat: no-repeat;
+        background-position: center, center;
+        background-size: 100%;
+    }
+
+    .user-header>.content {
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        margin: 0px;
+    }
+
+    .user-header>.content .menu {
+        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
+        margin-top: 370px;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        height: 30px;
+        text-align: center;
+    }
+
+    .user-header>.content .menu>li {
+        vertical-align: bottom;
+        margin: 0px 1%;
+        line-height: 30px;
+    }
+
+    .user-header>.content .user-portrait {
+        width: 150px;
+        height: 150px;
+        border-radius: 150px;
+        background-color: #999;
+        box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+        vertical-align: bottom;
+    }
+/**user-header end**/
+/**recommend**/
+    .recommend {
+        margin-bottom: 20px;
+    }
+
+    .recommend .item span:nth-child(2) {
+        float: right;
+        color: green;
+    }
+/**recommend end**/
+/**tasks-filter**/
+	.tasks-filter {
+		margin: 10px 0px 20px 0px;
+	}
+	.tasks-filter>div {
+		padding: 1px;
+	}
+	.tasks-filter .leno-dropdown {
+		display: block;
+	}
+	.tasks-filter div[data-toggle=dropdown] {
+		text-align: center;
+	}
+	.select-menu {
+		padding: 10px;
+		max-width: 300px;
+	}
+	.select-menu>div {
+		overflow: auto;
+		max-height: 300px;
+	}
+	.select-menu .leno-input {
+		width: 100%;
+	}
+	.select-menu .flat-input {
+		width: 50px;
+	}
+	.select-menu .tag,
+	.tasks-filter .tag {
+		background-color: white;
+	}
+	.tasks-filter .label {
+		color: #999;
+		display: inline-block;
+		margin-right: 10px;
+	}
+/**tasks-filter end**/
+/**form log**/
+	.leno-form button {
+		width: 100%;
+	}
+	.log .leno-input-group {
+		width: 100%;
+	}
+	.log .leno-input-group label {
+		display: inline-block;
+		width: 20px;
+	}
+	.user.body {
+		background: rgba(0, 0, 0, 0) url("https://dn-proceson.qbox.me/login.jpg") no-repeat fixed 0 0 / cover;
+		position: absolute;
+		height: 100%;
+		width: 100%;
+	}
+	.show {
+		width: 100%;
+		padding: 40px 20px;
+		background-color: rgba(255, 255, 255, 0.3);
+	}
+	.empty {
+		box-shadow: 0px 0px 3px rgba(0, 0, 0,0.4);
+		-moz-box-shadow: 0px 0px 3px rgba(0, 0, 0,0.4);
+		-webkit-box-shadow: 0px 0px 3px rgba(0, 0, 0,0.4);
+	}
+/**form log end**/
+/**task-item**/
+    .item.task header {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .item.task header>span {
+        font-size: 16px;
+        float: right;
+        margin-left: 20px;
+    }
+    .item.task>div {
+        padding: 10px;
+    }
+    .price {
+        color: red;
+    }
+    .item.task>footer>span {
+        display: inline-block;
+        margin-right: 10px;
+        font-size: 13px;
+        color: #FFC125;
+        text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.4);
+    }
+/**task-item end**/
+/**editor**/
+    .editor .footer {
+        margin: 10px 0px;
+    }
+    .editor .leno-input {
+        width: 100%;
+    }
+    .editor .leno-input[name=title] {
+        text-align: center;
+    }
+    .editor label {
+        width: 100px;
+        display: inline-block;
+    }
+/**editor end**/
+/**tag**/
+    .tag {
+		font-size: 13px;
+        background-color: #efefef;
+        margin: 5px 5px 0px 0px;
+        padding: 2px 5px;
+        display: inline-block;
+		border-radius: 2px;
+    }
+
+    .tag:hover {
+        background-color: #aaa;
+        color: white;
+        cursor: pointer;
+    }
+/**tag end**/
+@media screen and (min-width: 0px) and (max-width: 768px) {
+    .content {
+        width: 100%;
+    }
+
+    .glb-header .menu {
+        left: 0%;
+    }
+
+    .glb-header .person {
+        right: 0%;
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 992px) {
+    .content {
+        width: 100%;
+    }
+
+    .glb-header .menu {
+        left: 10%;
+    }
+
+    .glb-header .person {
+        right: 10%;
+    }
+}
+@media screen and (min-width: 993px) and (max-width: 1200px) {
+    .content {
+        width: 80%;
+        margin-left: calc(10% + 20px);
+    }
+
+    .glb-header .menu {
+        left: 10%;
+    }
+
+    .glb-header .person {
+        right: 10%;
+    }
+
+    .tc-container {
+        display: table;
+        width: 100%;
+    }
+    .tc-row {
+        display: table-row;
+    }
+    .tc-cell {
+        display: table-cell;
+        vertical-align: top;
+    }
+    .tc-two {
+        width: 30%;
+    }
+    .to-container {
+        width: 70%;
+        margin-left: 15%;
+    }
+}
+@media screen and (min-width: 1201px) {
+    .content {
+        width: 1000px;
+        margin-left: calc(50% - 500px);
+    }
+
+    .glb-header .menu {
+        left: 10%;
+    }
+
+    .glb-header .person {
+        right: 10%;
+    }
+    
+    .to-container {
+        width: 1000px;
+        margin-left: calc(50% - 500px);
+    }
+}
