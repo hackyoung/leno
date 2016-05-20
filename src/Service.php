@@ -14,8 +14,8 @@ abstract class Service
         $prefix = substr($method, 0, 3);
         switch($prefix) {
             case 'set':
-                $attr = str_replace('set', '', $method);
-                $this->attr = $args[0];
+                $attr = unCamelCase(str_replace('set', '', $method));
+                $this->$attr = $args[0] ?? $args;
                 return $this;
         }
         throw new \Leno\Exception (get_called_class() . '::'.$method . ' Not Defined');
