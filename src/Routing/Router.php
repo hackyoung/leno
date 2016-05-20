@@ -4,6 +4,7 @@ namespace Leno\Routing;
 /**
  * Router 通过一个Uri路由到正确的controller and action
  * 这个Router可以通过规则路由到其他Router，也可以路由到controller
+ * ###sample
  */
 class Router
 {
@@ -25,12 +26,12 @@ class Router
     const MOD_MIX = 2;
 
     /**
-     * @var 传入的request参数
+     * 传入的request参数
      */
     protected $request;
 
     /**
-     * @var 传入的response参数
+     * 传入的response参数
      */
     protected $response;
 
@@ -40,32 +41,37 @@ class Router
     protected $path;
 
     /**
-     * @var [
+     * [
      *      'regexp' => 'router_class_name|target_path'
      * ]
      */
     protected $rules = [];
 
     /**
-     * @var 查找类的跟路径
+     * 查找类的跟路径
      */
     protected $base = 'controller';
 
     /**
-     * @var 当前路由器的模式
+     * 当前路由器的模式
      */
     protected $mode = self::MOD_RESTFUL;
 
     /**
-     * @var restful模式下各种http method对应请求的方法
+     * restful模式下各种http method对应请求的方法
      */
     protected $restful = [
-        'GET' => 'index',
-        'POST' => 'add',
-        'DELETE' => 'delete',
-        'PUT' => 'modify',
+        'GET' => 'index',   // 将get提交的路由到index方法
+        'POST' => 'add',    // 将post提交的路由到add方法
+        'DELETE' => 'remove', // 将delete方式提交的路由到remove方法
+        'PUT' => 'modify', // 将put方式提交的路由到modify方法
     ];
 
+    /**
+     * 构造函数
+     * @param \Leno\Http\Request request
+     * @param \Leno\Http\Response resonse
+     */
     public function __construct($request, $response)
     {
         $this->request = $request;
@@ -73,11 +79,21 @@ class Router
         $this->path = $this->initPath();
     }
 
+    /**
+     * 路由时通过解析path路由到指定的controller，这里没有直接使用request::uri进行路由，其原因时，如果路由到的是另一个router而不是controller，那么用户在最终的controller中获得request对象中的uri将不是一个正确的uri
+     * @param string path ###sample /cq/blog/index
+     * @return this
+     */
     public function setPath($path)
     {
         $this->path = $path;
+        return $this;
     }
 
+    /**
+     * 执行路由操作，该方法会先查看路由器上面是否设置规则，如有规则则按规则路由，如果没有设置规则，则根据path路由
+     * @return \Leno\Http\Response
+     */
     public function route()
     {
         $this->beforeRoute();
@@ -102,6 +118,9 @@ class Router
         return $this->response;
     }
 
+    /**
+     * 对路由的返回结果包装成一个\Leno\Http\Response对象
+     */
     protected function handleResult($response)
     {
         if($response === null) {
@@ -118,6 +137,9 @@ class Router
         return true;
     }
 
+    /**
+     * 初始化path，path是放在request里面的path属性，如果没有该属性，则path=uri
+     */
     private function initPath()
     {
         if($this->request->hasAttribute('path')) {
@@ -134,6 +156,9 @@ class Router
         return $path;
     }
 
+    /**
+     * 解析path，得到一个Target对象，Target包含了将调用的controller，将调用的方法，调用参数，可直接通过Target::invoke调用
+     */
     private function getTarget($mode = null)
     {
         $mode = $mode ?? $this->mode;
