@@ -5,8 +5,8 @@
  *      namespace class   method
  * leno namespace command [sub-command] [option]
  */
-require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-define ('ROOT', dirname(dirname(__DIR__)) . '/test');
+define ('ROOT', dirname(dirname(dirname(dirname(dirname(__DIR__))))));
+require_once  ROOT . '/vendor/autoload.php';
 \Leno\Configure::init();
 $commander = new \Leno\Console\Commander;
 $commander->execute();
