@@ -1,5 +1,5 @@
 <?php
-namespace Leno;
+namespace Leno\Traits;
 
 trait Singleton
 {

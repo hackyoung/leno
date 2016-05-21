@@ -1,6 +1,9 @@
 <?php
 namespace Leno;
 
+/**
+ * 自动加载类
+ */
 class AutoLoader
 {
     const SUFFIX = '.php';

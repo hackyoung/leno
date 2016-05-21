@@ -1,12 +1,14 @@
 <?php
 namespace Leno\Console;
 
+/**
+ * 终端格式化，Formatter解析输入的简单版xml(没有属性的xml),将其转换为Node,对Node进行格式化
+ *
+ * @license MIT
+ * @author hackyoung@163.com
+ */
 class Formatter
 {
-    protected $output;
-
-    protected $handler;
-
     protected $position = 0;
 
     protected $input;

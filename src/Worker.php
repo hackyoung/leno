@@ -4,22 +4,41 @@ namespace Leno;
 use \Leno\Http\Request;
 use \Leno\Http\Response;
 
+/**
+ * 处理从客户端发上来的Http请求，该类是一个单例，且是应用程序执行的开始
+ * 通过调用Worker::execute方法，程序将请求发送到制定的路由器，让路由器
+ * 路由到正确的方法
+ */
 class Worker
 {
-    use \Leno\Singleton;
+    /**
+     * 使用单例的trait
+     */
+    use \Leno\Traits\Singleton;
 
-    protected $uri;
-
-    protected $method;
-
+    /**
+     * 将http客户端传递上来的信息包装成request对象
+     */
     protected $request;
 
+    /**
+     * 将需要返回给HTTP客户端的包装成response对象
+     */
     protected $response;
 
+    /**
+     * worker使用的路由器，可通过Worker::setRouterClass()方法设置
+     */
     protected static $Router = '\Leno\Routing\Router';
 
+    /**
+     * log文件夹
+     */
     protected static $log_path = ROOT . '/tmp/log';
 
+    /**
+     * 构造函数，初始化request, response，初始化配置工具,启动自动加载机制
+     */
     protected function __construct()
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '';
@@ -33,6 +52,9 @@ class Worker
         self::autoload();
     }
 
+    /**
+     * 将response和request传递给Router进行路由，处理Router返回的结果
+     */
     public function execute()
     {
         try {
@@ -43,11 +65,17 @@ class Worker
         $this->response->send();
     }
 
+    /**
+     * 该方法可以获取到response
+     */
     public function getResponse()
     {
         return $this->response;
     }
 
+    /**
+     * 获取一个logger实例
+     */
     public function logger($name = 'default')
     {
         $log = new \Monolog\Logger($name);
@@ -57,11 +85,17 @@ class Worker
         return $log;
     }
 
+    /**
+     * 自动加载类,psr4风格
+     */
     public static function autoload()
     {
         \Leno\AutoLoader::instance()->execute();
     }
 
+    /**
+     * 处理异常信息,子类应该重写该方法
+     */
     public function handleException($e)
     {
         if($e instanceof \Leno\Http\Exception) {
@@ -71,6 +105,9 @@ class Worker
         throw $e;
     }
 
+    /**
+     * 将所有的错误信息转换为异常信息
+     */
     public function errorToException()
     {
         set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -78,6 +115,9 @@ class Worker
         });
     }
 
+    /**
+     * 设置Router的class
+     */
     public static function setRouterClass($routerClass)
     {
         self::$Router = $routerClass;

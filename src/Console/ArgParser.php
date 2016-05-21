@@ -3,7 +3,7 @@ namespace Leno\Console;
 
 class ArgParser
 {
-    use \Leno\Singleton;
+    use \Leno\Traits\Singleton;
 
     protected $command;
 
