@@ -76,8 +76,9 @@ class Commander extends \Leno\Shell
 <<<EOF
 用法: <keyword>leno command [sub-command] [param...]</keyword>
 支持的命令<keyword>(command)</keyword>：
+<keyword>init</keyword>\t\t初始化项目
 <keyword>doc</keyword>\t\t生成文档
-<keyword>build</keyword>\t\t建立项目(生成数据库)
+<keyword>build</keyword>\t\t建立数据库
 EOF;
         (new \Leno\Console\Formatter)->format($info);
         echo "\n";
