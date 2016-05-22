@@ -4,6 +4,6 @@ return [
     'HOST' => 'localhost',  // 数据库的主机名,IP或者域名
     'DB' => 'test_db',      // 连接的database
     'USER' => 'user',       // 连接的用户名
-    'PASSWORD' => '******'  // 连接的数据库密码
-    'PORT' => 3306          // 数据库的端口号
+    'PASSWORD' => '******', // 连接的数据库密码
+    'PORT' => 3306,         // 数据库的端口号
 ];

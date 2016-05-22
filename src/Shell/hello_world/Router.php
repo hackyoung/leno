@@ -2,7 +2,7 @@
 /**
  * 通过leno init自动生成, 如果需要在路由之前执行逻辑，则重写Router的beforeRoute方法
  */
-class Router extends \Leno\Router
+class Router extends \Leno\Routing\Router
 {
     /**
      * 如果需要编写规则，则取消注释下面的代码

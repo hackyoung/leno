@@ -7,6 +7,7 @@ require_once ROOT .'/vendor/autoload.php';
 // 注册名字空间
 \Leno\AutoLoader::register('Model', '/model');
 \Leno\AutoLoader::register('Controller', '/controller');
+\Leno\AutoLoader::instance()->execute();
 
 // 添加view目录
 \Leno\View::addViewDir(ROOT . '/view');

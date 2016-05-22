@@ -49,7 +49,6 @@ class Worker
         $this->request->withAttribute('path', strtolower(preg_replace('/\?.*/', '', $uri)));
         $this->response = new Response;
         \Leno\Configure::init();
-        self::autoload();
     }
 
     /**
