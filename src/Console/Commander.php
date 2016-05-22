@@ -94,7 +94,7 @@ EOF;
         foreach(self::$namespaces as $namespace) {
             $class = preg_replace_callback('/^\w|\.\w/', function($matches) {
                 return strtoupper(str_replace('.', '\\', $matches[0]));
-            }, $namespace.'.'.$this->command);
+            }, $namespace.'.'.camelCase($this->command));
             if(class_exists($class)) {
                 return new \ReflectionClass($class);
             }

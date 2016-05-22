@@ -80,7 +80,7 @@ abstract class Shell
     protected function handleHelp($command)
     {
         $this->output(sprintf('用法:<keyword>leno %s %s %s </keyword>',
-            strtolower(preg_replace('/^.*\\\/', '', get_called_class())),
+            strtolower(preg_replace('/^.*\\\/', '', unCamelCase(get_called_class()))),
             $command, '[参数]'
         ));
         $this->output("\n".$this->describeCommand($command)."\n");

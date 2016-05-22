@@ -21,7 +21,7 @@ cd path/to/project_dir && vendor/bin/leno build hello_world --root .
 
 之后你会看到生成了一系列文件,敲两个命令,你就可以直接编写业务逻辑了。
 
-至此,安装完成。先泡杯咖啡,看看新闻放松放松。劳逸结合，轻松学习。下一小节我们会通过一个简单的博客系统介绍如何编写业务逻辑<font size=7>^-^</font>
+至此,安装完成。先泡杯咖啡,看看新闻放松放松。劳逸结合，轻松学习。下一小节我们会通过一个简单的博客系统介绍如何编写业务逻辑^-^
 #例子
 好吧,喝完一杯咖啡之后发现,还是先描述我们的例子比较靠谱
 我们的例子[后文统统叫sample,别问我为什么,任性]是一个宇宙无敌巨简单的博客系统，有一个列表页，详情页，以及撰写页。提供展示列表，查看详情，撰写功能（这是废话）
@@ -37,7 +37,7 @@ class Blog extends Model\Entity
         'description' => ['type' => 'string', 'required' => false, 'extra' => [
             'max_length' => 512
         ]],
-        'author' => ['type' => 'uuid',],
+        'author' => ['type' => 'uuid'],
         'content' => ['type' => 'text'],
         'created' => ['type' => 'datetime'],
         'updated' => ['type' => 'datetime', 'required' => false],
