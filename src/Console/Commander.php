@@ -55,7 +55,7 @@ class Commander extends \Leno\Shell
         try {
             $target = $this->getTarget();
         } catch(\Exception $ex) {
-            \Leno\Console\Stdout::error($ex->getMessage());
+            \Leno\Console\Io\Stdout::error($ex->getMessage());
             return;
         }
         $shell = $target->newInstance();
