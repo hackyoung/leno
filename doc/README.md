@@ -1,5 +1,4 @@
-#介绍
-LenoPHP是一个简单干净的PHP框架，有如下特性:
+#介绍 LenoPHP是一个简单干净的PHP框架，有如下特性:
 * 支持Mysql,和Pgsql,基于PDO的ORM,且方便拓展
 * 支持继承,嵌套,条件输出,标签的模板系统
 * 设计清晰的路由,可自定义规则,支持RESTFUL路由风格,可自定义action绑定
@@ -17,7 +16,7 @@ composer require hackyoung/leno
 之后你会看到一个vendor目录,且已经支持psr0,psr4. 然后就是自动化初始化环境
 
 ```shell
-cd path/to/project_dir && vendor/bin/leno build init
+cd path/to/project_dir && vendor/bin/leno build hello_world --root .
 ```
 
 之后你会看到生成了一系列文件,敲两个命令,你就可以直接编写业务逻辑了。
@@ -109,7 +108,7 @@ class Collect extends \Model\Service
 
     public function execute(callable $callable = null)
     {
-        $selector = Blog::selector()->limit($this->page, $this->page_size);
+        $selector = Blog::selector()->limit($page, $page_size);
         if($this->name) {
             $selector->byLikeName($this->name);
         }
