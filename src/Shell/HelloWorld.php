@@ -1,7 +1,7 @@
 <?php
 namespace Leno\Shell;
 
-class Init extends \Leno\Shell
+class HelloWorld extends \Leno\Shell
 {
     protected $template_dir = __DIR__ . '/hello_world';
 
