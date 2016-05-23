@@ -16,7 +16,7 @@ composer require hackyoung/leno
 之后你会看到一个vendor目录,且已经支持psr0,psr4. 然后就是自动化初始化环境
 
 ```shell
-cd path/to/project_dir && vendor/bin/leno build hello_world --root .
+cd path/to/project_dir && vendor/bin/leno hello_world --root .
 ```
 
 之后你会看到生成了一系列文件,敲两个命令,你就可以直接编写业务逻辑了。

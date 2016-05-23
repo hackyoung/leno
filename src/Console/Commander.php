@@ -1,6 +1,9 @@
 <?php
 namespace Leno\Console;
 
+/**
+ * 将shell传递过来的command，sub-command，args解析到指定的方法，并执行
+ */
 class Commander extends \Leno\Shell
 {
     protected $command;

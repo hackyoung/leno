@@ -7,6 +7,8 @@ abstract class Shell
 
     protected $needed_args = [];
 
+    abstract public function main();
+
     public function setArg($idx, $val)
     {
         $this->args[$idx] = $val;

@@ -1,4 +1,8 @@
 <?php
+// 如果你的服务器环境没有使用rewrite指向到这个文件,那么以
+// www.sample.com/index.php/hello/world的形式访问,这个文件
+// 是逻辑执行的入口
+
 // 定义ROOT变量
 define('ROOT', __DIR__);
 
@@ -7,6 +11,7 @@ require_once ROOT .'/vendor/autoload.php';
 // 注册名字空间
 \Leno\AutoLoader::register('Model', '/model');
 \Leno\AutoLoader::register('Controller', '/controller');
+\Leno\AutoLoader::register('Shell', '/shell');
 \Leno\AutoLoader::instance()->execute();
 
 // 添加view目录

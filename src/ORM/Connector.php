@@ -3,6 +3,9 @@ namespace Leno\ORM;
 
 use \Leno\Configure;
 
+/**
+ * 解析configure，生成一个sql的执行器
+ */
 class Connector
 {
     use \Leno\Traits\Setter; 
