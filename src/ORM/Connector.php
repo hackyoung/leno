@@ -49,16 +49,19 @@ class Connector
     public static function get($label = null)
     {
         $label = $label ?? Configure::read('label') ?? 'mysql';
-        $adapter = new self;
         $Executor = self::getExecutorClass($label);
 
-        return $adapter->setName(Configure::read('user') ?? '')
-            ->setLabel($label)
-            ->setPassword(Configure::read('password' ?? ''))
-            ->setHost(Configure::read('host') ?? 'localhost')
-            ->setPort(Configure::read('port') ?? $Executor::DFT_PORT)
-            ->setDb(Configure::read('db') ?? 'test')
-            ->getExecutor();
+        $host = Configure::read('host') ?? 'localhost';
+        $db = Configure::read('db') ?? 'test_db';
+        $port = Configure::read('port') ?? $Executor::DFT_PORT;
+        $password = Configure::read('password') ?? null;
+        $options = Configure::read('options') ?? [];
+        $user = Configure::read('user') ?? 'root';
+
+        return (new self)->setName($user)->setLabel($label)
+            ->setPassword($password)->setHost($host)
+            ->setPort($port)->setDb($db)
+            ->setOptions($options)->getExecutor();
     }
 
     public static function getExecutorClass($label)
