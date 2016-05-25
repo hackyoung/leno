@@ -3,7 +3,7 @@ namespace Leno\ORM\Adapter\Mysql;
 
 class Executor extends \Leno\ORM\Adapter\Executor
 {
-    public function keyQuote(string $key)
+    public function keyQuote(string $key) : string
     {
         return '`'.$key.'`';
     }

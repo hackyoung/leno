@@ -88,7 +88,7 @@ class Table
     public function getDbAttr()
     {
         $adapter = self::getAdapter();
-        return $adapter->getFieldsInfo($this->name);
+        return $adapter->getTableInfo($this);
     }
 
     public function lastSql()

@@ -7,7 +7,7 @@ abstract class Executor extends \PDO
 
     abstract public function getTableInfo(\Leno\ORM\Table $table);
 
-    abstract public function keyQuote(string $key);
+    abstract public function keyQuote(string $key) : string;
 
     public function getTypeClass($label)
     {
