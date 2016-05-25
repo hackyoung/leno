@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9779d4f4c5034bd1865e1abcd7312909",
-    "content-hash": "c31d388a609497bd4830aa5106a3c74a",
+    "hash": "4042bfd8e385d7fde5ae31df81f312b1",
+    "content-hash": "9db7bb2f2907ba88afb7b87331e481d2",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -71,16 +71,16 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "bb9024c526b22f3fe6ae55a561fd70653d470aa8"
+                "reference": "c10d860e2a9595f8883527fa0021c7da9e65f579"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/bb9024c526b22f3fe6ae55a561fd70653d470aa8",
-                "reference": "bb9024c526b22f3fe6ae55a561fd70653d470aa8",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/c10d860e2a9595f8883527fa0021c7da9e65f579",
+                "reference": "c10d860e2a9595f8883527fa0021c7da9e65f579",
                 "shasum": ""
             },
             "require": {
@@ -118,7 +118,7 @@
             "keywords": [
                 "promise"
             ],
-            "time": "2016-03-08 01:15:46"
+            "time": "2016-05-18 16:56:05"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -180,16 +180,16 @@
         },
         {
             "name": "leno/view",
-            "version": "dev-master",
+            "version": "v0.4.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hackyoung/lenoview.git",
-                "reference": "eed2579ecde23167cbc7767c6d8cb161dce926af"
+                "reference": "204504ac0f242ae307ffb19850057804796e24db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/eed2579ecde23167cbc7767c6d8cb161dce926af",
-                "reference": "eed2579ecde23167cbc7767c6d8cb161dce926af",
+                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/204504ac0f242ae307ffb19850057804796e24db",
+                "reference": "204504ac0f242ae307ffb19850057804796e24db",
                 "shasum": ""
             },
             "type": "library",
@@ -199,7 +199,7 @@
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "time": "2016-05-03 13:18:56"
+            "time": "2016-05-25 05:01:29"
         },
         {
             "name": "monolog/monolog",
