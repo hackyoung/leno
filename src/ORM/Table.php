@@ -38,7 +38,7 @@ class Table
 
     public function getName()
     {
-        return $this->name;
+        return self::getAdapter()->keyQuote($this->name);
     }
 
     public function setUniqueKeys($unique_keys)
@@ -132,7 +132,7 @@ class Table
         if(!empty($remove)) {
             $fixed_part[] = $this->handleRemove($remove);
         }
-        $this->sql = sprintf('ALTER TABLE %s %s', $this->name,
+        $this->sql = sprintf('ALTER TABLE %s %s', $this->getName(),
             implode(', ', $fixed_part)
         );
         $adapter = self::getAdapter();
@@ -152,7 +152,7 @@ class Table
         foreach($this->fields as $field => $attr) {
             $fields[] = $field . ' ' .implode(' ', array_values($attr)) ;
         }
-        $this->sql = sprintf($tmp, $this->name, implode(', ', $fields));
+        $this->sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
         $adapter = self::getAdapter();
         logger()->info('Table: '.$this->getName() . ' execute sql: '.$this->sql);
         $result = $adapter->exec($this->sql);
