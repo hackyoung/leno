@@ -3,6 +3,8 @@ namespace Leno;
 
 use \Leno\Http\Request;
 use \Leno\Http\Response;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
 
 /**
  * 处理从客户端发上来的Http请求，该类是一个单例，且是应用程序执行的开始
@@ -75,11 +77,11 @@ class Worker
     /**
      * 获取一个logger实例
      */
-    public function logger($name = 'default')
+    public function logger($level = Logger::DEBUG, $name = 'default')
     {
-        $log = new \Monolog\Logger($name);
-        $log->pushHandler(new \Monolog\Handler\StreamHandler(
-            self::$log_path . '/' .$name.'.log', \Monolog\Logger::DEBUG
+        $log = new Logger($name);
+        $log->pushHandler(new StreamHandler(
+            self::$log_path . '/' .$name.'.log', $level
         ));
         return $log;
     }

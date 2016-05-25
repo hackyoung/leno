@@ -625,7 +625,6 @@ abstract class Row
         logger()->info('EXECUTING SQL: '.$sql);
         $this->result = $driver->exec($sql);
         if($this->result === false) {
-            logger()->info('EXECUTING SQL: '.$sql.' ERROR: '.$driver->errorInfo());
             throw new \Exception(implode(':', $driver->errorInfo()). "\n");
         }
         return $this;
