@@ -82,22 +82,25 @@ class Build extends \Leno\Shell
         foreach($attributes as $field => $info) {
             $type = $this->getTypeFromRule($info);
             $attr = [];
-            if($type instanceof \Leno\Validator\Type\Uuid) {
+            if ($type instanceof \Leno\Validator\Type\Uuid) {
                 $attr['type'] = 'char(36)';
-            } elseif($type instanceof \Leno\Validator\Type\Uri) {
+            } elseif ($type instanceof \Leno\Validator\Type\Uri) {
                 $attr['type'] = 'varchar(1024)';
-            } elseif($type instanceof \Leno\Validator\Type\Url) {
+            } elseif ($type instanceof \Leno\Validator\Type\Url) {
                 $attr['type'] = 'varchar(1024)';
-            } elseif($type instanceof \Leno\Validator\Type\Number) {
+            } elseif ($type instanceof \Leno\Validator\Type\Number) {
                 $attr['type'] = 'int(11)';
-            } elseif($type instanceof \Leno\Validator\Type\Stringl) {
+            } elseif ($type instanceof \Leno\Validator\Type\Stringl) {
+                if (empty($type->getMaxLength())) {
+                    throw new \Leno\Exception(sprintf('%s has no length!', $field));
+                }
                 $attr['type'] = 'varchar('.$type->getMaxLength().')';
-            } elseif($type instanceof \Leno\Validator\Type\Enum) {
+            } elseif ($type instanceof \Leno\Validator\Type\Enum) {
                 $attr['type'] = 'varchar(32)';
             } else {
                 $attr['type'] = $info['type'];
             }
-            if($info['required'] ?? true === false) {
+            if ($info['required'] ?? true === false) {
                 $attr['null'] = 'NULL';
             } else {
                 $attr['null'] = 'NOT NULL';
@@ -144,6 +147,6 @@ class Build extends \Leno\Shell
 
     public function describe()
     {
-        return "建立数据库，Controller以及其他项目初始化信息";
+        return "同步Entity与数据库";
     }
 }

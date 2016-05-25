@@ -36,6 +36,11 @@ class Table
         $this->fields = array_merge($this->fields, $fields);
     }
 
+    public function getName()
+    {
+        return $this->name;
+    }
+
     public function setUniqueKeys($unique_keys)
     {
         $this->unique_keys = $unique_keys;

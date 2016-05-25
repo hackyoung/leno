@@ -1,7 +1,7 @@
 <?php
 namespace Leno\Validator\Type;
 
-class Email extends \Leno\Validator\String1
+class Email extends \Leno\Validator\Type\String1
 {
     protected $regexp = '/^[a-zA-Z0-9_+.-]+\@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,4}$/';
 
