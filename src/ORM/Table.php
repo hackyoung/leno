@@ -205,6 +205,6 @@ class Table
 
     public static function getAdapter()
     {
-        return \Leno\ORM\Adapter::get();
+        return \Leno\ORM\Connector::get();
     }
 }
