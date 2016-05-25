@@ -4,7 +4,7 @@ namespace Leno\ORM;
 class Mapper implements \JsonSerializable
 {
     /**
-     * @var [
+     * [
      *      'name' => ['type' => 'string', 'extra' => ['max_length' => 2015]],
      *      'age' => ['type' => 'integer', 'allow_empty' => true,],
      * ];
@@ -12,7 +12,7 @@ class Mapper implements \JsonSerializable
     public static $attributes = [];
 
     /**
-     * @var [
+     * [
      *      'id', 'name'
      * ]
      */
@@ -21,7 +21,7 @@ class Mapper implements \JsonSerializable
     public static $primary;
 
     /**
-     * @var [
+     * [
      *        methodName: [
      *            relation: [],
      *            class:
@@ -31,17 +31,17 @@ class Mapper implements \JsonSerializable
     public static $foreign =[];
 
     /**
-     * @var 存储在哪张表中
+     * 存储在哪张表中
      */
     public static $table;
 
     /**
-     * @var 数据是否在数据库中已经有记录
+     * 数据是否在数据库中已经有记录
      */
     protected $fresh = true;
 
     /**
-     * @var [
+     * [
      *        city : [obj]
      * ]
      */
@@ -110,7 +110,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 添加一个关系实体, 如$user->addBook($book);
+     * 添加一个关系实体, 如$user->addBook($book);
      * @param string key 
      * @param mapper val
      * @return this
@@ -147,7 +147,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 将一个实体持久化存储,会保存其有关系的其他实体信息
+     * 将一个实体持久化存储,会保存其有关系的其他实体信息
      */
     public function save()
     {
@@ -193,7 +193,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 在该实体被保存前，该方法会保存与该实体有关系的其他实体
+     * 在该实体被保存前，该方法会保存与该实体有关系的其他实体
      * @param string key 关联的外键
      * @param [] objs 一系列通过key关联的对象
      */
@@ -225,7 +225,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获取该mapper对象关联的mapper对象，依赖于maper配置的foreign属性
+     * 获取该mapper对象关联的mapper对象，依赖于maper配置的foreign属性
      */
     protected function getRelateObjs($key) 
     {
@@ -265,7 +265,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 判断是否可以自动生成uuid
+     * 判断是否可以自动生成uuid
      */
     private function isAutoCreate($primary)
     {
@@ -275,7 +275,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获取mapper的唯一键信息
+     * 获取mapper的唯一键信息
      */
     public static function getUnique()
     {
@@ -284,7 +284,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获取mapper的主键信息
+     * 获取mapper的主键信息
      */
     public static function getPrimary()
     {
@@ -293,7 +293,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获取一个mapper的外键关联信息
+     * 获取一个mapper的外键关联信息
      */
     public static function getForeign($key = null)
     {
@@ -305,7 +305,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获取一个mapper的具体字段的属性
+     * 获取一个mapper的具体字段的属性
      */
     public static function getAttribute($key, $inner = 'type')
     {
@@ -317,7 +317,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 获得一个mapper的属性(行信息)
+     * 获得一个mapper的属性(行信息)
      */
     public static function getAttributes()
     {
@@ -339,7 +339,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 通过唯一键查找一个mapper实例,没有找到则抛异常
+     * 通过唯一键查找一个mapper实例,没有找到则抛异常
      * @param string|array pk 唯一键
      * @return Mapper
      */
@@ -353,7 +353,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 返回一个关联到该mapper的行删除器
+     * 返回一个关联到该mapper的行删除器
      */
     public static function deletor()
     {
@@ -363,7 +363,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 返回一个关联到该mapper的行更新器
+     * 返回一个关联到该mapper的行更新器
      */
     public static function updator()
     {
@@ -373,7 +373,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 返回一个关联到该mapper的行创建器
+     * 返回一个关联到该mapper的行创建器
      */
     public static function creator()
     {
@@ -383,7 +383,7 @@ class Mapper implements \JsonSerializable
     }
 
     /**
-     * @description 返回一个关联到该mapper的行选择器
+     * 返回一个关联到该mapper的行选择器
      */
     public static function selector()
     {

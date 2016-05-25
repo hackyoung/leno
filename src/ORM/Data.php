@@ -170,6 +170,9 @@ class Data implements \JsonSerializable, \Iterator
 
     /**
      * 验证值是否合法
+     * @param string key val的索引
+     * @param mixed val 待检查的值
+     * @return bool
      */
     public function validate($key, $val)
     {
@@ -187,7 +190,7 @@ class Data implements \JsonSerializable, \Iterator
     {
         foreach($this->config as $k=>$config) {
             $val = $this->get($k);
-	        if(isset($beforeCheckKey) && is_callable($beforeCheckKey) && $beforeCheckKey($k, $this) === false){
+	        if(is_callable($beforeCheckKey) && call_user_func_array($beforeCheckKey, [$this]) === false) {
                 continue;
             }
             if(!(new \Leno\Validator($config, $k))->check($val)) {

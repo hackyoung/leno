@@ -61,10 +61,10 @@ class Router
      * restful模式下各种http method对应请求的方法
      */
     protected $restful = [
-        'GET' => 'index',   // 将get提交的路由到index方法
-        'POST' => 'add',    // 将post提交的路由到add方法
-        'DELETE' => 'remove', // 将delete方式提交的路由到remove方法
-        'PUT' => 'modify', // 将put方式提交的路由到modify方法
+        'GET'       =>  'index',    // 将get提交的路由到index方法
+        'POST'      =>  'add',      // 将post提交的路由到add方法
+        'DELETE'    =>  'remove',   // 将delete方式提交的路由到remove方法
+        'PUT'       =>  'modify',   // 将put方式提交的路由到modify方法
     ];
 
     /**
@@ -80,7 +80,9 @@ class Router
     }
 
     /**
-     * 路由时通过解析path路由到指定的controller，这里没有直接使用request::uri进行路由，其原因时，如果路由到的是另一个router而不是controller，那么用户在最终的controller中获得request对象中的uri将不是一个正确的uri
+     * 路由时通过解析path路由到指定的controller，这里没有直接使用request::uri进行路由，
+     * 其原因时，如果路由到的是另一个router而不是controller，那
+     * 么用户在最终的controller中获得request对象中的uri将不是一个正确的uri
      * @param string path ###sample /cq/blog/index
      * @return this
      */
@@ -91,7 +93,8 @@ class Router
     }
 
     /**
-     * 执行路由操作，该方法会先查看路由器上面是否设置规则，如有规则则按规则路由，如果没有设置规则，则根据path路由
+     * 执行路由操作，该方法会先查看路由器上面是否设置规则，如有规则则按规则路由，
+     * 如果没有设置规则，则根据path路由
      * @return \Leno\Http\Response
      */
     public function route()
