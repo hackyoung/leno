@@ -1,6 +1,8 @@
 <?php
 namespace Leno\Console;
 
+use \Leno\Console\ArgParser;
+
 /**
  * 将shell传递过来的command，sub-command，args解析到指定的方法，并执行
  */
@@ -22,7 +24,7 @@ class Commander extends \Leno\Shell
     public function __construct()
     {
         try {
-            $parser = \Leno\Console\ArgParser::instance();
+            $parser = ArgParser::instance();
         } catch(\Exception $ex) {
             $this->setExecute(false)->help();
             return;
@@ -30,6 +32,11 @@ class Commander extends \Leno\Shell
         $this->command = $parser->getCommand();
         $this->action = $parser->getSubCommand();
         $this->args = $parser->getArgs();
+    }
+
+    public function main()
+    {
+        $this->help();
     }
 
     public function setCommand($command)
