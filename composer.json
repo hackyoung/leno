@@ -4,13 +4,13 @@
     "license": "MIT",
     "require": {
         "monolog/monolog": "1.0.*",
-		"leno/view": "v0.4.0.x-dev",
+        "leno/view": "v0.4.0.x-dev",
         "guzzlehttp/guzzle": "6.2.*"
     },
     "autoload": {
         "psr-4": {
             "Leno\\": "src",
-			"Test\\": "test"
+            "Test\\": "test"
         },
         "files": [ "src/functions.php" ]
     },
