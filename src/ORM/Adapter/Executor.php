@@ -1,5 +1,5 @@
 <?php
-namespace \Leno\ORM\Adapter;
+namespace Leno\ORM\Adapter;
 
 abstract class Executor extends \PDO
 {
