@@ -183,6 +183,7 @@ class Selector extends \Leno\ORM\Row
         if($sql === null) {
             $sql = $this->getSql();
         }
+        logger()->info('EXECUTING SQL: '.$sql);
         $sth = self::getAdapter()->query($sql);
         if(!$sth || empty($sth)) {
             return $sth;

@@ -112,7 +112,7 @@ function uuid()
     return implode('-', $arr);
 }
 
-function logger($name)
+function logger($name = 'default')
 {
     return \Leno\Worker::instance()->logger($name);
 }
