@@ -29,7 +29,6 @@ function unCamelCase($string, $limiter='_')
 }
 
 if(!function_exists('getallheaders')) {
-
     function getallheaders() {
         $headers = array(); 
         foreach ($_SERVER as $key => $value) { 
@@ -111,4 +110,9 @@ function uuid()
         randString(12, $template),
     ];
     return implode('-', $arr);
+}
+
+function logger($name)
+{
+    return \Leno\Worker::instance()->logger($name);
 }

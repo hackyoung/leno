@@ -136,8 +136,10 @@ class Table
             implode(', ', $fixed_part)
         );
         $adapter = self::getAdapter();
+        logger()->info('Table: '.$this->getName() . ' execute sql: '.$this->sql);
         $result = $adapter->exec($this->sql);
         if($result === false) {
+            logger()->error('Table: '.$this->geName() . ' execute sql state: '.$adapter->errorInfo()[2]);
             throw new \Exception($adapter->errorInfo()[2]);
         }
         return $result;
@@ -152,8 +154,10 @@ class Table
         }
         $this->sql = sprintf($tmp, $this->name, implode(', ', $fields));
         $adapter = self::getAdapter();
+        logger()->info('Table: '.$this->getName() . ' execute sql: '.$this->sql);
         $result = $adapter->exec($this->sql);
         if(!$result) {
+            logger()->error('Table: '.$this->geName() . ' execute sql state: '.$adapter->errorInfo()[2]);
             throw new \Exception($adapter->errorInfo()[2]);
         }
         return $result;
