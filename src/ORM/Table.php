@@ -107,7 +107,6 @@ class Table
         $add = [];
         $alter = [];
         foreach($this->fields as $field => $attr) {
-            $field = self::getAdapter()->keyQuote($field);
             if(!isset($dbInfo[$field])) {
                 $add[$field] = $attr;
                 continue;
@@ -186,7 +185,7 @@ class Table
     {
         $ret = [];
         foreach($add_set as $field => $attr) {
-            $ret[] = sprintf('ADD COLUMN %s %s', $field, 
+            $ret[] = sprintf('ADD COLUMN %s %s', self::getAdapter()->keyQuote($field),
                 implode(' ', array_values($attr))
             );
         }
@@ -197,6 +196,7 @@ class Table
     {
         $ret = [];
         foreach($alter_set as $field => $attr) {
+            $field = self::getAdapter()->keyQuote($field);
             $ret[] = sprintf('CHANGE %s %s %s', $field, $field,
                 implode(' ', array_values($attr))
             );
@@ -208,7 +208,7 @@ class Table
     {
         $ret = [];
         foreach($remove_set as $field => $attr) {
-            $ret[] = sprintf('DROP %s', $field);
+            $ret[] = sprintf('DROP %s', self::getAdapter()->keyQuote($field));
         }
         return implode(', ', $ret);
     }
