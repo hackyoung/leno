@@ -38,7 +38,7 @@ class AutoLoader
         $class = preg_replace('/\\$/', '', $class);
         $path_prefix = '/';
         foreach(self::$map as $name_prefix => $path_prefix) {
-            if(preg_match('/^'.$name_prefix.'/', $class)) {
+            if(preg_match('/^'.str_replace('/', '\\\\', $name_prefix).'/', $class)) {
                 $class = preg_replace('/'.$name_prefix.'/', '', $class);
                 break;
             }

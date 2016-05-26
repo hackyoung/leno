@@ -214,7 +214,7 @@ class Router
                 continue;
             }
             if(preg_match('/Router/', $rule)) {
-                return $this->resolvRouterRule($rule);
+                return $this->resolvRouterRule($rule, $reg);
             }
             return $this->resolvPathRule($reg, $rule);
         }
@@ -233,18 +233,18 @@ class Router
         }, $rule);
     }
 
-    private function resolvRouterRule($class)
+    private function resolvRouterRule($class, $regexp)
     {
         try {
             $rc = new \ReflectionClass($class);
         } catch(\Exception $e) {
             throw new \Leno\Exception(
-                'router:'.$rule.' not found'
+                'router:'.$class.' not found'
             );
         }
         $request = clone $this->request;
         $request->withAttribute('path', preg_replace(
-            $regexp, '', $this->path
+            '/'.$regexp.'/', '', $this->path
         ));
         return $rc->newInstance($request, $this->response);
     }

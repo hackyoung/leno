@@ -106,7 +106,8 @@ class Table
         $dbInfo = $this->getDbAttr();
         $add = [];
         $alter = [];
-        foreach($this->fields as $field=>$attr) {
+        foreach($this->fields as $field => $attr) {
+            $field = self::getAdapter()->keyQuote($field);
             if(!isset($dbInfo[$field])) {
                 $add[$field] = $attr;
                 continue;
@@ -150,7 +151,7 @@ class Table
         $tmp = 'CREATE TABLE %s (%s)';
         $fields = [];
         foreach($this->fields as $field => $attr) {
-            $fields[] = $field . ' ' .implode(' ', array_values($attr)) ;
+            $fields[] = self::getAdapter()->keyQuote($field) . ' ' . implode(' ', array_values($attr));
         }
         $this->sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
         $adapter = self::getAdapter();
