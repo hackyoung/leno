@@ -35,18 +35,18 @@ class AutoLoader
 
     public function load($class)
     {
-        $class = preg_replace('/\\$/', '', $class);
-        $path_prefix = '/';
+        $class = str_replace('\\', '/', preg_replace('/\\$/', '', $class));
         foreach(self::$map as $name_prefix => $path_prefix) {
-            if(preg_match('/^'.str_replace('/', '\\\\', $name_prefix).'/', $class)) {
-                $class = preg_replace('/'.$name_prefix.'/', '', $class);
-                break;
+            if(preg_match('/^'.str_replace('/', '\/', $name_prefix).'/', $class)) {
+                $right = $path_prefix . preg_replace('/^'.str_replace('/', '\/', $name_prefix).'/', '', $class);
+                $class_file = ROOT . $right . self::SUFFIX;
+                if(file_exists($class_file)) {
+                    require_once $class_file;
+                }
             }
-            $path_prefix = '/';
         }
-        $classFile = ROOT . $path_prefix . strtr($class, '\\', '/') . self::SUFFIX;
-        if(file_exists($classFile)) {
-            require_once $classFile;
+        if(file_exists(ROOT . '/' . $class . self::SUFFIX)) {
+            require_once file_exists(ROOT . '/' . $class . self::SUFFIX);
         }
     }
 
