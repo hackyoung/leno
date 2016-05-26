@@ -1360,24 +1360,26 @@ var Form = (function(L) {
                     return false;
                 }
                 var beforeSubmit = f.form_opts.callback.beforeSubmit;
-                var a = beforeSubmit(data);
-                if(a != false) {
+                if(beforeSubmit(data) !== false) {
                     if(leno.empty(f.form_opts.url.submit)) {
                         throw 'submit url is empty';
                         return false;
                     }
                     submit.attr('disabled', true);
                     $.ajax({
-                        url: f.form_opts.url,
+                        url: f.form_opts.url.submit,
                         type: 'post',
                         data: data,
                         complete: function(response) {
                             submit.removeAttr('disabled');
-                            if(response.status != 200) {
+                            var after = f.form_opts.callback.afterReturn;
+                            if (after(response) === false) {
                                 return;
                             }
-                            var after = f.form_opts.callback.afterReturn;
-                            after(response);
+                            if(response.status === 200) {
+                                window.location.href = f.form_opts.url.go;
+                            }
+                            leno.alert(response.responseText);
                         }
                     });
                 }
@@ -3137,22 +3139,17 @@ $(document).ready(function() {
         leno.dropdown($(this));
     });
     $('.leno-form').each(function() {
-        var url = $(this).attr('href');
+        var url = {
+            submit: $(this).attr('href'),
+            go: $(this).attr('go')
+        };
         var id = $(this).attr('id');
         var go = $(this).attr('go');
         new leno.form({
             url: url,
             node: $(this),
             method: $(this).attr('method'),
-            id: 'leno-form-'+id,
-            callback: {
-                beforeSubmit: function() {
-                    return true;
-                },
-                afterReturn: function() {
-                    window.location.href = go;
-                }
-            }
+            id: 'leno-form-'+id
         });
     });
     $('.leno-input-group input').focus(function() {

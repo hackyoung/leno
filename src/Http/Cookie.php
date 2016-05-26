@@ -24,6 +24,15 @@ class Cookie
         return $this;
     }
 
+    public function remove($key)
+    {
+        setcookie($key, null,
+            time(), $this->path, $this->domain,
+            $this->secure, $this->http_only
+        );
+        return $this;
+    }
+
     public static function get($key)
     {
         return $_COOKIE[$key] ?? null;

@@ -11,11 +11,10 @@ define ('ROOT', dirname(dirname(dirname(dirname(dirname(__DIR__))))));
 // 载入所有依赖
 require_once  ROOT . '/vendor/autoload.php';
 
-// 注册名字空间
-\Leno\AutoLoader::register('Model', '/model');
-\Leno\AutoLoader::register('Controller', '/controller');
-\Leno\AutoLoader::register('Shell', '/shell');
-\Leno\AutoLoader::instance()->execute();
+// 应用需要的class loader
+if(is_file(ROOT . '/autoload.php')) {
+    require_once ROOT . '/autoload.php';
+}
 
 // 初始化配置器
 \Leno\Configure::init();

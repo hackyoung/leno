@@ -6,13 +6,10 @@
 // 定义ROOT变量
 define('ROOT', __DIR__);
 
-require_once ROOT .'/vendor/autoload.php';
+require_once ROOT . '/vendor/autoload.php';
 
-// 注册名字空间
-\Leno\AutoLoader::register('Model', '/model');
-\Leno\AutoLoader::register('Controller', '/controller');
-\Leno\AutoLoader::register('Shell', '/shell');
-\Leno\AutoLoader::instance()->execute();
+// 载入应用需要的名字映射
+require_once ROOT . '/autoload.php';
 
 // 添加view目录
 \Leno\View::addViewDir(ROOT . '/view');
