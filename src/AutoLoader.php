@@ -46,7 +46,7 @@ class AutoLoader
             }
         }
         if(file_exists(ROOT . '/' . $class . self::SUFFIX)) {
-            require_once file_exists(ROOT . '/' . $class . self::SUFFIX);
+            require_once ROOT . '/' . $class . self::SUFFIX;
         }
     }
 
