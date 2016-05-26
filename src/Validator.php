@@ -32,9 +32,16 @@ class Validator extends \Leno\Validator\Type
             throw new \Exception('Rule Error: Type Not Found');
         } else if(is_array($type)) {
             foreach($type as $t) {
-                $rule = $this->rules;
-                $rule['type'] = $t;
-                $this->checkSimple($value, $rule);
+                $this->rules['type'] = $t;
+                try {
+                    $this->checkSimple($value);
+                } catch(\Exception $ex) {
+                    continue;
+                }
+                break;
+            }
+            if(isset($ex) && $ex instanceof \Exception) {
+                throw $ex;
             }
             return true;
         } elseif(in_array($type, $array)) {

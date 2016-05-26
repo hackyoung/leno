@@ -323,8 +323,7 @@ abstract class Row
 
     public function quote($str)
     {
-        $Adapter = self::$adapter;
-        return $Adapter::keyQuote($str);
+        return self::getAdapter()->keyQuote($str);
     }
 
     public function getOn()
