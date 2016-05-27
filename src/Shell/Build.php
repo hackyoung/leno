@@ -100,17 +100,18 @@ class Build extends \Leno\Shell
     protected function getTypeFromInfo($info)
     {
         $maps = [
-            '\Leno\Validator\Type\Uuid' => 'CHAR(36)',
-            '\Leno\Validator\Type\Uri' => 'VARCHAR(1024)',
-            '\Leno\Validator\Type\Url' => 'VARCHAR(1024)',
-            '\Leno\Validator\Type\Number' => 'INT(11)',
+            '\Leno\Validator\Type\Uuid' => 'char(36)',
+            '\Leno\Validator\Type\Uri' => 'varchar(1024)',
+            '\Leno\Validator\Type\Url' => 'varchar(1024)',
+            '\Leno\Validator\Type\Datetime' => 'datetime',
+            '\Leno\Validator\Type\Number' => 'int(11)',
+            '\Leno\Validator\Type\Enum' => 'varchar(32)',
             '\Leno\Validator\Type\Stringl' => function($type) {
                 if (empty($type->getMaxLength())) {
                     throw new \Leno\Exception(sprintf('%s has no length!', $field));
                 }
-                return 'VARCHAR('.$type->getMaxLength().')';
+                return 'varchar('.$type->getMaxLength().')';
             },
-            '\Leno\Validator\Type\Enum' => 'VARCHAR(32)',
         ];
         $type = $this->getTypeFromRule($info);
         foreach($maps as $class => $guess_type) {
