@@ -80,43 +80,52 @@ class Build extends \Leno\Shell
         }
         $table = new \Leno\ORM\Table($table);
         foreach($attributes as $field => $info) {
-            $type = $this->getTypeFromRule($info);
-            $attr = [];
-            if ($type instanceof \Leno\Validator\Type\Uuid) {
-                $attr['type'] = 'CHAR(36)';
-            } elseif ($type instanceof \Leno\Validator\Type\Uri) {
-                $attr['type'] = 'VARCHAR(1024)';
-            } elseif ($type instanceof \Leno\Validator\Type\Url) {
-                $attr['type'] = 'VARCHAR(1024)';
-            } elseif ($type instanceof \Leno\Validator\Type\Number) {
-                $attr['type'] = 'INT(11)';
-            } elseif ($type instanceof \Leno\Validator\Type\Stringl) {
-                if (empty($type->getMaxLength())) {
-                    throw new \Leno\Exception(sprintf('%s has no length!', $field));
-                }
-                $attr['type'] = 'VARCHAR('.$type->getMaxLength().')';
-            } elseif ($type instanceof \Leno\Validator\Type\Enum) {
-                $attr['type'] = 'VARCHAR(32)';
-            } else {
-                $attr['type'] = $info['type'];
-            }
-            if ($info['required'] ?? true === false) {
+            $attr = [
+                'type' => $this->getTypeFromInfo($info),
+                'null' => 'NOT NULL',
+                'default' => 'NULL'
+            ];
+            if (($info['required'] ?? true) === false) {
                 $attr['null'] = 'NULL';
-            } else {
-                $attr['null'] = 'NOT NULL';
             }
             if($info['default'] ?? false) {
                 $attr['default'] = $info['default'];
             }
             $table->setField($field, $attr);
         }
-        sleep(1);
         $table->save();
         if($table->lastSql()) {
             $this->info('执行SQL：'.$table->lastSql());
         } else {
             $this->notice('不需要更新');
         }
+    }
+
+    protected function getTypeFromInfo($info)
+    {
+        $maps = [
+            '\Leno\Validator\Type\Uuid' => 'CHAR(36)',
+            '\Leno\Validator\Type\Uri' => 'VARCHAR(1024)',
+            '\Leno\Validator\Type\Url' => 'VARCHAR(1024)',
+            '\Leno\Validator\Type\Number' => 'INT(11)',
+            '\Leno\Validator\Type\Stringl' => function($type) {
+                if (empty($type->getMaxLength())) {
+                    throw new \Leno\Exception(sprintf('%s has no length!', $field));
+                }
+                return 'VARCHAR('.$type->getMaxLength().')';
+            },
+            '\Leno\Validator\Type\Enum' => 'VARCHAR(32)',
+        ];
+        $type = $this->getTypeFromRule($info);
+        foreach($maps as $class => $guess_type) {
+            if(is_callable($guess_type)) {
+                $guess_type = call_user_func($guess_type, $type);
+            }
+            if($type instanceof $class) {
+                return $guess_type;
+            }
+        }
+        return $info['type'];
     }
 
     protected function getTypeFromRule($rule)
