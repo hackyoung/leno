@@ -6,21 +6,21 @@ namespace Model;
  */
 abstract class Entity extends \Leno\ORM\Mapper
 {
-   // 需要在Insert之前添加逻辑，则取消注释下面的方法
-   // protected function beforeInsert()
-   // {
-   //     // Insert之前的逻辑
-   // }
+   //需要在Insert之前添加逻辑，则取消注释下面的方法
+   //protected function beforeInsert()
+   //{
+   //    // Insert之前的逻辑
+   //}
 
-   // 需要在update之前添加逻辑，则取消注释下面的代码
-   // protected function beforeUpdate()
-   // {
-   //     // update之前的逻辑
-   // }
+   //需要在update之前添加逻辑，则取消注释下面的代码
+   //protected function beforeUpdate()
+   //{
+   //    // update之前的逻辑
+   //}
 
-   // 需要在save之前添加逻辑，则取消注释下面的代码,save的含义是在update/insert都将执行
-   // protected function beforeSave()
-   // {
-   //     // save之前的逻辑
-   // }
+   //需要在save之前添加逻辑，则取消注释下面的代码,save的含义是在update/insert都将执行
+   //protected function beforeSave()
+   //{
+   //    // save之前的逻辑
+   //}
 }

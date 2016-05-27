@@ -83,20 +83,20 @@ class Build extends \Leno\Shell
             $type = $this->getTypeFromRule($info);
             $attr = [];
             if ($type instanceof \Leno\Validator\Type\Uuid) {
-                $attr['type'] = 'char(36)';
+                $attr['type'] = 'CHAR(36)';
             } elseif ($type instanceof \Leno\Validator\Type\Uri) {
-                $attr['type'] = 'varchar(1024)';
+                $attr['type'] = 'VARCHAR(1024)';
             } elseif ($type instanceof \Leno\Validator\Type\Url) {
-                $attr['type'] = 'varchar(1024)';
+                $attr['type'] = 'VARCHAR(1024)';
             } elseif ($type instanceof \Leno\Validator\Type\Number) {
-                $attr['type'] = 'int(11)';
+                $attr['type'] = 'INT(11)';
             } elseif ($type instanceof \Leno\Validator\Type\Stringl) {
                 if (empty($type->getMaxLength())) {
                     throw new \Leno\Exception(sprintf('%s has no length!', $field));
                 }
-                $attr['type'] = 'varchar('.$type->getMaxLength().')';
+                $attr['type'] = 'VARCHAR('.$type->getMaxLength().')';
             } elseif ($type instanceof \Leno\Validator\Type\Enum) {
-                $attr['type'] = 'varchar(32)';
+                $attr['type'] = 'VARCHAR(32)';
             } else {
                 $attr['type'] = $info['type'];
             }

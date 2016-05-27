@@ -22,6 +22,7 @@ class AutoLoader
 
     public static function register($namespace, $base_dir)
     {
+        $base_dir = '/' . preg_replace('/^\//', '', $base_dir);
         self::$map[$namespace] = $base_dir;
     }
 
