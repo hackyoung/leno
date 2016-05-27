@@ -70,20 +70,16 @@ class Build extends \Leno\Shell
 
     protected function synTable($Entity)
     {
-        $attributes = $Entity::$attributes ?? false;
-        if(!$attributes) {
-            throw new \Exception($Entity . ' May Be Not A Entity');
+        if(!$Entity::$table || !$Entity::$attributes) {
+            $this->warning('Find A Class: ' . $Entity. ' But Maybe Not A Entity');
+            logger()->warn('Find A Class: ' . $Entity. ' But Maybe Not A Entity');
+            return;
         }
-        $table = $Entity::$table ?? false;
-        if(!$table) {
-            throw new \Exception($Entity . ' May Be Not A Entity');
-        }
-        $table = new \Leno\ORM\Table($table);
-        foreach($attributes as $field => $info) {
+        $table = new \Leno\ORM\Table($Entity::$table);
+        foreach($Entity::$attributes as $field => $info) {
             $attr = [
                 'type' => $this->getTypeFromInfo($info),
                 'null' => 'NOT NULL',
-                'default' => 'NULL'
             ];
             if (($info['required'] ?? true) === false) {
                 $attr['null'] = 'NULL';
