@@ -12,9 +12,7 @@ class Response extends \GuzzleHttp\Psr7\Response
             }
             $url .= '?'.implode('&', $thep);
         }
-        (new \Leno\Validator([
-            'type' => ['uri', 'url']
-        ], 'redirect_url'))->check($url);
+        (new \Leno\Validator(['type' => ['uri', 'url']], 'redirect_url'))->check($url);
         header('location: '.$url);
         exit;
     }
