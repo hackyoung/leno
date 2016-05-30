@@ -3,6 +3,7 @@ namespace Leno\Routing;
 
 use \Leno\Routing\Rule;
 use \Leno\Routing\Target;
+use \Leno\Traits\Setter as MagicCall;
 
 /**
  * Router 通过一个Uri路由到正确的controller and action
@@ -12,7 +13,7 @@ use \Leno\Routing\Target;
 class Router
 {
 
-    use \Leno\Traits\Setter;
+    use \Leno\Traits\MagicCall;
 
     /**
      * 通常的路由模式 path类型为namespace/controller/method/{$param1}/{$param2}/...
@@ -114,8 +115,10 @@ class Router
         $result = (new Rule($this))->handle();
         if($result instanceof self) {
             return $result->route();
+        } 
+        if (is_string($result)) {
+            $this->path = new Path($result);
         }
-        $this->path = $result;
         if($this->mode !== self::MOD_MIX) {
             $target = Target::getFromRouter($this);
             $this->invoke($target);
@@ -133,6 +136,27 @@ class Router
         }
         $this->setMode(self::MOD_MIX);
         $this->afterRoute();
+        return $this->response;
+    }
+
+    protected function invoke($target)
+    {
+        $instance = $target->setConstructParameters([
+            $this->request, $this->response
+        ])->getInstance();
+        if($target->hasMethod('beforeExecute')) {
+            $target->invoke('beforeExecute', $instance);
+        }
+        ob_start();
+        $response = $target->invoke(null, $instance);
+        $content = ob_get_contents();
+        ob_end_clean();
+        if($this->handleResult($response)) {
+            $this->response->write($content);
+        }
+        if($target->hasMethod('afterExecute')) {
+            $this->response = $target->invoke('afterExecute', $instance);
+        }
         return $this->response;
     }
 
@@ -155,26 +179,6 @@ class Router
         return true;
     }
 
-    private function invoke($target)
-    {
-        $instance = $target->setConstructParameters([
-            $this->request, $this->response
-        ])->getInstance();
-        if($target->hasMethod('beforeExecute')) {
-            $target->invoke('beforeExecute', $instance);
-        }
-        ob_start();
-        $response = $target->invoke(null, $instance);
-        $content = ob_get_contents();
-        ob_end_clean();
-        if($this->handleResult($response)) {
-            $this->response->write($content);
-        }
-        if($target->hasMethod('afterExecute')) {
-            $this->response = $target->invoke('afterExecute', $instance);
-        }
-        return $this->response;
-    }
 
     protected function beforeRoute()
     {

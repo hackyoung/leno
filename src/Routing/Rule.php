@@ -34,7 +34,6 @@ class Rule
             }
             return $this->resolvPathRule($reg, $rule);
         }
-        return $this->path;
     }
 
     private function resolvPathRule($reg, $rule)
@@ -43,12 +42,11 @@ class Rule
         $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
         $reg = '/('.str_replace('|', '\/)|(', $reg).')/';
         $parameters = explode('/', preg_replace($reg, '', $path));
-        $p = preg_replace_callback('/\$\{.*\}/U', 
+        return preg_replace_callback('/\$\{.*\}/U', 
         function($matches) use (&$idx, $parameters) {
             $idx = (int)preg_replace('/\$|\{|\}/', '', $matches[0]) - 1;
             return '${'.$parameters[$idx].'}';
         }, $rule);
-        return $path->set($p);
     }
 
     private function resolvRouterRule($class, $regexp)
