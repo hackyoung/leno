@@ -15,11 +15,6 @@ class Rule
 
     public function handle()
     {
-        return $this->handleRule();
-    }
-
-    private function handleRule()
-    {
         $path = (string)$this->router->getPath();
         $rules = $this->router->getRules();
         foreach($rules as $reg => $rule) {

@@ -12,7 +12,7 @@ Trait Setter
                 $this->$attr = $args[0] ?? $args;
                 return $this;
             case 'get':
-                $attr = unCamelCase(str_replace('set', '', $method));
+                $attr = unCamelCase(str_replace('get', '', $method));
                 return $this->$attr;
         }
         throw new \Leno\Exception (get_called_class() . '::'.$method . ' Not Defined');

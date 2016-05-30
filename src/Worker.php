@@ -45,7 +45,7 @@ class Worker
     {
         $this->request = Request::getNormal();
         $this->request->withAttribute(
-            'path', strtolower(preg_replace('/\?.*/', '', $uri))
+            'path', strtolower(preg_replace('/\?.*/', '', (string)$this->request->getUri()))
         );
         $this->response = new Response;
         \Leno\Configure::init();

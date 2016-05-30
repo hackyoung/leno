@@ -95,7 +95,7 @@ abstract class Controller
         foreach($this->data as $k=>$d) {
             $data[$k] = $d;
         }
-        (new View($view, $data))->display();
+        (new View($view, $data))->render();
     }
 
     /**

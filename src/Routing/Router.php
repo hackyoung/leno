@@ -13,7 +13,7 @@ use \Leno\Traits\Setter as MagicCall;
 class Router
 {
 
-    use \Leno\Traits\MagicCall;
+    use MagicCall;
 
     /**
      * 通常的路由模式 path类型为namespace/controller/method/{$param1}/{$param2}/...
@@ -117,7 +117,7 @@ class Router
             return $result->route();
         } 
         if (is_string($result)) {
-            $this->path = new Path($result);
+            $this->setPath($result);
         }
         if($this->mode !== self::MOD_MIX) {
             $target = Target::getFromRouter($this);
@@ -167,11 +167,11 @@ class Router
     {
         if($response === null) {
             return true;
-        } elseif($response instanceof \Leno\Http\Response) {
+        } elseif ($response instanceof \Leno\Http\Response) {
             $this->response = $response;
-        } elseif($response instanceof \Psr\Http\Message\StreamInterface) {
+        } elseif ($response instanceof \Psr\Http\Message\StreamInterface) {
             $this->response = $this->response->withBody($response);
-        } elseif(is_string($response)) {
+        } elseif (is_string($response)) {
             $this->response->write($response);
         } else {
             throw new \Leno\Exception('Controller returned a "'.gettype($response).'" but not supported.');

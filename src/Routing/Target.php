@@ -73,7 +73,7 @@ class Target extends \ReflectionClass
         }, $patharr));
         if($mode === Router::MOD_RESTFUL) {
             $request = $router->getRequest();
-            $method =strtoupper($_POST['_method'] ?? $request->getMethod());
+            $method = strtoupper($_POST['_method'] ?? $request->getMethod());
             $action = $router->getActionOfRestful($method);
             if($action === null) {
                 throw new \Leno\Http\Exception(501);
