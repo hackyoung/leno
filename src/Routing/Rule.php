@@ -35,7 +35,8 @@ class Rule
     {
         $path = (string)$this->router->getPath();
         $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
-        $reg = '/('.str_replace('|', '\/)|(', $reg).')/';
+        $reg = str_replace('|', ')|(', $reg);
+        $reg = '/('.str_replace('/', '\/', $reg).')/';
         $parameters = explode('/', preg_replace($reg, '', $path));
         return preg_replace_callback('/\$\{.*\}/U', 
         function($matches) use (&$idx, $parameters) {
