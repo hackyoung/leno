@@ -1307,6 +1307,7 @@ select.flat-input:active {
     border-bottom: 1px solid #bbb;
     border-radius: 2px 2px 0px 0px;
     padding: 5px 0px;
+    position: absolute;
     white-space: nowrap;
 }
 
