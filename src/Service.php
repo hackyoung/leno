@@ -38,5 +38,5 @@ abstract class Service
         self::$map[$prefix] = $base;
     }
 
-    abstract public function execute();
+    abstract public function execute(callable $callable);
 }

@@ -12,7 +12,7 @@ class Test extends \Leno\Controller
             'type' => 'uuid'
         ], 'world']);
         var_dump($param);
-         */
         $this->getService('hello')->setParam('hello world')->execute();
+         */
     }
 }

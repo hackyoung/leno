@@ -43,12 +43,10 @@ class Worker
      */
     protected function __construct()
     {
-        $uri = $_SERVER['REQUEST_URI'] ?? '';
-        $method = $_SERVER['REQUEST_METHOD'] ?? 'get';
-        $this->request = new Request(
-            $method, $uri, getallheaders()
+        $this->request = Request::getNormal();
+        $this->request->withAttribute(
+            'path', strtolower(preg_replace('/\?.*/', '', (string)$this->request->getUri()))
         );
-        $this->request->withAttribute('path', strtolower(preg_replace('/\?.*/', '', $uri)));
         $this->response = new Response;
         \Leno\Configure::init();
     }
