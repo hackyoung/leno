@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4042bfd8e385d7fde5ae31df81f312b1",
+    "hash": "f1890a0e25bcbfbd256f71d300b85104",
     "content-hash": "9db7bb2f2907ba88afb7b87331e481d2",
     "packages": [
         {
@@ -184,12 +184,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/hackyoung/lenoview.git",
-                "reference": "204504ac0f242ae307ffb19850057804796e24db"
+                "reference": "8afc0ca9607eb41abfea6eff5b319df129f10549"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/204504ac0f242ae307ffb19850057804796e24db",
-                "reference": "204504ac0f242ae307ffb19850057804796e24db",
+                "url": "https://api.github.com/repos/hackyoung/lenoview/zipball/8afc0ca9607eb41abfea6eff5b319df129f10549",
+                "reference": "8afc0ca9607eb41abfea6eff5b319df129f10549",
                 "shasum": ""
             },
             "type": "library",
@@ -199,7 +199,7 @@
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "time": "2016-05-25 05:01:29"
+            "time": "2016-05-27 04:02:01"
         },
         {
             "name": "monolog/monolog",

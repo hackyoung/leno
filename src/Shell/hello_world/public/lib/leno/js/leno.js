@@ -751,7 +751,7 @@ var leno = leno || {};
     leno.enableDropdown = function(id) {
         $('#'+id).find('[data-toggle=dropdown]').removeAttr('disabled');
     }
-    leno.scrollTo = function(node, relate, timeout) {
+    leno.scrollTo = function(node, relate, timeout, on_done) {
         var relate = relate || 70;
         if(timeout == null) {
             timeout = 30;
@@ -773,6 +773,9 @@ var leno = leno || {};
         var interval = setInterval(function() {
             if(i == timeout || begin < 0) {
                 clearInterval(interval);
+                if(typeof on_done === 'function') {
+                    on_done();
+                }
                 return;
             }
             begin = begin + speed;
@@ -1360,26 +1363,24 @@ var Form = (function(L) {
                     return false;
                 }
                 var beforeSubmit = f.form_opts.callback.beforeSubmit;
-                if(beforeSubmit(data) !== false) {
+                var a = beforeSubmit(data);
+                if(a != false) {
                     if(leno.empty(f.form_opts.url.submit)) {
                         throw 'submit url is empty';
                         return false;
                     }
                     submit.attr('disabled', true);
                     $.ajax({
-                        url: f.form_opts.url.submit,
+                        url: f.form_opts.url,
                         type: 'post',
                         data: data,
                         complete: function(response) {
                             submit.removeAttr('disabled');
-                            var after = f.form_opts.callback.afterReturn;
-                            if (after(response) === false) {
+                            if(response.status != 200) {
                                 return;
                             }
-                            if(response.status === 200) {
-                                window.location.href = f.form_opts.url.go;
-                            }
-                            leno.alert(response.responseText);
+                            var after = f.form_opts.callback.afterReturn;
+                            after(response);
                         }
                     });
                 }
@@ -1719,6 +1720,8 @@ leno.editor = (function() {
         var toolbar = document.createElement('div');
         toolbar.setAttribute('class', 'editor-toolbar');
         root.appendChild(toolbar);
+        var nexttoolbar = document.createElement('div');
+        root.appendChild(nexttoolbar);
         var content = document.createElement('iframe');
         content.setAttribute('src', '');
         content.setAttribute('frameborder', '0');
@@ -1852,6 +1855,14 @@ leno.editor = (function() {
             left: 1,
             right: 1
         }
+        //, operation: [
+        //    {
+        //        label: 'hello',
+        //        click: function() {
+        //        
+        //        }
+        //    }   
+        //]
     };
 
     var lenoEditor = function(opts) {
@@ -1919,26 +1930,7 @@ leno.editor = (function() {
                 var oldtoolbarfixed = editor.toolbarfixed;
                 if(opts.toolbarFix) {
                     var sheight = leno.scrollTop();
-                    if(sheight + opts.toolbarFixedHeight >= pos.y) {
-                        editor.toolbarfixed = true;
-                    } else {
-                        editor.toolbarfixed = false;
-                    }
-                    if(editor.toolbarfixed != oldtoolbarfixed ) {
-                        if(editor.toolbarfixed) {
-                            $(toolbar).addClass('stickTop');
-                            $(toolbar).css({
-                                width: editor.getSize().width - 2 + 'px',
-                                top: opts.toolbarFixedHeight + 'px',
-                                left: pos.x + 1
-                            });
-                        } else {
-                            $(toolbar).removeClass('stickTop');
-                            $(toolbar).css('top', 'auto');
-                            $(toolbar).css('left', 'auto');
-                        }
-                        editor.contentResize();
-                    }
+                    $(toolbar).css('top', Math.max(pos.y, sheight + opts.toolbarFixedHeight));
                     if(sheight + opts.toolbarFixedHeight > pos.y +
                             $(root).height() - $(toolbar).height()) {
                         $(toolbar).hide();
@@ -1997,6 +1989,11 @@ leno.editor = (function() {
         frame.setAttribute('width', w);
         $(toolbar).css({
             width: this.getSize().width - 2,
+            left: leno.position(root).x + 1
+        });
+        $(toolbar).next().css({
+            width: this.getSize().width - 2,
+            height: $(toolbar).height() + 10,
             left: leno.position(root).x + 1
         });
         if(this.toolbarfixed) {
@@ -3139,17 +3136,22 @@ $(document).ready(function() {
         leno.dropdown($(this));
     });
     $('.leno-form').each(function() {
-        var url = {
-            submit: $(this).attr('href'),
-            go: $(this).attr('go')
-        };
+        var url = $(this).attr('href');
         var id = $(this).attr('id');
         var go = $(this).attr('go');
         new leno.form({
             url: url,
             node: $(this),
             method: $(this).attr('method'),
-            id: 'leno-form-'+id
+            id: 'leno-form-'+id,
+            callback: {
+                beforeSubmit: function() {
+                    return true;
+                },
+                afterReturn: function() {
+                    window.location.href = go;
+                }
+            }
         });
     });
     $('.leno-input-group input').focus(function() {
