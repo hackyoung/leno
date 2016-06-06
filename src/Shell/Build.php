@@ -48,8 +48,8 @@ class Build extends \Leno\Shell
             }
             $pathfile = $entity_dir . '/' .$filename;
             if(is_dir($pathfile)) {
-                $namespace = implode('\\', [$namespace, camelCase($filename)]);
-                $this->synDb($pathfile, $namespace);
+                $the_namespace = implode('\\', [$namespace, camelCase($filename)]);
+                $this->synDb($pathfile, $the_namespace);
                 continue;
             }
             if(preg_match('/\.php$/', $filename)) {
@@ -71,14 +71,14 @@ class Build extends \Leno\Shell
     protected function synTable($Entity)
     {
         if(!$Entity::$table || !$Entity::$attributes) {
-            $this->warning('Find A Class: ' . $Entity. ' But Maybe Not A Entity');
-            logger()->warn('Find A Class: ' . $Entity. ' But Maybe Not A Entity');
+            $this->warn('Find A Class: ' . $Entity. ' But No Table\attributes Assign Ingnore');
+            logger()->warn('Find A Class: ' . $Entity. ' But No Table\attributes Assign Ingnore');
             return;
         }
         $table = new \Leno\ORM\Table($Entity::$table);
         foreach($Entity::$attributes as $field => $info) {
             $attr = [
-                'type' => $this->getTypeFromInfo($info),
+                'type' => $this->getTypeFromInfo($info, $field),
                 'null' => 'NOT NULL',
             ];
             if (($info['required'] ?? true) === false) {
@@ -97,7 +97,7 @@ class Build extends \Leno\Shell
         }
     }
 
-    protected function getTypeFromInfo($info)
+    protected function getTypeFromInfo($info, $field)
     {
         $maps = [
             '\Leno\Validator\Type\Uuid' => 'char(36)',
@@ -106,7 +106,7 @@ class Build extends \Leno\Shell
             '\Leno\Validator\Type\Datetime' => 'datetime',
             '\Leno\Validator\Type\Number' => 'int(11)',
             '\Leno\Validator\Type\Enum' => 'varchar(32)',
-            '\Leno\Validator\Type\Stringl' => function($type) {
+            '\Leno\Validator\Type\Stringl' => function($type, $field) {
                 if (empty($type->getMaxLength())) {
                     throw new \Leno\Exception(sprintf('%s has no length!', $field));
                 }
@@ -116,7 +116,7 @@ class Build extends \Leno\Shell
         $type = $this->getTypeFromRule($info);
         foreach($maps as $class => $guess_type) {
             if(is_callable($guess_type)) {
-                $guess_type = call_user_func($guess_type, $type);
+                $guess_type = call_user_func($guess_type, $type, $field);
             }
             if($type instanceof $class) {
                 return $guess_type;
