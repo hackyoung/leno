@@ -2033,14 +2033,19 @@ leno.editor = (function() {
 
         // 全屏展示
         this.resize(width, height);
+        
+        // 调整工具栏位置
+        var toolbar = this.editorContent.getToolbar();
+        this.toolbar_style = toolbar.style;
+        $(toolbar).css('top', 0);
+        $(toolbar).css('left', 0);
+
         $(content).css({
             position: 'fixed',
             top: this.config.fullscreen.top,
             left: this.config.fullscreen.left,
             zIndex: '1000'
         });
-        var toolbar = this.editorContent.getToolbar();
-        $(toolbar).css('width', '100%');
         var doc = this.editorContent.getDocument();
         var body = doc.getElementsByTagName('body');
         $(body[0]).css('overflow-y', 'auto');
@@ -2065,6 +2070,7 @@ leno.editor = (function() {
         this.config.autoIncrement = this.unfullscreenautoIncrement; 
 
         this.resize(this.config.width, this.config.height);
+        this.editorContent.getToolbar().style = this.toolbar_style;
         lenoEditor.toolbar.unactiveItem(this, 'fullscreen');
         this.fullscreened = false;
         this.contentResize();
