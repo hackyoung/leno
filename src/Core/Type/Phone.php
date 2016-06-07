@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Phone extends \Leno\Validator\Type\Stringl
+class Phone extends \Leno\Core\Type\Stringl
 {
     protected $regexp = '/^[a-zA-Z0-9_+.-]+\@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,4}$/';
 

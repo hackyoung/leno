@@ -1,5 +1,5 @@
 <?php
-namespace Leno\Validator;
+namespace Leno\Core;
 
 interface TypeStorage
 {

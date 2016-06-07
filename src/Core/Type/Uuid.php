@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Uuid extends \Leno\Validator\Type
+class Uuid extends \Leno\Core\Type
 {
     protected $regexp = '/^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i';
 

@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Enum extends \Leno\Validator\Type
+class Enum extends \Leno\Core\Type
 {
     protected $val_list;
 

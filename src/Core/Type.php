@@ -1,23 +1,23 @@
 <?php
-namespace Leno\Validator;
+namespace Leno\Core;
 
 abstract class Type
 {
     public static $types = [
-        'int' => '\Leno\Validator\Type\IntNumber',
-        'integer' => '\Leno\Validator\Type\IntNumber',
-        'number' => '\Leno\Validator\Type\Number',
-        'enum' => '\Leno\Validator\Type\Enum',
-        'string' => '\Leno\Validator\Type\Stringl',
-        'uuid' => '\Leno\Validator\Type\Uuid',
-        'uri' => '\Leno\Validator\Type\Uri',
-        'url' => '\Leno\Validator\Type\Url',
-        'ip' => '\Leno\Validator\Type\Ipv4',
-        'ipv4' => '\Leno\Validator\Type\Ipv4',
-        'email' => '\Leno\Validator\Type\Email',
-        'phone' => '\Leno\Validator\Type\Phone',
-        'datetime' => '\Leno\Validator\Type\Datetime',
-        'json' => '\Leno\Validator\Type\Json',
+        'int' => '\Leno\Core\Type\IntNumber',
+        'integer' => '\Leno\Core\Type\IntNumber',
+        'number' => '\Leno\Core\Type\Number',
+        'enum' => '\Leno\Core\Type\Enum',
+        'string' => '\Leno\Core\Type\Stringl',
+        'uuid' => '\Leno\Core\Type\Uuid',
+        'uri' => '\Leno\Core\Type\Uri',
+        'url' => '\Leno\Core\Type\Url',
+        'ip' => '\Leno\Core\Type\Ipv4',
+        'ipv4' => '\Leno\Core\Type\Ipv4',
+        'email' => '\Leno\Core\Type\Email',
+        'phone' => '\Leno\Core\Type\Phone',
+        'datetime' => '\Leno\Core\Type\Datetime',
+        'json' => '\Leno\Core\Type\Json',
     ];
 
     protected $allow_empty = false;

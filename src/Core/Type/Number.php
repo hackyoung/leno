@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Number extends \Leno\Validator\Type
+class Number extends \Leno\Core\Type
 {
     protected $max;
 

@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Stringl extends \Leno\Validator\Type
+class Stringl extends \Leno\Core\Type
 {
     protected $max_length;
 

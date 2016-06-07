@@ -1,13 +1,8 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Json extends \Leno\Validator\Type implements \Leno\Validator\TypeStorage
+class Json extends \Leno\Core\Validator implements \Leno\Core\TypeStorage
 {
-    public function check($value)
-    {
-        return true;
-    }
-
     public function toStore($value)
     {
         if(is_array($value) || $value instanceof \JsonSerializable) {

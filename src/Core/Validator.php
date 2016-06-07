@@ -1,8 +1,8 @@
 <?php
 
-namespace Leno;
+namespace Leno\Core;
 
-class Validator extends \Leno\Validator\Type
+class Validator extends \Leno\Core\Type
 {
     /**
      * @var [

@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Uri extends \Leno\Validator\Type implements \Leno\Validator\TypeStorage
+class Uri extends \Leno\Core\Type implements \Leno\Core\TypeStorage
 {
     protected $regexp = '#^/(?:[^?]*)?(?:\?[^\#]*)?(?:\#[0-9a-z\-\_\/]*)?$#';
 

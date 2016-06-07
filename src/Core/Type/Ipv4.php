@@ -1,7 +1,7 @@
 <?php
-namespace Leno\Validator\Type;
+namespace Leno\Core\Type;
 
-class Ipv4 extends \Leno\Validator\Type
+class Ipv4 extends \Leno\Core\Type
 {
     protected $regexp = '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/';
 
