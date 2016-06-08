@@ -70,13 +70,14 @@ class Build extends \Leno\Shell
 
     protected function synTable($Entity)
     {
-        if(!$Entity::$table || !$Entity::$attributes) {
+        $re = new \ReflectionClass($Entity);
+        if(!$re->hasProperty('table') || !$re->hasProperty('attributes')) {
             $this->warn('Find A Class: ' . $Entity. ' But No Table\attributes Assign Ingnore');
             logger()->warn('Find A Class: ' . $Entity. ' But No Table\attributes Assign Ingnore');
             return;
         }
-        $table = new \Leno\ORM\Table($Entity::$table);
-        foreach($Entity::$attributes as $field => $info) {
+        $table = new \Leno\ORM\Table($re->getStaticPropertyValue('table'));
+        foreach($re->getStaticPropertyValue('attributes') as $field => $info) {
             $attr = [
                 'type' => $this->getTypeFromInfo($info, $field),
                 'null' => 'NOT NULL',
