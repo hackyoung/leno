@@ -1364,31 +1364,29 @@ var Form = (function(L) {
                 }
                 var beforeSubmit = f.form_opts.callback.beforeSubmit;
                 var a = beforeSubmit(data);
-                if(a != false) {
-                    if(leno.empty(f.form_opts.url.submit)) {
-                        throw 'submit url is empty';
-                        return false;
-                    }
-                    submit.attr('disabled', true);
-                    $.ajax({
-                        url: f.form_opts.url,
-                        type: 'post',
-                        data: data,
-                        complete: function(response) {
-                            submit.removeAttr('disabled');
-                            if(response.status != 200) {
-                                return;
-                            }
-                            var after = f.form_opts.callback.afterReturn;
-                            after(response);
-                        }
-                    });
+                if(a === false) {
+                    return;
                 }
+                if(leno.empty(f.form_opts.url)) {
+                    throw 'submit url is empty';
+                    return false;
+                }
+                submit.attr('disabled', true);
+                $.ajax({
+                    url: f.form_opts.url,
+                    type: 'post',
+                    data: data,
+                    complete: function(response) {
+                        submit.removeAttr('disabled');
+                        if(response.status != 200) {
+                            return;
+                        }
+                        var after = f.form_opts.callback.afterReturn;
+                        after(response);
+                    }
+                });
             });
-            if(f.form_opts.enter == null) {
-                f.form_opts.enter = true;
-            }
-            if(f.form_opts.enter) {
+            if(f.form_opts.enter !== false) {
                 f.form_opts.node.children().keydown(function(e) {
                     if(e.keyCode == 13) {
                         submit.click();
@@ -1397,7 +1395,16 @@ var Form = (function(L) {
                 });
             }
         })(this);
+        leno.form_instance[opts.id] = this;
     };
+
+    form.prototype.beforeSubmit = function(callback) {
+        this.form_opts.callback.beforeSubmit = callback;
+    }
+
+    form.prototype.afterReturn = function(callback) {
+        this.form_opts.callback.afterReturn = callback;
+    }
 
     form.validate = function(f) {
         var node = f.form_opts.node;
@@ -1430,6 +1437,10 @@ var Form = (function(L) {
     return form;
 })();
 leno.form = Form;
+leno.form_instance = {};
+leno.getForm = function(id) {
+    return leno.form_instance['leno-form-'+id];
+}
 var ImageUploader = (function() {
     var upload = function(opts) {
         this.init = function(opts) {
@@ -3154,8 +3165,10 @@ $(document).ready(function() {
                 beforeSubmit: function() {
                     return true;
                 },
-                afterReturn: function() {
-                    window.location.href = go;
+                afterReturn: function(response) {
+                    if(response.status == 200) {
+                        window.location.href = go;
+                    }
                 }
             }
         });
