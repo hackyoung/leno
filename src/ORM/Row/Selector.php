@@ -178,6 +178,22 @@ class Selector extends \Leno\ORM\Row
         return $ret[0] ?? false;
     }
 
+    public function count()
+    {
+        $sql = sprintf('SELECT count(*) as c FROM %s %s WHERE %s %s %s',
+            $this->quote($this->table), $this->useJoin(),
+            $this->useWhere(), $this->useGroup(), 
+            $this->useOrder(), $this->useLimit()
+        );
+        $result = $this->execute($sql);
+        if(!$result) {
+            return 0;
+        }
+        foreach($result as $k=>$row) {
+            return $row['c'];
+        }
+    }
+
     public function execute($sql = null)
     {
         if($sql === null) {
