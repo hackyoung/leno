@@ -1,0 +1,9 @@
+{
+    "name" : "leno/core",
+    "autoload" : {
+        "psr-4" : {
+            "Leno\\Core\\" : "."
+        },
+        "files" : ["functions.php"]
+    }
+}

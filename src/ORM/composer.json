@@ -1,0 +1,11 @@
+{
+    "name" : "leno/orm",
+    "autoload" : {
+        "psr-4" : {
+            "Leno\\ORM\\" : "."
+        }
+    },
+    "require" : {
+        "leno/core" : "~0.0.3"
+    }
+}
