@@ -100,6 +100,9 @@ class Worker
         if($e instanceof \Leno\Http\Exception) {
             return $this->response->withStatus($e->getCode())
                 ->write($e->getMessage());
+        } else if ($e instanceof \ErrorException) {
+            return $this->response->withStatus(500)
+                ->write($e->getMessage());
         }
         throw $e;
     }
