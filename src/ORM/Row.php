@@ -134,6 +134,12 @@ abstract class Row
      */
     private $mapper;
 
+    protected $params = [];
+
+    protected $param_dirty = false;
+
+    protected $stmt;
+
     /**
      *  构造函数
      * @param string table 表明
@@ -341,6 +347,18 @@ abstract class Row
         return new \Leno\ORM\Expr($this->quote($this->table));
     }
 
+    public function getParams()
+    {
+        return $this->params;
+    }
+
+    public function setParam($field, $value)
+    {
+        $idx = ':'.$this->table .'_'. $field . '_' .randString(16);
+        $this->params[$idx] = $value;
+        return $idx;
+    }
+
     public function getFieldExpr($field)
     {
         return new \Leno\ORM\Expr($this->getName() . '.' . $this->quote($field));
@@ -429,6 +447,7 @@ abstract class Row
                 $ret[] = self::R_AND;
             }
             $ret = array_merge($ret, $joinWhere);
+            $this->params = array_merge($this->params, $join['row']->getParams());
         }
         return implode(' ', $ret);
     }
@@ -562,38 +581,59 @@ abstract class Row
      */
     private function expr($item)
     {
-        $like = [ 'like' => 'LIKE', 'not_like' => 'NOT LIKE', ];
+        return $this->exprLike($item) ?? $this->exprIn($item) ?? $this->exprR($item);
+    }
+
+    private function exprIn($item)
+    {
         $in = [ 'in' => 'IN', 'not_in' => 'NOT IN', ];
-        $expr = [ 'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
-            'lt' => '<', 'gte' => '>=', 'lte' => '<=', ];
-        if(isset($like[$item['expr']])) {
-            return sprintf('%s %s %%s%', 
-                $this->getFieldExpr($item['field']),
-                $like[$item['expr']],
-                $item['value']
-            );
-        } elseif (isset($in[$item['expr']])) {
+        if (isset($in[$item['expr']])) {
             $format = '%s %s (%s)';
             $field = $this->getFieldExpr($item['field']);
             $expr = $in[$item['expr']];
             if ($item['value'] instanceof \Leno\ORM\Row) {
                 $value = $item['value']->getSql();
+                $this->params = array_merge($this->params, $item['value']->getParams());
             } elseif (is_array($item['value'])) {
-                $value = implode(',', array_map(function($it) {
-                    return $this->valueQuote($it);
+                $value = implode(',', array_map(function($it) use ($item) {
+                    $param_idx = $this->setParam($item['field'], $it);
+                    return $param_idx;
                 }, $item['value']));
             } else {
                 $value = $item['value'];
             }
             return sprintf($format, $field, $expr, $value);
-        } elseif (isset($expr[$item['expr']])) {
+        }
+    }
+
+    private function exprLike($item)
+    {
+        $like = [ 'like' => 'LIKE', 'not_like' => 'NOT LIKE', ];
+        if(isset($like[$item['expr']])) {
+            $idx = $this->setParam($item['field'], '%'.$item['value'].'%');
             return sprintf('%s %s %s', 
                 $this->getFieldExpr($item['field']),
-                $expr[$item['expr']],
-                $this->valueQuote($item['value'])
+                $like[$item['expr']],
+                $idx
             );
-        } else {
-            throw new \Exception($item['expr'] . ' Not Supported');
+        }
+    }
+
+    private function exprR($item)
+    {
+        $expr = [ 'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
+            'lt' => '<', 'gte' => '>=', 'lte' => '<=', ];
+        if (isset($expr[$item['expr']])) {
+            if(!($item['value'] instanceof \Leno\ORM\Expr)) {
+                $idx = $this->setParam($item['field'], $item['value']);
+            } else {
+                $idx = $item['value'];
+            }
+            return sprintf('%s %s %s',
+                    $this->getFieldExpr($item['field']),
+                    $expr[$item['expr']],
+                    $idx
+            );
         }
     }
 
@@ -621,10 +661,17 @@ abstract class Row
             return false;
         }
         $driver = self::getAdapter();
-        logger()->info('EXECUTING SQL: '.$sql);
-        $this->result = $driver->exec($sql);
-        if($this->result === false) {
-            throw new \Exception(implode(':', $driver->errorInfo()). "\n");
+        $this->stmt = $driver->prepare($sql);
+        logger()->info('EXECUTING SQL: '.$sql, $this->params);
+        $result = $this->stmt->execute($this->params);
+        $this->param_dirty = true;
+        if(!$result) {
+            $error = sprintf("SQL Error[%s]: %s",
+                $this->stmt->errorCode(),
+                $this->stmt->errorInfo()[2]
+            );
+            logger()->info($error);
+            throw new \Leno\Exception ($error);
         }
         return $this;
     }

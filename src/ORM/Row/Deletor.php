@@ -11,6 +11,7 @@ class Deletor extends \Leno\ORM\Row
 
     public function getSql()
     {
+        $this->params = [];
         return sprintf('DELETE FROM %s %s WHERE %s',
             $this->getName(), $this->useJoin(),
             $this->useWhere()

@@ -180,20 +180,14 @@ class Selector extends \Leno\ORM\Row
 
     public function execute($sql = null)
     {
-        if($sql === null) {
-            $sql = $this->getSql();
-        }
-        logger()->info('EXECUTING SQL: '.$sql);
-        $sth = self::getAdapter()->query($sql);
-        if(!$sth || empty($sth)) {
-            return $sth;
-        }
-        $sth->setFetchMode(\PDO::FETCH_ASSOC);
-        return $sth;
+        parent::execute();
+        $this->stmt->setFetchMode(\PDO::FETCH_ASSOC);
+        return $this->stmt;
     }
 
     public function getSql()
     {
+        $this->params = [];
         return sprintf('SELECT %s FROM %s %s WHERE %s %s %s',
             $this->useField(), $this->quote($this->table),
             $this->useJoin(), $this->useWhere(), $this->useGroup(), 
