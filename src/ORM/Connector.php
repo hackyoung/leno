@@ -24,6 +24,8 @@ class Connector
 
     protected $options;
 
+    protected static $executor;
+
     protected static $executor_map = [
         'mysql' => '\\Leno\\ORM\\Adapter\\Mysql\\Executor',
         'pgsql' => '\\Leno\\ORM\\Adapter\\Pgsql\\Executor',
@@ -49,10 +51,14 @@ class Connector
 
     public static function get($label = null)
     {
+        if(self::$executor instanceof \PDO) {
+            return self::$executor;
+        }
+
         $label = $label ?? Configure::read('label') ?? 'mysql';
         $Executor = self::getExecutorClass($label);
 
-        return (new self)
+        self::$executor = (new self)
             ->setLabel($label)
             ->setUser(Configure::read('user') ?? 'root')
             ->setPassword(Configure::read('password') ?? null)
@@ -61,6 +67,7 @@ class Connector
             ->setDb(Configure::read('db') ?? 'test_db')
             ->setOptions(Configure::read('options') ?? [])
             ->getExecutor();
+        return self::$executor;
     }
 
     public static function getExecutorClass($label)

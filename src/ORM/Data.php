@@ -193,6 +193,10 @@ class Data implements \JsonSerializable, \Iterator
 	        if(is_callable($beforeCheckKey) && call_user_func_array($beforeCheckKey, [$this]) === false) {
                 continue;
             }
+            // 默认允许为空
+            if(!isset($config['allow_empty'])) {
+                $config['allow_empty'] = true;
+            }
             if(!(new \Leno\Validator($config, $k))->check($val)) {
                 throw new \Exception($k . ' Validate Failed');
             }
