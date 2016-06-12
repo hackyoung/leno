@@ -11,17 +11,21 @@ require __DIR__ . '/boot.php';
     ->setAge(23)
     ->create();
  */
-/**
 $hh = (new \Leno\ORM\Row\Selector('world'));
 $hello = (new \Leno\ORM\Row\Selector('test'));
-$stmt = $hello->byEqHello('hello')
+$stmt = $hello
+    ->field('hello', 'world')
     ->byGtAge(14)
-    ->join($hh->onEqName($hello->getFieldExpr('hello'))->byEqName('hello'))
     ->execute();
 
 var_dump($stmt->fetchAll());
- */
+
+/*
 $hello = (new \Leno\ORM\Row\Updator('test'))
     ->setHello('update hello')
     ->byEqAge(13)
     ->update();
+
+$count = (new \Leno\ORM\Row\Selector('test'))->count();
+var_dump($count);
+ */

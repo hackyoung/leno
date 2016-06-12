@@ -104,6 +104,10 @@ class Selector extends \Leno\ORM\Row
         } elseif(is_string($field)) {
             $this->field[$field] = $alias;
             return $this;
+        } elseif($field instanceof \Leno\ORM\Expr) {
+            $field = '__expr__'.(string)$field;
+            $this->field[$field] = $alias;
+            return $this;
         } elseif($field == false) {
             $this->field = false;
             return $this;
@@ -130,9 +134,10 @@ class Selector extends \Leno\ORM\Row
         }
         $ret = [];
         foreach($this->field as $field=>$alias) {
-            $f = implode('.', [
-                $this->quote($this->table), $this->quote($field)
-            ]);
+            $f = str_replace('__expr__', '', $field);
+            if($f === $field) {
+                $f = $this->getName() . '.' . $this->quote($field);
+            }
             if($alias) {
                 $f .= ' AS ' . $alias;
             }
@@ -176,6 +181,18 @@ class Selector extends \Leno\ORM\Row
         $this->limit(0,1);
         $ret = $this->find() ?? [];
         return $ret[0] ?? false;
+    }
+
+    public function count()
+    {
+        $data = $this->field(
+            new \Leno\ORM\Expr('count(*)'), 'count'
+        )->limit(1)
+            ->execute()
+            ->fetchAll();
+        foreach($data as $row) {
+            return (int)$row['count'];
+        }
     }
 
     public function execute($sql = null)

@@ -441,9 +441,12 @@ abstract class Row
     protected function useWhere()
     {
         $ret = $this->getWhere();
+        if(empty($ret)) {
+            $ret = [1];
+        }
         foreach($this->joins as $join) {
             $joinWhere = $join['row']->getWhere();
-            if(!empty($joinWhere) && !empty($ret)) {
+            if(!empty($joinWhere)) {
                 $ret[] = self::R_AND;
             }
             $ret = array_merge($ret, $joinWhere);
