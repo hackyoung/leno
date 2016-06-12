@@ -164,32 +164,43 @@ class Mapper implements \JsonSerializable
                 $this->saveRelateObjs($key, $obj);
             }
             if(!$this->isFresh()) {
-                if($this->beforeUpdate() === false || !$this->data->validateAll()) {
-                    return false;
-                }
-                $updator = self::updator();
-                $updator->by('eq', $primary, $this->data->get($primary));
-                $this->data->each(function($key, $data) use ($updator){
-                    if($data->isDirty($key)) {
-                        $updator->set($key, $data->forStore($key));
-                    }
-                });
-                return $updator->update();
+                $this->update();
+                return \Leno\ORM\Row::commitTransaction();
             }
-            $this->beforeInsert();
-            if($this->beforeInsert() === false || !$this->data->validateAll()) {
-                return false;
-            }
-            $creator = self::creator();
-            $this->data->each(function($key, $data) use ($creator) {
-                $creator->set($key, $data->forStore($key));
-            });
-            $creator->create();
+            $this->create();
             return \Leno\ORM\Row::commitTransaction();
         } catch(\Exception $e) {
             \Leno\ORM\Row::rollback();
             throw $e;
         }
+    }
+
+    protected function update()
+    {
+        if($this->beforeUpdate() === false || !$this->data->validateAll()) {
+            return false;
+        }
+        $updator = self::updator();
+        $primary = self::getPrimary();
+        $updator->by('eq', $primary, $this->data->get($primary));
+        $this->data->each(function($key, $data) use ($updator){
+            if($data->isDirty($key)) {
+                $updator->set($key, $data->forStore($key));
+            }
+        });
+        $updator->update();
+    }
+
+    protected function create()
+    {
+        if($this->beforeInsert() === false || !$this->data->validateAll()) {
+            return false;
+        }
+        $creator = self::creator();
+        $this->data->each(function($key, $data) use ($creator) {
+            $creator->set($key, $data->forStore($key));
+        });
+        $creator->create();
     }
 
     /**
