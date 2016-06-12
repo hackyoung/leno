@@ -129,6 +129,8 @@ abstract class Row
      */
     protected $result;
 
+    protected $params;
+
     /**
      * @var 保存使用该行操作器的mapper,如果没有设置，则无法将查询出来的对象转换为对象
      */

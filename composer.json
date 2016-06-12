@@ -14,5 +14,8 @@
         },
         "files": [ "src/functions.php" ]
     },
-    "bin" : [ "src/bin/leno" ]
+    "bin" : [ "src/bin/leno" ],
+    "replace" : {
+        "leno/orm" : "self.version"
+    }
 }
