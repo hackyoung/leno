@@ -366,17 +366,12 @@ abstract class Row
 
     public static function beginTransaction() 
     {
-        if(!self::getAdapter()->inTransaction()) {
-            self::getAdapter()->beginTransaction();
-        }
+        self::getAdapter()->beginTransaction();
     }
 
     public static function commitTransaction()
     {
-        $adapter = self::getAdapter();
-        if($adapter->inTransaction()) {
-            return $adapter->commit();
-        }
+        return self::getAdapter()->commit();
     }
 
     public static function rollback()
