@@ -8,7 +8,7 @@ use \Leno\Configure;
  */
 class Connector
 {
-    use \Leno\Traits\Setter; 
+    use \Leno\Traits\Magic; 
 
     protected $label;
 
@@ -47,6 +47,11 @@ class Connector
         } catch(\Exception $ex) {
             throw new \Leno\Exception('connect database error:'.$ex->getMessage());
         }
+    }
+
+    public function __call($method, array $args = null)
+    {
+        return $this->__magic_call($method, $args);
     }
 
     public static function get($label = null)

@@ -1,9 +1,9 @@
 <?php
 namespace Leno\Traits;
 
-Trait Setter
+Trait Magic
 {
-    public function __call($method, array $args = null)
+    private function __magic_call($method, array $args = null)
     {
         $prefix = substr($method, 0, 3);
         switch($prefix) {

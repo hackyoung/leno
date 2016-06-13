@@ -96,6 +96,13 @@ class CommentParser
             array_unshift($ds, $elem);
         } while(count($stack) > 0);
         $name = $name ?? 'description';
-        $this->tags[$name] = implode('', $ds);
+        if(!isset($this->tags[$name])) {
+            $this->tags[$name] = implode('', $ds);
+            return;
+        }
+        if(is_string($this->tags[$name])) {
+            $this->tags[$name] = [$this->tags[$name]];
+        }
+        $this->tags[] = implode('', $ds);
     }
 }

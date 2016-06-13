@@ -3,13 +3,23 @@ namespace Leno;
 
 abstract class Service
 {
-    use \Leno\Traits\Setter;
+    use \Leno\Traits\Magic;
 
     protected static $map = [
         'user' => 'model.service',
         'leno.remote' => 'leno.service.remote.helper',
         'leno.local' => 'leno.service.local'
     ];
+
+    public function __call($method, array $args = null)
+    {
+        return $this->__magic_call($method, $args);
+    }
+
+    public function validate($val, $rules)
+    {
+        return (new \Leno\Validator($rules))->check($val);
+    }
 
     public static function getService($service_name, $args = [])
     {

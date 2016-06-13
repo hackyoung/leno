@@ -3,7 +3,7 @@ namespace Leno\Http;
 
 class Cookie
 {
-    use \Leno\Traits\Setter;
+    use \Leno\Traits\Magic;
 
     protected $expire = 0;
 
@@ -15,26 +15,44 @@ class Cookie
 
     protected $http_only = false;
 
-    public function set($key, $value)
+    protected $key;
+
+    protected $value;
+
+    public function __construct($key)
     {
-        setcookie($key, $value,
+        $this->key = $key;
+    }
+
+    public function __call($method, array $args = null)
+    {
+        return $this->__magic_call($method, $args);
+    }
+
+    public function set($value)
+    {
+        $this->value = $value;
+        $this->save();
+        return $this;
+    }
+
+    public function remove()
+    {
+        $this->value = null;
+        $this->save();
+        return $this;
+    }
+
+    public function get()
+    {
+        return $this->value ?? $_COOKIE[$this->key] ?? null;
+    }
+
+    protected function save()
+    {
+        setcookie($this->key, $this->value,
             $this->expire, $this->path, $this->domain,
             $this->secure, $this->http_only
         );
-        return $this;
-    }
-
-    public function remove($key)
-    {
-        setcookie($key, null,
-            time(), $this->path, $this->domain,
-            $this->secure, $this->http_only
-        );
-        return $this;
-    }
-
-    public static function get($key)
-    {
-        return $_COOKIE[$key] ?? null;
     }
 }
