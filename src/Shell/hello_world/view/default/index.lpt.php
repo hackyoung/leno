@@ -1,4 +1,4 @@
-<extend name="_layout.default">
+<extend name="global._layout.default">
     <fragment name="body">
         <style>
         .hello {
