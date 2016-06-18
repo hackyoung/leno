@@ -58,8 +58,9 @@ class Data implements DataInterface
     public function validate() : bool
     {
         foreach($this->config as $field => $config) {
-            $Type = Type::getClass($config['type']);
-            $type = (new $Type(($config['null'] ?? true), true))
+            $type = Type::get($config['type']);
+            $type->setRequried($config['null'] ?? true)
+                ->setAllowEmpty(true)
                 ->setExtra($config['extra'])
                 ->check($this->data[$field]['value'] ?? null);
         }
@@ -74,8 +75,8 @@ class Data implements DataInterface
                 continue;
             }
             $attr = $this->config[$field];
-            $Type = Type::get($attr['type']);
-            $dirty_data[$field] = (new $Type)->toDB($value_info['value']);
+            $type = Type::get($attr['type']);
+            $dirty_data[$field] = $type->toDB($value_info['value']);
         }
         return $dirty_data;
     }

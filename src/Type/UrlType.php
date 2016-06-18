@@ -23,7 +23,7 @@ class UrlType extends \Leno\Type implements TypeStorageInterface
 
     public function toPHP($value)
     {
-        return new Uri($value);
+        return $value;
     }
 
     public function toType()

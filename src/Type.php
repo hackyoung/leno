@@ -96,7 +96,7 @@ abstract class Type implements TypeCheckInterface
         if($type == null) {
             throw new TypeMissingException($idx);
         }
-        return $type;
+        return new $type;
     }
 
     public static function register($type, $class, $adapter = null)

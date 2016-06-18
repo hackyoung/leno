@@ -79,10 +79,10 @@ class Build extends \Leno\Shell
         $table = new \Leno\ORM\Table($re->getStaticPropertyValue('table'));
         foreach($re->getStaticPropertyValue('attributes') as $field => $info) {
             $attr = [
-                'type' => $this->getTypeFromInfo($info, $field),
+                'type' => Type::get($info['type'])->toType(),
                 'null' => 'NOT NULL',
             ];
-            if (($info['required'] ?? true) === false) {
+            if (($info['null'] ?? true) === false) {
                 $attr['null'] = 'NULL';
             }
             if($info['default'] ?? false) {
@@ -96,60 +96,6 @@ class Build extends \Leno\Shell
         } else {
             $this->notice('不需要更新');
         }
-    }
-
-    protected function getTypeFromInfo($info, $field)
-    {
-        $maps = [
-            '\Leno\Validator\Type\Uuid' => 'char(36)',
-            '\Leno\Validator\Type\Uri' => 'varchar(1024)',
-            '\Leno\Validator\Type\Url' => 'varchar(1024)',
-            '\Leno\Validator\Type\Datetime' => 'datetime',
-            '\Leno\Validator\Type\Number' => 'int(11)',
-            '\Leno\Validator\Type\Enum' => 'varchar(32)',
-            '\Leno\Validator\Type\Stringl' => function($type, $field) {
-                if (empty($type->getMaxLength())) {
-                    throw new \Leno\Exception(sprintf('%s has no length!', $field));
-                }
-                return 'varchar('.$type->getMaxLength().')';
-            },
-        ];
-        $type = $this->getTypeFromRule($info);
-        foreach($maps as $class => $guess_type) {
-            if(is_callable($guess_type)) {
-                $guess_type = call_user_func($guess_type, $type, $field);
-            }
-            if($type instanceof $class) {
-                return $guess_type;
-            }
-        }
-        return $info['type'];
-    }
-
-    protected function getTypeFromRule($rule)
-    {
-        extract($rule['extra'] ?? []);
-        $Type = \Leno\Validator\Type::get($rule['type']);
-        switch($rule['type']) {
-            case 'int':
-            case 'integer':
-            case 'number':
-                $type = new $Type($min ?? null, $max ?? null);
-                break;
-            case 'string':
-                $type = new $Type(
-                    $regexp ?? null, 
-                    $min_length ?? null,
-                    $max_length ?? null
-                );
-                break;
-            case 'enum':
-                $type = new $Type($enum_list ?? []);
-                break;
-            default:
-                $type = new $Type;
-        }
-        return $type;
     }
 
     public function describe()

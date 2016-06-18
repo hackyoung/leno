@@ -1,8 +1,9 @@
 <?php
 namespace Leno;
 
-use \Leno\View as View;
-use \Leno\View\Template as Template;
+use \Leno\View;
+use \Leno\View\Template;
+use \Leno\Type;
 
 abstract class Controller
 {
@@ -105,8 +106,15 @@ abstract class Controller
     {
         $source = $this->getInputSource();
         if(!empty($rule)) {
+            $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
+            if(isset($rule['required'])) {
+                $type->setRequired($rule['required']);
+            }
+            if(isset($rule['allow_empty'])) {
+                $type->setAllowEmpty($rule['allow_empty']);
+            }
             try {
-                (new \Leno\Validator($rule, $key))->check($source[$key] ?? null);
+                $type->check($source[$key]);
             } catch(\Exception $e) {
                 throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
             }
@@ -132,8 +140,15 @@ abstract class Controller
                 $ret[$rule] = $source[$rule] ?? null;
                 continue;
             }
+            $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
+            if(isset($rule['required'])) {
+                $type->setRequired($rule['required']);
+            }
+            if(isset($rule['allow_empty'])) {
+                $type->setAllowEmpty($rule['allow_empty']);
+            }
             try {
-                (new \Leno\Validator($rule, $k))->check($source[$k] ?? null);
+                $type->check($source[$k]);
             } catch(\Exception $e) {
                 $message = $rule['message'] ?? $e->getMessage();
                 throw new \Leno\Http\Exception(400, $message);

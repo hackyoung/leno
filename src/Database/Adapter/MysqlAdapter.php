@@ -19,7 +19,10 @@ class MysqlAdapter extends Adapter
         $fields = [];
         do {
             $row = $result->fetch(self::FETCH_ASSOC);
-            $attr = [ 'type' => $row['Type'], ];
+            $attr = [
+                'type' => strtoupper($row['Type']),
+                'null' => 'NULL'
+            ];
             if ($row['Null'] === 'NO') {
                 $attr['null'] = 'NOT NULL';
             }

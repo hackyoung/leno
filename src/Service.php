@@ -1,7 +1,9 @@
 <?php
 namespace Leno;
 
-abstract class Service
+use \Leno\Service\Exception as ServiceException;
+
+class Service
 {
     use \Leno\Traits\Magic;
 
@@ -18,7 +20,14 @@ abstract class Service
 
     public function validate($val, $rules)
     {
-        return (new \Leno\Validator($rules))->check($val);
+        $type = Type::get($rules['type'])->setExtra($rules['extra'] ?? []);
+        if(isset($rules['required'])) {
+            $type->setRequired($rules['required']);
+        }
+        if(isset($rules['allow_empty'])) {
+            $type->setAllowEmpty($rules['allow_empty']);
+        }
+        return $type->check($val);
     }
 
     public static function getService($service_name, $args = [])
@@ -34,11 +43,11 @@ abstract class Service
             return strtoupper(str_replace('.', '\\', $matches[0]));
         }, $name);
         if(!class_exists($class)) {
-            throw new \Leno\Service\Exception('service \''.$service_name.'\' Not Found');
+            throw new ServiceException('service \''.$service_name.'\' Not Found');
         }
         $service = (new \ReflectionClass($class))->newInstanceArgs($args);
         if(!$service instanceof self) {
-            throw new \Leno\Service\Exception('\''.$service_name.'\' Not A Service');
+            throw new ServiceException('\''.$service_name.'\' Not A Service');
         }
         return $service;
     }
@@ -47,6 +56,4 @@ abstract class Service
     {
         self::$map[$prefix] = $base;
     }
-
-    abstract public function execute(callable $callable);
 }

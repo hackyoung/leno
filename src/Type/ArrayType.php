@@ -50,11 +50,17 @@ abstract class ArrayType extends Leno\Type implements TypeStorageInterface
 
     public function toPHP($value)
     {
+        if($value === null) {
+            return null;
+        }
         return $this->_toPHP($value);
     }
 
     public function toDB($value) : string
     {
+        if($value === null) {
+            return null;
+        }
         return $this->_toDB($value);
     }
 
@@ -69,13 +75,11 @@ abstract class ArrayType extends Leno\Type implements TypeStorageInterface
 
     private function getType($config, $value_name)
     {
-        $Type = self::get($config['type']);
-        $type = new $Type;
-        $type->setExtra($config['extra'])
+        return self::get($config['type'])
+            ->setExtra($config['extra'])
             ->setValueName($value_name)
             ->setAllowEmpty(($config['allow_empty'] ?? false))
             ->setRequired(($config['required'] ?? true));
-        return $type;
     }
 
     abstract protected function _toType();

@@ -6,6 +6,7 @@ use \Leno\Database\Row;
 use \Leno\Database\Adapter;
 use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
+use \Leno\Type;
 
 use \Leno\ORM\Exception\PrimaryMissingException;
 use \Leno\Exception\MethodNotFoundException;
@@ -520,7 +521,9 @@ class Entity implements \JsonSerializable
         $Entity = get_called_class();
         $entity = new $Entity(true);
         foreach($Entity::$attributes as $field => $attr) {
-            $value = $row[$field] ?? $attr['default'] ?? null;
+            $value = Type::get($attr['type'])->toPHP(
+                $row[$field] ?? $attr['default'] ?? null
+            );
             if($attr['sensitive'] ?? false) {
                 $entity->setForcely($field, $value, false);
                 continue;

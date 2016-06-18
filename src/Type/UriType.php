@@ -22,11 +22,17 @@ class UriType extends \Leno\Type implements TypeStorageInterface
 
     public function toDB($value)
     {
+        if($value === null) {
+            return null;
+        }
         return (string)$value;
     }
 
     public function toPHP($value)
     {
+        if($value === null) {
+            return null;
+        }
         return new Uri($value);
     }
 

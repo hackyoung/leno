@@ -141,13 +141,7 @@ class Table
         }
         $this->sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
         $adapter = self::getAdapter();
-        logger()->info('Table: '.$this->getName() . ' execute sql: '.$this->sql);
-        $result = $adapter->exec($this->sql);
-        if(!$result) {
-            logger()->info('Table: '.$this->getName() . ' execute sql: '.$adapter->errorInfo()[2]);
-            throw new \Exception($adapter->errorInfo()[2]);
-        }
-        return $result;
+        return $adapter->execute($this->sql);
     }
 
     private function isFieldEqual($field1, $field2)

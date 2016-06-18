@@ -27,11 +27,17 @@ abstract class DatetimeType extends \Leno\Type implements TypeStorageInterface
 
     public function toPHP($value)
     {
+        if($value === null) {
+            return null;
+        }
         return new \Datetime($value);
     }
 
     public function toDB($value) : string
     {
+        if($value === null) {
+            return null;
+        }
         if($value instanceof \Datetime) {
             return $value->format($this->format);
         }

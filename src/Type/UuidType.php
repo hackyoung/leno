@@ -18,6 +18,9 @@ abstract class UuidType extends \Leno\Type implements TypeStorageInterface
 
     public function toDB($value) : string
     {
+        if($value === null) {
+            return null;
+        }
         return (string)$value;
     }
 
