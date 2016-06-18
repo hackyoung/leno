@@ -7,10 +7,23 @@ class PdoDriver extends Driver
 {
     private $handler;
 
-    public function __construct($dsn, $user, $pass, $options = null)
+    private $parameters;
+
+    public function __construct($params)
     {
-        $this->handler = new \PDO($dsn, $user, $pass, $options);
-        $this->handler->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->parameters = $params;
+        $handler_reflection = new \ReflectionClass('PDO');
+        $this->handler = $handler_reflection->newInstanceArgs(
+            $this->getArgs()
+        );
+        $this->handler->setAttribute(
+            \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION
+        );
+    }
+
+    public function getDB()
+    {
+        return $this->parameters['db'] ?? 'test_db';
     }
 
     protected function _rollback()
@@ -33,5 +46,21 @@ class PdoDriver extends Driver
         $stmt = $this->handler->prepare($sql);
         $stmt->execute($params);
         return $stmt;
+    }
+
+    private function getArgs()
+    {
+        $params = $this->parameters;
+        $dsn = ($params['adapter'] ?? 'mysql') . ':' . implode(';', [
+            'dbname='. ($params['db'] ?? 'test_db'),
+            'port='. ($params['port'] ?? null),
+            'host='. ($params['host'] ?? 'localhost'),
+        ]);
+        return [
+            $dsn,
+            $params['user'] ?? null,
+            $params['password'] ?? null,
+            $params['options'] ?? null
+        ];
     }
 }

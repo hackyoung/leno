@@ -18,7 +18,11 @@ class MysqlAdapter extends Adapter
             'CHARACTER_MAXIMUM_LENGTH as length, '.
             'COLUMN_DEFAULT as default_value,'.
             'IS_NULLABLE as is_nullable '.
-            'FROM information_schema.COLUMNS WHERE TABLE_NAME = \''.$table_name.'\'';
+        'FROM '.
+            'information_schema.COLUMNS '.
+        'WHERE '.
+            'TABLE_NAME = \''.$table_name.'\' AND '.
+            'TABLE_SCHEMA = \''.$this->getDB().'\'';
         $result = $this->execute($sql);
         $fields = [];
         foreach ($result as $row) {
@@ -68,8 +72,9 @@ class MysqlAdapter extends Adapter
             'information_schema.KEY_COLUMN_USAGE '.
         'WHERE '.
             'CONSTRAINT_NAME != \'PRIMARY\' AND '.
-            'TABLE_NAME=\''.$table_name.'\' AND '.
-            'REFERENCED_TABLE_NAME IS NULL';
+            'TABLE_NAME = \''.$table_name.'\' AND '.
+            'REFERENCED_TABLE_NAME IS NULL AND '.
+            'TABLE_SCHEMA = \''.$this->getDB().'\'';
 
         $result = $this->execute($sql);
 
@@ -96,7 +101,9 @@ class MysqlAdapter extends Adapter
         'FROM '.
             'information_schema.KEY_COLUMN_USAGE '.
         'WHERE '.
-            'TABLE_NAME=\''.$table_name.'\' AND REFERENCED_TABLE_NAME IS NOT NULL';
+            'TABLE_NAME = \''.$table_name.'\' AND '.
+            'TABLE_SCHEMA = \''.$this->getDB().'\' AND '.
+            'REFERENCED_TABLE_NAME IS NOT NULL';
 
         $result = $this->execute($sql);
 
@@ -123,7 +130,9 @@ class MysqlAdapter extends Adapter
         'FROM '.
             'information_schema.KEY_COLUMN_USAGE '.
         'WHERE '.
-            'CONSTRAINT_NAME = \'PRIMARY\' AND TABLE_NAME=\''.$table_name.'\'';
+            'CONSTRAINT_NAME = \'PRIMARY\' AND '.
+            'TABLE_SCHEMA = \''.$this->getDB().'\' AND '.
+            'TABLE_NAME = \''.$table_name.'\'';
 
         $result = $this->execute($sql);
         return $result->fetch()['field'] ?? null;

@@ -132,6 +132,11 @@ abstract class Adapter implements AdapterInterface
         return $this->driver;
     }
 
+    public function getDB()
+    {
+        return $this->driver()->getDB();
+    }
+
     protected static function logger()
     {
         return logger('adapter');

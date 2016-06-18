@@ -63,8 +63,7 @@ abstract class Driver implements DriverInterface
         $driver_reflection = new \ReflectionClass($Driver);
         switch($driver_label) {
             case 'pdo':
-                $p = self::normalizePdoParams($parameters);
-                return $driver_reflection->newInstanceArgs($p);
+                return $driver_reflection->newInstanceArgs([$parameters]);
             default:
                 throw new \Leno\Exception('不支持的driver');
         }
@@ -75,6 +74,8 @@ abstract class Driver implements DriverInterface
         return logger('driver');
     }
 
+    abstract public function getDB();
+
     abstract protected function _rollback();
 
     abstract protected function _commit();
@@ -82,19 +83,4 @@ abstract class Driver implements DriverInterface
     abstract protected function _beginTransaction();
 
     abstract protected function _execute(string $sql, array $params);
-
-    private static function normalizePdoParams($params)
-    {
-        $dsn = ($params['adapter'] ?? 'mysql') . ':' . implode(';', [
-            'dbname='. ($params['db'] ?? 'test_db'),
-            'port='. ($params['port'] ?? null),
-            'host='. ($params['host'] ?? 'localhost'),
-        ]);
-        return [
-            $dsn,
-            $params['user'] ?? null,
-            $params['password'] ?? null,
-            $params['options'] ?? null
-        ];
-    }
 }

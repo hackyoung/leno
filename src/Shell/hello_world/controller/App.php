@@ -1,7 +1,7 @@
 <?php
 namespace Controller;
 
-abstract class App extends \Leno\Controller
+class App extends \Leno\Controller
 {
     protected $js = [
         '/lib/leno/js/jquery.js',
@@ -11,4 +11,8 @@ abstract class App extends \Leno\Controller
     protected $css = [
         '/lib/leno/css/leno.css',
     ];
+
+    protected function beforeRender()
+    {
+    }
 }

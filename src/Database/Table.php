@@ -24,8 +24,6 @@ class Table
      */
     protected $fields = [];
 
-    protected $sql;
-
     protected $unique_keys = false;
 
     protected $foreign_keys = false;
@@ -99,11 +97,6 @@ class Table
         return $this;
     }
 
-    public function lastSql()
-    {
-        return $this->sql;
-    }
-
     protected function alterTable()
     {
         $dbInfo = self::getAdapter()->describeColumns($this->name);
@@ -135,11 +128,11 @@ class Table
         if(!empty($remove)) {
             $fixed_part[] = $this->handleRemove($remove);
         }
-        $this->sql = sprintf('ALTER TABLE %s %s', $this->getName(),
+        $sql = sprintf('ALTER TABLE %s %s', $this->getName(),
             implode(', ', $fixed_part)
         );
         $adapter = self::getAdapter();
-        return $adapter->execute($this->sql);
+        return $adapter->execute($sql);
     }
 
     protected function addTable()
@@ -149,9 +142,9 @@ class Table
         foreach($this->fields as $field => $attr) {
             $fields[] = $this->getExprOfField($field, $attr);
         }
-        $this->sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
+        $sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
         $adapter = self::getAdapter();
-        return $adapter->execute($this->sql);
+        return $adapter->execute($sql);
     }
 
     private function isFieldEqual($field1, $field2)
