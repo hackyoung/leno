@@ -36,7 +36,7 @@ class UriType extends \Leno\Type implements TypeStorageInterface
         return new Uri($value);
     }
 
-    public function toType()
+    public function toDbType() : string
     {
         return 'VARCHAR(1024)';
     }

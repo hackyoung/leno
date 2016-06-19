@@ -6,7 +6,7 @@ interface TypeStorageInterface
     /**
      * 保存在数据库中的类型，将php中定义的类型转换为数据库友好的类型
      */
-    public function toType () : string;
+    public function toDbType () : string;
 
     /**
      * 将属于该类型的一个值转换为数据库友好的可存储的值

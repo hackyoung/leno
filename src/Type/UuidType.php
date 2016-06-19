@@ -29,7 +29,7 @@ abstract class UuidType extends \Leno\Type implements TypeStorageInterface
         return $value;
     }
 
-    public function toType() : string
+    public function toDbType() : string
     {
         return $this->_toType();
     }

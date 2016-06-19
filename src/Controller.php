@@ -140,7 +140,8 @@ abstract class Controller
                 $ret[$rule] = $source[$rule] ?? null;
                 continue;
             }
-            $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
+            $type = Type::get($rule['type'])->setValueName($k)
+                ->setExtra($rule['extra'] ?? []);
             if(isset($rule['required'])) {
                 $type->setRequired($rule['required']);
             }

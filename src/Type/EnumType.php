@@ -20,7 +20,7 @@ class EnumType extends \Leno\Type implements TypeStorageInterface
         return $value;
     }
 
-    public function toType()
+    public function toDbType() : string
     {
         $enum_list = $this->extra;
         $len = 0;

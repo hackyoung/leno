@@ -14,25 +14,28 @@ abstract class Type implements TypeCheckInterface
         'mysql' => [
             'array' => '\\Leno\\Type\\Mysql\\ArrayType', 
             'datetime' => '\\Leno\\Type\\Mysql\\DatetimeType',
-            'uuid' => '\\Leno\\Type\\Mysql\\UuidType'
+            'uuid' => '\\Leno\\Type\\Mysql\\UuidType',
+            'int' => '\\Leno\\Type\\Mysql\\IntegerType'
+            'integer' => '\\Leno\\Type\\Mysql\\IntegerType'
+            'number' => '\\Leno\\Type\\Mysql\\NumberType',
         ],
         'pgsql' => [
             'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
             'datetime' => '\\Leno\\Type\\Pgsql\\DatetimeType',
             'uuid' => '\\Leno\\Type\\Pgsql\\UuidType'
+            'int' => '\\Leno\\Type\\Pgsql\\IntegerType'
+            'integer' => '\\Leno\\Type\\Pgsql\\IntegerType'
+            'number' => '\\Leno\\Type\\Pgsql\\NumberType',
         ],
-        'int' => '\Leno\Type\IntegerType',
-        'integer' => '\Leno\Type\IntegerType',
-        'number' => '\Leno\Type\NumberType',
-        'enum' => '\Leno\Type\EnumType',
-        'string' => '\Leno\Type\StringType',
-        'uri' => '\Leno\Type\UriType',
-        'url' => '\Leno\Type\UrlType',
-        'ip' => '\Leno\Type\Ipv4Type',
-        'ipv4' => '\Leno\Type\Ipv4Type',
-        'email' => '\Leno\Type\EmailType',
-        'phone' => '\Leno\Type\PhoneType',
-        'json'      =>    '\Leno\Type\JsonType',
+        'enum' => '\\Leno\\Type\\EnumType',
+        'string' => '\\Leno\\Type\\StringType',
+        'uri' => '\\Leno\\Type\\UriType',
+        'url' => '\\Leno\\Type\\UrlType',
+        'ip' => '\\Leno\\Type\\Ipv4Type',
+        'ipv4' => '\\Leno\\Type\\Ipv4Type',
+        'email' => '\\Leno\\Type\\EmailType',
+        'phone' => '\\Leno\Type\PhoneType',
+        'json' => '\\Leno\\Type\\JsonType',
     ];
 
     protected $allow_empty = false;

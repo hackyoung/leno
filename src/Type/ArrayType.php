@@ -44,7 +44,7 @@ abstract class ArrayType extends \Leno\Type implements TypeStorageInterface
         return true;
     }
 
-    public function toType() : string
+    public function toDbType() : string
     {
         return $this->_toType();
     }

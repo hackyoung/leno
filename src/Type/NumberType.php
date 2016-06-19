@@ -4,7 +4,7 @@ namespace Leno\Type;
 use \Leno\Type\Exception\ValueNumberException;
 use \Leno\Type\Exception\ValueNotNumberException;
 
-class NumberType extends \Leno\Type implements TypeStorageInterface
+abstract class NumberType extends \Leno\Type implements TypeStorageInterface
 {
     protected $regexp = '/-?\d+(\.\d+)?/';
 
@@ -31,8 +31,10 @@ class NumberType extends \Leno\Type implements TypeStorageInterface
         return (string)$value;
     }
 
-    public function toType() : string
+    public function toDbType() : string
     {
-        return 'INT';
+        return $this->_toType();
     }
+
+    abstract protected function _toType();
 }

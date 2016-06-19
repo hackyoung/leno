@@ -26,7 +26,7 @@ class UrlType extends \Leno\Type implements TypeStorageInterface
         return $value;
     }
 
-    public function toType()
+    public function toDbType() : string
     {
         return 'VARCHAR(1024)';
     }

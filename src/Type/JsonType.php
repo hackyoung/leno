@@ -30,7 +30,7 @@ class JsonType extends ArrayType implements TypeStorageInterface
         return $value;
     }
 
-    public function toType()
+    public function toDbType() : string
     {
         return 'JSONB';
     }
