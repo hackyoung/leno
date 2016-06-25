@@ -11,6 +11,9 @@ abstract class Service
         'leno.local' => 'leno.service.local'
     ];
 
+    /**
+     * 路由到指定的Service类
+     */
     public static function getService($service_name, $args = [])
     {
         foreach(self::$map as $prefix => $base) {

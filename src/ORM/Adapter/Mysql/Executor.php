@@ -3,6 +3,7 @@ namespace Leno\ORM\Adapter\Mysql;
 
 class Executor extends \Leno\ORM\Adapter\Executor
 {
+    const DFT_PORT = 3306;
     public function keyQuote(string $key) : string
     {
         return '`'.$key.'`';

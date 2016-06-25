@@ -9,7 +9,7 @@ Trait Setter
         switch($prefix) {
             case 'set':
                 $attr = unCamelCase(str_replace('set', '', $method));
-                $this->$attr = $args[0] ?? $args;
+                $this->$attr = $args[0];
                 return $this;
             case 'get':
                 $attr = unCamelCase(str_replace('get', '', $method));
