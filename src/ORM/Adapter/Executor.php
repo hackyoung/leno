@@ -33,6 +33,7 @@ abstract class Executor extends \PDO
     public function commit()
     {
        if(!--$this->transaction_counter) {
+           $this->exec('RELEASE SAVEPOINT trans'.$this->transaction_counter + 1);
            return parent::commit();
        }
        return $this->transaction_counter >= 0; 

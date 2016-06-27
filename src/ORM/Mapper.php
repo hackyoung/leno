@@ -95,18 +95,17 @@ class Mapper implements \JsonSerializable
     public function set($key, $val)
     {
         $foreign = self::getForeign($key);
-        if($foreign) {
-            $this->relation[$key] = [];
-            if(is_array($val)) {
-                foreach($val as $val) {
-                    $this->add($key, $val);
-                }
-            } else {
+        if(!$foreign) {
+            $this->data->set($key, $val);
+            return $this;
+        }
+        if(is_array($val)) {
+            foreach($val as $val) {
                 $this->add($key, $val);
             }
             return $this;
         }
-        $this->data->set($key, $val);
+        $this->add($key, $val);
         return $this;
     }
 
@@ -129,7 +128,7 @@ class Mapper implements \JsonSerializable
         if(!($foreign = self::getForeign($key))) {
             throw new \Exception('Method Not Allow');
         }
-        if(!$val instanceof $foreign['class']) {
+        if(!($val instanceof $foreign['class'])) {
             throw new \Exception('Method Not Allow');
         }
         if(!isset($this->relation[$key])) {
@@ -221,19 +220,25 @@ class Mapper implements \JsonSerializable
         }
         $primaryVal = $this->id();
         foreach($objs as $obj) {
-            if(!$obj instanceof $foreign['class']) {
+            if (!$obj instanceof $foreign['class']) {
                 continue;
             }
             $obj->save();
-            if(!$foreign['next'] ?? true) {
+            if (!$foreign['next'] ?? true) {
                 $this->data->set($foreign['foreign'], $obj->id());
                 continue;
             }
             $next = $foreign['next'];
-            if($next['foreign'] !== self::getPrimary()) {
+            if ($next['foreign'] !== self::getPrimary()) {
                 throw new \Leno\Exception ('Foreign Relation Define Error: '.$key);
             }
             $relationClass = $next['class'];
+            $here = $relationClass::selector()->byEq($foreign['foreign'], $obj->id())
+                ->byEq($next['local'], $primaryVal)
+                ->count();
+            if ($here > 0) {
+                continue;
+            }
             (new $next['class'])->set($foreign['foreign'], $obj->id())
                 ->set($next['local'], $primaryVal)
                 ->save();

@@ -12,7 +12,7 @@ require_once ROOT . '/vendor/autoload.php';
 require_once ROOT . '/autoload.php';
 
 // 添加view目录
-\Leno\View::addViewDir(ROOT . '/view');
+\Leno\View::addViewDir('global', ROOT . '/view');
 
 // 设置view的缓存目录
 \Leno\View\Template::setCacheDir(ROOT . '/tmp/view');

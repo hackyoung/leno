@@ -3,7 +3,6 @@ namespace Leno\Routing;
 
 use \Leno\Routing\Rule;
 use \Leno\Routing\Target;
-use \Leno\Traits\Setter as MagicCall;
 
 /**
  * Router 通过一个Uri路由到正确的controller and action
@@ -13,7 +12,7 @@ use \Leno\Traits\Setter as MagicCall;
 class Router
 {
 
-    use MagicCall;
+    use \Leno\Traits\Magic;
 
     /**
      * 通常的路由模式 path类型为namespace/controller/method/{$param1}/{$param2}/...
@@ -84,6 +83,11 @@ class Router
         $this->request = $request;
         $this->response = $response;
         $this->path = new Path($this);
+    }
+
+    public function __call($method, array $args = null)
+    {
+        return $this->__magic_call($method, $args);
     }
 
     public function getActionOfRestful($method)
