@@ -53,6 +53,15 @@ class Mapper implements \JsonSerializable
     {
         $class = get_called_class();
         $this->data = new Data($data, $class::$attributes);
+        $primary = self::getPrimary();
+        if(is_string($primary)) {
+            $primary = [$primary];
+        }
+        foreach($primary as $primary_key) {
+            if(!$this->data->isset($primary_key) && self::getAttribute($primary_key) === 'uuid') {
+                $this->data->set($primary_key, uuid());
+            }
+        }
     }
 
     public function __call($method, $parameters = null) {
@@ -155,10 +164,6 @@ class Mapper implements \JsonSerializable
         try {
             if($this->beforeSave() === false) {
                 return false;
-            }
-            $primary = self::getPrimary();
-            if($this->isAutoCreate($primary)) {
-                $this->data->set($primary, uuid());
             }
             foreach($this->relation as $key => $obj) {
                 $this->saveRelateObjs($key, $obj);
@@ -273,16 +278,6 @@ class Mapper implements \JsonSerializable
 
     protected function beforeUpdate()
     {
-    }
-
-    /**
-     * 判断是否可以自动生成uuid
-     */
-    private function isAutoCreate($primary)
-    {
-        return $primary === self::getPrimary() && 
-                !$this->data->isset($primary) && 
-                self::getAttribute($primary) === 'uuid';
     }
 
     /**
