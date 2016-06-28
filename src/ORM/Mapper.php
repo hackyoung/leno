@@ -53,6 +53,15 @@ class Mapper implements \JsonSerializable
     {
         $class = get_called_class();
         $this->data = new Data($data, $class::$attributes);
+        $primary = self::getPrimary();
+        if(is_string($primary)) {
+            $primary = [$primary];
+        }
+        foreach($primary as $primary_key) {
+            if(!$this->data->isset($primary_key) && self::getAttribute($primary_key) === 'uuid') {
+                $this->data->set($primary_key, uuid());
+            }
+        }
     }
 
     public function __call($method, $parameters = null) {
@@ -86,18 +95,17 @@ class Mapper implements \JsonSerializable
     public function set($key, $val)
     {
         $foreign = self::getForeign($key);
-        if($foreign) {
-            $this->relation[$key] = [];
-            if(is_array($val)) {
-                foreach($val as $val) {
-                    $this->add($key, $val);
-                }
-            } else {
+        if(!$foreign) {
+            $this->data->set($key, $val);
+            return $this;
+        }
+        if(is_array($val)) {
+            foreach($val as $val) {
                 $this->add($key, $val);
             }
             return $this;
         }
-        $this->data->set($key, $val);
+        $this->add($key, $val);
         return $this;
     }
 
@@ -120,7 +128,7 @@ class Mapper implements \JsonSerializable
         if(!($foreign = self::getForeign($key))) {
             throw new \Exception('Method Not Allow');
         }
-        if(!$val instanceof $foreign['class']) {
+        if(!($val instanceof $foreign['class'])) {
             throw new \Exception('Method Not Allow');
         }
         if(!isset($this->relation[$key])) {
@@ -156,40 +164,47 @@ class Mapper implements \JsonSerializable
             if($this->beforeSave() === false) {
                 return false;
             }
-            $primary = self::getPrimary();
-            if($this->isAutoCreate($primary)) {
-                $this->data->set($primary, uuid());
-            }
             foreach($this->relation as $key => $obj) {
                 $this->saveRelateObjs($key, $obj);
             }
             if(!$this->isFresh()) {
-                if($this->beforeUpdate() === false || !$this->data->validateAll()) {
-                    return false;
-                }
-                $updator = self::updator();
-                $updator->by('eq', $primary, $this->data->get($primary));
-                $this->data->each(function($key, $data) use ($updator){
-                    if($data->isDirty($key)) {
-                        $updator->set($key, $data->forStore($key));
-                    }
-                });
-                return $updator->update();
+                $this->update();
+                return \Leno\ORM\Row::commitTransaction();
             }
-            $this->beforeInsert();
-            if($this->beforeInsert() === false || !$this->data->validateAll()) {
-                return false;
-            }
-            $creator = self::creator();
-            $this->data->each(function($key, $data) use ($creator) {
-                $creator->set($key, $data->forStore($key));
-            });
-            $creator->create();
+            $this->create();
             return \Leno\ORM\Row::commitTransaction();
         } catch(\Exception $e) {
             \Leno\ORM\Row::rollback();
             throw $e;
         }
+    }
+
+    protected function update()
+    {
+        if($this->beforeUpdate() === false || !$this->data->validateAll()) {
+            return false;
+        }
+        $updator = self::updator();
+        $primary = self::getPrimary();
+        $updator->by('eq', $primary, $this->data->get($primary));
+        $this->data->each(function($key, $data) use ($updator){
+            if($data->isDirty($key)) {
+                $updator->set($key, $data->forStore($key));
+            }
+        });
+        $updator->update();
+    }
+
+    protected function create()
+    {
+        if($this->beforeInsert() === false || !$this->data->validateAll()) {
+            return false;
+        }
+        $creator = self::creator();
+        $this->data->each(function($key, $data) use ($creator) {
+            $creator->set($key, $data->forStore($key));
+        });
+        $creator->create();
     }
 
     /**
@@ -205,19 +220,25 @@ class Mapper implements \JsonSerializable
         }
         $primaryVal = $this->id();
         foreach($objs as $obj) {
-            if(!$obj instanceof $foreign['class']) {
+            if (!$obj instanceof $foreign['class']) {
                 continue;
             }
             $obj->save();
-            if(!$foreign['next'] ?? true) {
+            if (!$foreign['next'] ?? true) {
                 $this->data->set($foreign['foreign'], $obj->id());
                 continue;
             }
             $next = $foreign['next'];
-            if($next['foreign'] !== self::getPrimary()) {
+            if ($next['foreign'] !== self::getPrimary()) {
                 throw new \Leno\Exception ('Foreign Relation Define Error: '.$key);
             }
             $relationClass = $next['class'];
+            $here = $relationClass::selector()->byEq($foreign['foreign'], $obj->id())
+                ->byEq($next['local'], $primaryVal)
+                ->count();
+            if ($here > 0) {
+                continue;
+            }
             (new $next['class'])->set($foreign['foreign'], $obj->id())
                 ->set($next['local'], $primaryVal)
                 ->save();
@@ -262,16 +283,6 @@ class Mapper implements \JsonSerializable
 
     protected function beforeUpdate()
     {
-    }
-
-    /**
-     * 判断是否可以自动生成uuid
-     */
-    private function isAutoCreate($primary)
-    {
-        return $primary === self::getPrimary() && 
-                !$this->data->isset($primary) && 
-                self::getAttribute($primary) === 'uuid';
     }
 
     /**

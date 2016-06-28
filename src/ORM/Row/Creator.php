@@ -5,7 +5,7 @@ class Creator extends \Leno\ORM\Row
 {
     public function create()
     {
-        $this->execute();
+        parent::execute();
         return $this;
     }
 
@@ -36,7 +36,9 @@ class Creator extends \Leno\ORM\Row
         }, array_keys($this->data[0]));
         foreach($this->data as $data) {
             $values[] = '('.implode(',', array_map(function($value) {
-                return $this->valueQuote($value);
+                //return $this->valueQuote($value);
+                $this->params[] = $value;
+                return '?';
             }, array_values($data))).')';
         }
         return ['field' => implode(',', $field), 'values' => implode(',', $values)];
@@ -44,6 +46,7 @@ class Creator extends \Leno\ORM\Row
 
     public function getSql()
     {
+        $this->params = [];
         $data = $this->useData();
         if(empty($data)) {
             return false;

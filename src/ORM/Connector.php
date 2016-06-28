@@ -8,7 +8,7 @@ use \Leno\Configure;
  */
 class Connector
 {
-    use \Leno\Traits\Setter; 
+    use \Leno\Traits\Magic; 
 
     protected $label;
 
@@ -23,6 +23,8 @@ class Connector
     protected $password;
 
     protected $options;
+
+    protected static $executor;
 
     protected static $executor_map = [
         'mysql' => '\\Leno\\ORM\\Adapter\\Mysql\\Executor',
@@ -47,12 +49,21 @@ class Connector
         }
     }
 
+    public function __call($method, array $args = null)
+    {
+        return $this->__magic_call($method, $args);
+    }
+
     public static function get($label = null)
     {
+        if(self::$executor instanceof \PDO) {
+            return self::$executor;
+        }
+
         $label = $label ?? Configure::read('label') ?? 'mysql';
         $Executor = self::getExecutorClass($label);
 
-        return (new self)
+        self::$executor = (new self)
             ->setLabel($label)
             ->setUser(Configure::read('user') ?? 'root')
             ->setPassword(Configure::read('password') ?? null)
@@ -61,6 +72,7 @@ class Connector
             ->setDb(Configure::read('db') ?? 'test_db')
             ->setOptions(Configure::read('options') ?? [])
             ->getExecutor();
+        return self::$executor;
     }
 
     public static function getExecutorClass($label)

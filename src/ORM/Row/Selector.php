@@ -104,6 +104,10 @@ class Selector extends \Leno\ORM\Row
         } elseif(is_string($field)) {
             $this->field[$field] = $alias;
             return $this;
+        } elseif($field instanceof \Leno\ORM\Expr) {
+            $field = '__expr__'.(string)$field;
+            $this->field[$field] = $alias;
+            return $this;
         } elseif($field == false) {
             $this->field = false;
             return $this;
@@ -130,9 +134,10 @@ class Selector extends \Leno\ORM\Row
         }
         $ret = [];
         foreach($this->field as $field=>$alias) {
-            $f = implode('.', [
-                $this->quote($this->table), $this->quote($field)
-            ]);
+            $f = str_replace('__expr__', '', $field);
+            if($f === $field) {
+                $f = $this->getName() . '.' . $this->quote($field);
+            }
             if($alias) {
                 $f .= ' AS ' . $alias;
             }
@@ -196,20 +201,26 @@ class Selector extends \Leno\ORM\Row
 
     public function execute($sql = null)
     {
-        if($sql === null) {
-            $sql = $this->getSql();
+        $data = $this->field(
+            new \Leno\ORM\Expr('count(*)'), 'count'
+        )->limit(1)
+            ->execute()
+            ->fetchAll();
+        foreach($data as $row) {
+            return (int)$row['count'];
         }
-        logger()->info('EXECUTING SQL: '.$sql);
-        $sth = self::getAdapter()->query($sql);
-        if(!$sth || empty($sth)) {
-            return $sth;
-        }
-        $sth->setFetchMode(\PDO::FETCH_ASSOC);
-        return $sth;
+    }
+
+    public function execute($sql = null)
+    {
+        parent::execute();
+        $this->stmt->setFetchMode(\PDO::FETCH_ASSOC);
+        return $this->stmt;
     }
 
     public function getSql()
     {
+        $this->params = [];
         return sprintf('SELECT %s FROM %s %s WHERE %s %s %s',
             $this->useField(), $this->quote($this->table),
             $this->useJoin(), $this->useWhere(), $this->useGroup(), 

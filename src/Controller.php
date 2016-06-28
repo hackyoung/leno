@@ -99,7 +99,7 @@ abstract class Controller
     }
 
     /**
-     * @description 获取前端传递上来的参数
+     * 获取前端传递上来的参数
      */
     protected function input($key, $rule=null, $message = null)
     {
@@ -115,7 +115,7 @@ abstract class Controller
     }
 
     /**
-     * @description 获取一组输入
+     * 获取从前端传上来的参数
      * @param array rules = [
      *      'hello', // 不验证可用性
      *      'world', // 不验证可用性
@@ -144,7 +144,7 @@ abstract class Controller
     }
 
     /**
-     * @description 输出数据,采用该方法包裹所有需要界面展示的数据都应该用该方法包裹
+     * 输出数据,采用该方法包裹所有需要界面展示的数据都应该用该方法包裹
      * 方便以后拓展国际化
      */
     protected function output(string $output)
@@ -153,7 +153,7 @@ abstract class Controller
     }
 
     /**
-     * @description 输出数组
+     * 输出数组
      */
     protected function outputs(array $outputs)
     {
