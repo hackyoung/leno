@@ -94,6 +94,7 @@ abstract class Row
 
     /**
      * 构造函数
+     *
      * @param string table 表明
      */
     public function __construct($table)
@@ -103,8 +104,10 @@ abstract class Row
 
     /**
      *  __call方法，该方法提供by系列函数，on系列函数, set系列函数,get系列函数的入口
+     *
      * @param string method 方法名
      * @param array|null parameters 调用参数
+     *
      */
     public function __call($method, $parameters=null)
     {
