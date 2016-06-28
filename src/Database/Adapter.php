@@ -9,13 +9,16 @@ abstract class Adapter implements AdapterInterface
 {
     private $transaction_counter = 0;
 
+    private $tables_info = [];
+
     private static $adapter_map = [
         'mysql' => '\\Leno\\Database\\Adapter\\MysqlAdapter',
+        'pgsql' => '\\Leno\\Database\\Adapter\\PgsqlAdapter',
     ];
 
-    public static function get()
+    public static function get($adapter_label = 'mysql')
     {
-        return new self::$adapter_map['mysql'];
+        return new self::$adapter_map[$adapter_label];
     }
 
     public function beginTransaction() : bool
@@ -60,9 +63,17 @@ abstract class Adapter implements AdapterInterface
         return $this->quote($key);
     }
 
-    public function execute($sql, $params = null)
+    public function execute(string $sql, $params = null)
     {
         return $this->driver()->execute($sql, $params);
+    }
+
+    public function describeTable(string $table_name)
+    {
+        if (!isset($this->tables_info[$table_name])) {
+            return $this->tables_info[$table_name] = $this->_describeTable($table_name);
+        }
+        return $this->tables_info[$table_name];
     }
 
     protected function driver() : DriverInterface
@@ -79,4 +90,6 @@ abstract class Adapter implements AdapterInterface
     }
 
     abstract protected function quote(string $key) : string;
+
+    abstract protected function _describeTable(string $table_name);
 }

@@ -1,11 +1,11 @@
 <?php
 namespace Leno\Database;
 
+use \Leno\Database\Adapter;
+
 class Table
 {
     protected $name;
-
-    protected $newName;
 
     protected $db_info;
 
@@ -15,7 +15,6 @@ class Table
      *          'type' => '', 
      *          'default' => null, 
      *          'null' => null, 
-     *          'key' => null, 
      *          'extra' => null
      *      ],
      * ];
@@ -61,17 +60,11 @@ class Table
 
     public function save()
     {
-        $dbInfo = $this->getDbAttr();
+        $dbInfo = self::Adapter()->describeTable($this->getName());
         if($dbInfo === false) {
             return $this->addTable();
         }
         return $this->alterTable();
-    }
-
-    public function rename($name)
-    {
-        $this->newName = $name;
-        return $this;
     }
 
     public function setField($field, $attr)
@@ -90,12 +83,6 @@ class Table
         return $this;
     }
 
-    public function getDbAttr()
-    {
-        $adapter = self::getAdapter();
-        return $adapter->getTableInfo($this);
-    }
-
     public function lastSql()
     {
         return $this->sql;
@@ -103,7 +90,7 @@ class Table
 
     protected function alterTable()
     {
-        $dbInfo = $this->getDbAttr();
+        $dbInfo = self::Adapter()->describeTable($this->getName());
         $add = [];
         $alter = [];
         foreach($this->fields as $field => $attr) {
@@ -215,6 +202,6 @@ class Table
 
     public static function getAdapter()
     {
-        return \Leno\ORM\Connector::get();
+        return Adapter::get();
     }
 }

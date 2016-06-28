@@ -1,16 +1,11 @@
 <?php
+namespace Leno\Database;
 
 /**
  * 一个adapter负责和底层数据库驱动打交道
  */
-namespace Leno\Database;
-
 interface AdapterInterface
 {
-    /**
-     * 返回一个执行sql的驱动
-     */
-    public function driver() : DriverInterface;
 
     /**
      * 释放数据库事务保存点
@@ -41,4 +36,14 @@ interface AdapterInterface
      * 执行一条sql语句
      */
     public function execute(string $sql, $params);
+
+    /**
+     * 返回一张表的结构
+     */
+    public function describeTable(string $table_name);
+
+    /**
+     * 返回一个执行sql的驱动
+     */
+    protected function driver() : DriverInterface;
 }

@@ -2,7 +2,9 @@
 namespace Leno\Database;
 
 use \Leno\Database\DriverInterface;
+use \Leno\Database\Driver;
 use \Leno\Singletion;
+use \Leno\Configure;
 
 /**
  * 这里没有注释^.^
@@ -13,10 +15,13 @@ class Connection
 {
     use Singletion;
 
+    protected $config;
+
     protected $drivers = [];
 
     protected function __construct()
     {
+        $this->config = Configure::read('database');
     }
 
     /**
@@ -42,5 +47,6 @@ class Connection
 
     private function newDriver()
     {
+        return Driver::get($this->config['driver'], $this->config);   
     }
 }

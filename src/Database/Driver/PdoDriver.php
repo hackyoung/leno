@@ -2,12 +2,10 @@
 namespace Leno\Database\Driver;
 
 use \Leno\Database\DriverInterface;
-use \Leno\Database\DriverTrait;
+use \Leno\Database\Driver;
 
-class PdoDriver implements DriverInterface
+class PdoDriver extends Driver implements DriverInterface
 {
-    use DriverTrait;
-
     private $handler;
 
     public function __construct($dsn, $user, $pass, $options = null)

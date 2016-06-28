@@ -148,7 +148,7 @@ abstract class Row
     /**
      * join其他行操作器
      *
-     * ### sample
+     * ### example
      * $hello = (new Selector('hello'))
      *      ->field('name', 'hello_name')
      *      ->byEqName('hello');
@@ -187,8 +187,12 @@ abstract class Row
      *
      * @return this
      *
-     * ### sample
+     * ### example
      *
+     * $updator = new Updator('hello');
+     * $updator->set('name', 'hello')   // 传统写法
+     *      ->setAge(18)                // 简便写法
+     *      ->update();
      */
     public function set(string $field, $value)
     {
@@ -196,6 +200,27 @@ abstract class Row
         return $this;
     }
 
+    /**
+     * 通过条件过滤
+     *
+     * @param string expr 表达式
+     * @param string field 字段名
+     * @param mixed value 比较的值
+     *
+     * @return this
+     *
+     * ### example
+     *
+     * $updator = new Updator('hello'); 
+     * $updator->setName('young')
+     *      ->byEqName('young')     // 简单写法
+     *      ->update();
+     *
+     * $selector = new Selector('hello');
+     * $selector->by('like', 'name', 'you') // 原生写法
+     *      ->find();
+     *
+     */
     public function by($expr, $field, $value)
     {
         $this->attachAdd();
@@ -207,6 +232,15 @@ abstract class Row
         return $this;
     }
 
+    /**
+     * join 连接条件
+     *
+     * @param string expr 表达式
+     * @param string field 字段名
+     * @param mixed value 比较的值
+     *
+     * @return this
+     */
     public function on($expr, $field, $value)
     {
         $this->attachAdd();
@@ -218,12 +252,35 @@ abstract class Row
         return $this;
     }
 
+    /**
+     * 或者逻辑链接
+     *
+     * ### example
+     *
+     * $hello = (new Selector('hello'))
+     *      ->byLikeName('you')
+     *        ->or()
+     *      ->byLikeName('hello')
+     *      ->find();
+     */
     public function or()
     {
         $this->where[] = self::R_OR;
         return $this;
     }
 
+    /**
+     * 并且逻辑连接, 在by函数之间默认是and连接
+     *
+     * ### example
+     *
+     * $hello = (new Selector('hello'))
+     *      ->byLikeName('you')
+     *        ->and()   // 可省略，默认为and连接
+     *      ->byEqAge(15)
+     *      ->find();
+     *
+     */
     public function and()
     {
         $this->where[] = self::R_AND;
@@ -242,15 +299,17 @@ abstract class Row
         return $this;
     }
 
-    public function quote($val)
-    {
-        return self::getAdapter()->keyQuote($val);
-    }
 
     public function quoteBegin()
     {
         $this->attachAdd();
         $this->where[] = self::EXP_QUOTE_BEGIN;
+        return $this;
+    }
+
+    public function quoteEnd()
+    {
+        $this->where[] = self::EXP_QUOTE_END;
         return $this;
     }
 
@@ -261,16 +320,18 @@ abstract class Row
         return $this;
     }
 
-    public function quoteEnd()
-    {
-        $this->where[] = self::EXP_QUOTE_END;
-        return $this;
-    }
-
     public function onQuoteEnd()
     {
         $this->on[] = self::EXP_QUOTE_END;
         return $this;
+    }
+
+    public function quote($val)
+    {
+        $quoted = implode('.', array_map(function($item) {
+            return self::getAdapter()->keyQuote($item);
+        }, explode('.', $val)));
+        return new Expr($quoted);
     }
 
     public function getOn()
@@ -285,7 +346,7 @@ abstract class Row
 
     public function getName()
     {
-        return new Expr($this->quote($this->table));
+        return $this->quote($this->table);
     }
 
     public function getParams()
@@ -302,7 +363,7 @@ abstract class Row
 
     public function getFieldExpr($field)
     {
-        return new Expr($this->getName() . '.' . $this->quote($field));
+        return $this->quote($this->table . '.' . $field);
     }
 
     public static function beginTransaction() 
@@ -366,13 +427,6 @@ abstract class Row
         return implode(' ', $ret);
     }
 
-    protected function valueQuote($value)
-    {
-        if(is_string($value) && !$value instanceof \Leno\Database\Expr) {
-            return '\''.$value.'\'';  
-        }
-        return $value;
-    }
 
     protected function getMapper()
     {
@@ -384,6 +438,7 @@ abstract class Row
 
     /**
      * call魔术方法调用该方法，处理$row->by..., $row->on...系列函数
+     *
      * @param array series 通过__call 传递的参数名得到的
      */
     private function callCondition($series, $value, $type=self::TYPE_CONDI_BY)
@@ -433,7 +488,9 @@ abstract class Row
 
     /**
      * 构造查询条件,该方法可构造where条件以及join的on条件
+     *
      * @param string type self::TYPE_CONDI_BY|self::TYPE_CONDI_ON
+     *
      * @return array 查询条件的序列
      */
     private function getCondition($type)
@@ -467,11 +524,13 @@ abstract class Row
 
     /**
      * 将表达式描述转换为SQL可识别的字符串
+     *
      * @param array item [
      *        'field' => 'field',
      *        'expr' => 'expr',
      *        'value' => 'value'
      * ]
+     *
      * @return string
      */
     private function expr($item)
@@ -533,18 +592,10 @@ abstract class Row
     }
 
     /**
-     * 获取执行sql之后的结果
-     * @return mixed
-     */
-    public function getResult()
-    {
-        return $this->result;
-    }
-
-    /**
-     * 执行sql语句，该方法不直接返回结果，返回一个this对象
-     * 用self::getResult()获取执行结果
+     * 执行sql语句
+     *
      * @param string|null sql 如果为null，则尝试生成sql
+     *
      * @return self
      */
     public function execute($sql = null)

@@ -8,13 +8,16 @@ namespace Leno\ORM;
 class Data implements \JsonSerializable, \Iterator
 {
     /**
+     *
      * 保存写入Data的值，其结构为 [
      *  'key' => ['value' => '', 'dirty' => '',],
      * ]
+     *
      */
     protected $data = [];
 
     /**
+     *
      * 保存Data的配置信息，这些信息用于参数验证，其结构为 [
      *      'value' => [
      *          'type' => '',
@@ -23,7 +26,9 @@ class Data implements \JsonSerializable, \Iterator
      *          'extra' => []
      *      ],
      * ];
+     *
      * 见Validator
+     *
      */
     protected $config = [];
 
@@ -34,8 +39,10 @@ class Data implements \JsonSerializable, \Iterator
 
     /**
      * 构造函数
+     *
      * @param array data 当传入该参数，data的所有写入Data的数据都会默认标记为dirty,其余的set操作则默认标记为不是dirty的数据
      * @param array config 如果传递该参数，则Data的config将会设置为传递的config
+     *
      */
     public function __construct(array $data = [], array $config = null)
     {
@@ -54,8 +61,10 @@ class Data implements \JsonSerializable, \Iterator
      * $data->setName('young');         
      * $data->getName();
      * // output young
+     *
      * @param method string 方法名
      * @param parameters array 参数
+     *
      * @return this return this可以让我们像$data->setName('young')->getName();这样调用
      */
     public function __call($method, $parameters=null)
@@ -145,6 +154,7 @@ class Data implements \JsonSerializable, \Iterator
 
     /**
      * 判断提供的索引在Data里的值是否是脏的,如果不存在值，则抛异常
+     *
      * @param key string 值的索引
      */
     public function isDirty($key)
@@ -157,6 +167,7 @@ class Data implements \JsonSerializable, \Iterator
 
     /**
      * 迭代已经存在的所有值
+     *
      * @param callback callable 迭代方法,如果callback返回false，则停止迭代
      */
     public function each($callback)
@@ -170,8 +181,10 @@ class Data implements \JsonSerializable, \Iterator
 
     /**
      * 验证值是否合法
+     *
      * @param string key val的索引
      * @param mixed val 待检查的值
+     *
      * @return bool
      */
     public function validate($key, $val)
