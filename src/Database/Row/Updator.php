@@ -1,7 +1,10 @@
 <?php
-namespace Leno\ORM\Row;
+namespace Leno\Database\Row;
 
-class Updator extends \Leno\ORM\Row
+use \Leno\Database\Row;
+use \Leno\Database\Expr;
+
+class Updator extends Row
 {
     public function update($data = null)
     {
@@ -36,7 +39,7 @@ class Updator extends \Leno\ORM\Row
     {
         $ret = [];
         foreach($this->data as $field=>$value) {
-            if($value instanceof \Leno\ORM\Expr) {
+            if($value instanceof Expr) {
                 $idx = $value;
             } else {
                 $idx = $this->setParam($field, $value);

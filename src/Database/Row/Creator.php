@@ -1,7 +1,9 @@
 <?php
-namespace Leno\ORM\Row;
+namespace Leno\Database\Row;
 
-class Creator extends \Leno\ORM\Row
+use \Leno\Database\Row;
+
+class Creator extends Row
 {
     public function create()
     {
@@ -36,7 +38,6 @@ class Creator extends \Leno\ORM\Row
         }, array_keys($this->data[0]));
         foreach($this->data as $data) {
             $values[] = '('.implode(',', array_map(function($value) {
-                //return $this->valueQuote($value);
                 $this->params[] = $value;
                 return '?';
             }, array_values($data))).')';

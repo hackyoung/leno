@@ -1,13 +1,24 @@
 <?php
 namespace Leno\Database;
 
+use \Leno\Database\DriverInterface;
+use \Leno\Database\AdapterInterface;
+use \Leno\Database\Connection;
+
 abstract class Adapter implements AdapterInterface
 {
-    private $driver;
-
     private $transaction_counter = 0;
 
-    public function beginTransaction(): bool
+    private static $adapter_map = [
+        'mysql' => '\\Leno\\Database\\Adapter\\MysqlAdapter',
+    ];
+
+    public static function get()
+    {
+        return new self::$adapter_map['mysql'];
+    }
+
+    public function beginTransaction() : bool
     {
         if(!$this->transaction_counter++) {
             return $this->driver()->beginTransaction();
@@ -16,7 +27,7 @@ abstract class Adapter implements AdapterInterface
         return $this->transactionCounter >= 0; 
     }
 
-    public function commitTransaction(): bool
+    public function commitTransaction() : bool
     {
         $save_point = $this->getSavePoint();
         if(!--$this->transaction_counter) {
@@ -26,7 +37,7 @@ abstract class Adapter implements AdapterInterface
         return $this->transaction_counter >= 0; 
     }
 
-    public function releaseSavePoint(string $sp_pos): bool
+    public function releaseSavePoint(string $sp_pos) : bool
     {
         if($this->execute('RELEASE SAVEPOINT '.$sp_pos)) {
             return true;
@@ -54,10 +65,10 @@ abstract class Adapter implements AdapterInterface
         return $this->driver()->execute($sql, $params);
     }
 
-    protected function driver()
+    protected function driver() : DriverInterface
     {
         if(!($this->driver instanceof DriverInterface)) {
-            $this->driver = $this->getDriver();
+            $this->driver = Connection::instance()->select();
         }
         return $this->driver;
     }
@@ -66,8 +77,6 @@ abstract class Adapter implements AdapterInterface
     {
         return 'trans_'.$this->transaction_counter;
     }
-
-    abstract protected function getDriver() : DriverInterface;
 
     abstract protected function quote(string $key) : string;
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Leno\ORM;
+namespace Leno\Database;
 
 class Table
 {

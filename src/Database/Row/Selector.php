@@ -1,42 +1,47 @@
 <?php
-namespace Leno\ORM\Row;
+namespace Leno\Database\Row;
 
-class Selector extends \Leno\ORM\Row
+use \Leno\Database\Row;
+use \Leno\Database\Expr;
+
+class Selector extends Row
 {
     /**
-     * @var 降序
+     * 降序
      */
     const ORDER_DESC = 'DESC';
 
     /**
-     * @var 升序
+     * 升序
      */
     const ORDER_ASC = 'ASC';
 
     /**
-     * @var 保存分组信息
+     * 保存分组信息
      */
     protected $group = [];
 
     /**
-     * @var 保存排序信息
+     * 保存排序信息
      */
     protected $order = [];
 
     /**
-     * @var 保存查询字段信息
+     * 保存查询字段信息
      */
     protected $field = [];
 
     /**
-     * @var 保存limit信息
+     * 保存limit信息
      */
     protected $limit = [];
 
     /**
-     * @description __call魔术方法,提供group,order,field系列函数入口
+     * __call魔术方法,提供group,order,field系列函数入口
+     *
      * @param string method 方法名
      * @param mixed parameters 参数
+     *
      * @return this
      */
     public function __call($method, $parameters=null)
@@ -60,9 +65,11 @@ class Selector extends \Leno\ORM\Row
     }
 
     /**
-     * @description 排序
+     * 排序
+     *
      * @param string field 字段名
      * @param string self::ORDER_DESC|self::ORDER_ASC 排序方式
+     *
      * @return this
      */
     public function order($field, $order)
@@ -72,8 +79,10 @@ class Selector extends \Leno\ORM\Row
     }
 
     /**
-     * @description 分组
+     * 分组
+     *
      * @param string field 字段名
+     *
      * @return this
      */
     public function group($field)
@@ -83,39 +92,64 @@ class Selector extends \Leno\ORM\Row
     }
 
     /**
-     * @description 描述查询字段信息
+     * 描述查询字段信息
+     *
      * @param string field 字段名
      * @param string alias 查询别名
+     *
+     * ### example
+     * $selector = new Selector('hello');
+     *
+     * $selector->field('name')             // 查询 name 字段
+     *     ->field('cn_name', 'nick_name')  // 查询cn_name 字段 重命名为 nick_name
+     *     ->field(new Expr('count(user_id)'), 'number') // 表达式查询
+     *     ->field([                        // 数组方式
+     *         'age',
+     *         'unit' => 'tech_unit',
+     *     ]);
+     *
      * @return this
      */
     public function field($field, $alias=false)
     {
-        if(is_array($field)) {
-            $new_field = [];
-            foreach($field as $k => $v) {
+        if (is_array($field)) {
+            foreach ($field as $k => $v) {
                 if(is_int($k)) {
-                    $new_field[$v] = false;
+                    $this->field($v);
                     continue;
                 }
-                $new_field[$k] = $v;
+                $this->field($k, $v);
             }
-            $this->field = array_merge($this->field, $new_field);
             return $this;
-        } elseif(is_string($field)) {
+        } elseif (is_string($field)) {
             $this->field[$field] = $alias;
             return $this;
-        } elseif($field instanceof \Leno\ORM\Expr) {
+        } elseif ($field instanceof Expr) {
             $field = '__expr__'.(string)$field;
             $this->field[$field] = $alias;
             return $this;
-        } elseif($field == false) {
+        } elseif ($field == false) {
             $this->field = false;
             return $this;
         }
         throw new \Exception('Field Type Not Surpported');
     }
 
-    public function limit($row, $limit = -1)
+    /**
+     * 限制查询数量及偏移
+     *
+     * @param integer row 查询的起始行数
+     * @param integer limit 查询的数据条数
+     *
+     * ### sample
+     * $selector = new Selector('hello');
+     * $selector->limit(1, 100);        // 查询1-100行数据
+     * $selector->limit(10, 20);        // 查询10-20行数据
+     * $selector->limit(10);            // 查询10行之后的所有数据
+     *
+     * @return this
+     */
+    public function limit(int $row, int $limit = -1)
     {
         $this->limit = [
             'row' => $row,
@@ -124,7 +158,15 @@ class Selector extends \Leno\ORM\Row
         return $this;
     }
 
-    public function getField()
+    /**
+     * 该方法会读取$this->field属性，然后返回
+     * [
+     *      'hello',
+     *      'world AS the_world'
+     * ]
+     * 方式的数组
+     */
+    public function getField() : array
     {
         if($this->field === false) {
             return [];
@@ -146,6 +188,13 @@ class Selector extends \Leno\ORM\Row
         return $ret;
     }
 
+    /**
+     * 该方法会读取$this->group属性，然后返回
+     * [
+     *      `table`.`field`,
+     * ]
+     * 的格式，"`"在不同的数据库系统的表现形式不一样
+     */
     public function getGroup()
     {
         return array_map(function($field) {
@@ -153,16 +202,35 @@ class Selector extends \Leno\ORM\Row
         }, $this->group);
     }
 
+    /**
+     * 该方法会读取$this->order属性，然后返回
+     * [
+     *      `table`.`field` DESC,
+     *      `table`.`field` ASC
+     * ]
+     * 的格式，"`"在不同的数据库系统的表现形式不一样
+     */
     public function getOrder()
     {
         $ret = [];
         foreach($this->order as $field=>$order) {
-        
             $ret[] = $this->quote($this->table) . '.' .$this->quote($field) . ' ' . $order;
         }
         return $ret;
     }
 
+    /**
+     * 执行查找操作，如果设置了Mapper类，该方法会将数据转换成Mapper对象
+     * ### sample
+     * $selector = new Selector('table');
+     * $selector->field([
+     *    'hello',
+     *    'world' => 'the_world'
+     * ])->byEqHello('hello')
+     * ->or()
+     *  ->byEqHello('hell')
+     *  ->find();
+     */
     public function find()
     {
         $ret = [];
@@ -176,6 +244,9 @@ class Selector extends \Leno\ORM\Row
         return $ret;
     }
 
+    /**
+     * 根据条件查找第一条数据
+     */
     public function findOne()
     {
         $this->limit(0,1);
@@ -183,6 +254,9 @@ class Selector extends \Leno\ORM\Row
         return $ret[0] ?? false;
     }
 
+    /**
+     * count有多少条数据会被返回
+     */
     public function count()
     {
         $sql = sprintf('SELECT count(*) as c FROM %s %s WHERE %s %s %s',
@@ -194,28 +268,16 @@ class Selector extends \Leno\ORM\Row
         if(!$result) {
             return 0;
         }
-        foreach($result as $k=>$row) {
+        foreach ($result as $k=>$row) {
             return $row['c'];
         }
     }
 
     public function execute($sql = null)
     {
-        $data = $this->field(
-            new \Leno\ORM\Expr('count(*)'), 'count'
-        )->limit(1)
-            ->execute()
-            ->fetchAll();
-        foreach($data as $row) {
-            return (int)$row['count'];
-        }
-    }
-
-    public function execute($sql = null)
-    {
-        parent::execute();
-        $this->stmt->setFetchMode(\PDO::FETCH_ASSOC);
-        return $this->stmt;
+        $stmt = parent::execute();
+        $stmt->setFetchMode(\PDO::FETCH_ASSOC);
+        return $stmt;
     }
 
     public function getSql()

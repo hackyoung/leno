@@ -15,17 +15,17 @@ interface AdapterInterface
     /**
      * 释放数据库事务保存点
      */
-    public function releaseSavePoint(string $sp_pos): bool;
+    public function releaseSavePoint(string $sp_pos) : bool;
 
     /**
      * 开始一个事物
      */
-    public function beginTransaction(): bool;
+    public function beginTransaction() : bool;
 
     /**
      * 提交一个事务
      */
-    public function commitTransaction(): bool;
+    public function commitTransaction() : bool;
 
     /**
      * 事物回滚到上一个事务保存点
@@ -39,9 +39,6 @@ interface AdapterInterface
 
     /**
      * 执行一条sql语句
-     * @exception ForeignKeyException
-     * @exception PrimaryKeyException
-     * @exception UniqueKeyException
      */
     public function execute(string $sql, $params);
 }

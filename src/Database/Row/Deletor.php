@@ -1,7 +1,9 @@
 <?php
-namespace Leno\ORM\Row;
+namespace Leno\Database\Row;
 
-class Deletor extends \Leno\ORM\Row
+use \Leno\Database\Row;
+
+class Deletor extends Row
 {
     public function delete()
     {

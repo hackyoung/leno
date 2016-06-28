@@ -1,147 +1,99 @@
 <?php
-namespace Leno\ORM;
+namespace Leno\Database;
 
-/**
- *
- *   self::selector()
- *       ->quoteBegin()
- *           ->byEqHello('hello')
- *           ->or()
- *           ->byEqWorld('world')
- *       ->quoteEnd()->find();
- */
+use \Leno\Database\Expr;
+use \Leno\Database\Adapter;
+
 abstract class Row
 {
     /**
-     * @var 用于查询条件的OR关系
+     * 用于查询条件的OR关系
      */
     const R_OR = 'OR'; 
 
     /**
-     * @var 用于查询条件的AND关系
+     * 用于查询条件的AND关系
      */
     const R_AND = 'AND';
 
     /**
-     * @var 用于查询条件的优先级
+     * 用于查询条件的优先级
      */
     const EXP_QUOTE_BEGIN = '(';
 
     /**
-     * @var 用于查询条件的优先级
+     * 用于查询条件的优先级
      */
     const EXP_QUOTE_END = ')';
 
     /**
-     * @var 左连接类型
+     * 左连接类型
      */
     const JOIN_LEFT = 'LEFT_JOIN';
 
     /**
-     * @var 内连接类型
+     * 内连接类型
      */
     const JOIN_INNER = 'INNER_JOIN';
 
     /**
-     * @var 右连接类型
+     * 右连接类型
      */
     const JOIN_RIGHT = 'RIGHT_JOIN';
 
     /**
-     * @var 外连接类型
+     * 外连接类型
      */
     const JOIN_OUTER = 'OUTER_JOIN';
 
     /**
-     * @var 用于条件过滤
+     * 用于条件过滤
      */
     const TYPE_CONDI_BY = 'by';
 
     /**
-     * @var 用于join操作
+     * 用于join操作
      */
     const TYPE_CONDI_ON = 'on';
 
     /**
-     * @var 选择器类型
-     */
-    const TYPE_SELECTOR = 'selector';
-
-    /**
-     * @var 移除器类型
-     */
-    const TYPE_DELETOR = 'deletor';
-
-    /**
-     * @var 更新器类型
-     */
-    const TYPE_UPDATOR = 'updator';
-
-    /**
-     * @var 创建器类型
-     */
-    const TYPE_CREATOR = 'creator';
-
-    /**
-     * @var 已经创建的行操作器的实例 [
-     *        selector_user => selector_object,
-     *        updator_user => updator_object,
-     *        deletor_user => deletor_object,
-     *        creator_user => creator_object,
-     * ]
-     */
-    protected static $instance = [];
-
-    /**
-     * @var 该行操作器所使用的adapter实例
-     */
-    private static $adapter_instance;
-
-    /**
-     * @var 该行操作器操作的表名
+     * 该行操作器操作的表名
      */
     protected $table;
 
     /**
-     * @var 保存where查询条件
+     * 保存where查询条件
      */
     protected $where = [];
 
     /**
-     * @var 保存待join的selector
+     * 保存待join的selector
      */
     protected $joins = [];
 
     /**
-     * @var 保存join的条件
+     * 保存join的条件
      */
     protected $on = [];
 
     /**
-     * @var 保存待插入或者更新的data [
+     * 保存待插入或者更新的data [
      *        ['name' => 'young', 'age' => 25],
      * ]
      */
     protected $data = [];
 
     /**
-     * @var 保存create,update,delete之后adapter返回的结果
+     * 保存create,update,delete之后adapter返回的结果
      */
     protected $result;
-
-    /**
-     * @var 保存使用该行操作器的mapper,如果没有设置，则无法将查询出来的对象转换为对象
-     */
-    private $mapper;
 
     protected $params = [];
 
     protected $param_dirty = false;
 
-    protected $stmt;
-
     /**
-     *  构造函数
+     * 构造函数
      * @param string table 表明
      */
     public function __construct($table)
@@ -177,6 +129,7 @@ abstract class Row
 
     /**
      *  __get魔术方法，返回其字段对应值
+     *
      * @return mixed
      */
     public function __get($key)
@@ -190,40 +143,21 @@ abstract class Row
     }
 
     /**
-     *  设置该行操作器的mapper
-     * @param string mapper mapper类名
-     * @return this
+     * join其他行操作器
+     *
+     * ### sample
+     * $hello = (new Selector('hello'))
+     *      ->field('name', 'hello_name')
+     *      ->byEqName('hello');
+     *
+     * $world = (new Selector('world'))
+     *      ->field('name', 'world_name')
+     *      ->join($hello->onEqId($world->getFieldExpr('id')));
+     *
+     * $world->execute();
+     *
      */
-    public function setMapper($mapper)
-    {
-        $this->mapper = $mapper;
-        return $this;
-    }
-
-    /**
-     *  开始事务
-     * @return this
-     */
-    public function begin()
-    {
-        self::beginTransaction();
-        return $this;
-    }
-
-    /**
-     *  结束事务
-     * @return this
-     */
-    public function end()
-    {
-        self::commitTransaction();
-        return $this;
-    }
-
-    /**
-     *  join其他行操作器
-     */
-    public function join($row, $type = self::JOIN_LEFT)
+    public function join(Row $row, $type = self::JOIN_LEFT)
     {
         $this->joins[] = [
             'row' => $row,
@@ -232,24 +166,28 @@ abstract class Row
         return $this;
     }
 
-    public function reset($attr)
-    {
-        $this->$attr = [];
-        if($attr === 'joins') {
-            $this->on = [];
-        }
-    }
-
     public function resetAll()
     {
         $this->data = [];
         $this->joins = [];
         $this->on = [];
         $this->where = [];
+        $this->params = [];
         return $this;
     }
 
-    public function set($field, $value)
+    /**
+     * 设置data
+     *
+     * @param string field 字段名
+     * @param string value 值
+     *
+     * @return this
+     *
+     * ### sample
+     *
+     */
+    public function set(string $field, $value)
     {
         $this->data[$field] = $value;
         return $this;
@@ -301,6 +239,11 @@ abstract class Row
         return $this;
     }
 
+    public function quote($val)
+    {
+        return self::getAdapter()->keyQuote($val);
+    }
+
     public function quoteBegin()
     {
         $this->attachAdd();
@@ -327,11 +270,6 @@ abstract class Row
         return $this;
     }
 
-    public function quote($str)
-    {
-        return self::getAdapter()->keyQuote($str);
-    }
-
     public function getOn()
     {
         return $this->getCondition(self::TYPE_CONDI_ON);
@@ -344,7 +282,7 @@ abstract class Row
 
     public function getName()
     {
-        return new \Leno\ORM\Expr($this->quote($this->table));
+        return new Expr($this->quote($this->table));
     }
 
     public function getParams()
@@ -361,7 +299,7 @@ abstract class Row
 
     public function getFieldExpr($field)
     {
-        return new \Leno\ORM\Expr($this->getName() . '.' . $this->quote($field));
+        return new Expr($this->getName() . '.' . $this->quote($field));
     }
 
     public static function beginTransaction() 
@@ -379,53 +317,9 @@ abstract class Row
         self::getAdapter()->rollback();
     }
 
-    public static function selector($table)
-    {
-        $key = self::getInstanceKey(self::TYPE_SELECTOR, $table);
-        if(!isset(self::$instance[$key])) {
-            self::$instance[$key] = new \Leno\ORM\Row\Selector($table);
-        }
-        return self::$instance[$key];
-    }
-
-    public static function creator($table)
-    {
-        $key = self::getInstanceKey(self::TYPE_CREATOR, $table);
-        if(!isset(self::$instance[$key])) {
-            self::$instance[$key] = new \Leno\ORM\Row\Creator($table);
-        }
-        return self::$instance[$key];
-    }
-
-    public static function deletor($table)
-    {
-        $key = self::getInstanceKey(self::TYPE_DELETOR, $table);
-        if(!isset(self::$instance[$key])) {
-            self::$instance[$key] = new \Leno\ORM\Row\Deletor($table);
-        }
-        return self::$instance[$key];
-    }
-
-    public static function updator($table)
-    {
-        $key = self::getInstanceKey(self::TYPE_UPDATOR, $table);
-        if(!isset(self::$instance[$key])) {
-            self::$instance[$key] = new \Leno\ORM\Row\Updator($table);
-        }
-        return self::$instance[$key];
-    }
-
     public static function getAdapter()
     {
-        if(!self::$adapter_instance) {
-            self::$adapter_instance = \Leno\ORM\Connector::get();
-        }
-        return self::$adapter_instance;
-    }
-
-    public static function getInstanceKey($type, $table)
-    {
-        return $type.'_'.$table;
+        return Adapter::get();
     }
 
     protected function useOn()
@@ -471,7 +365,7 @@ abstract class Row
 
     protected function valueQuote($value)
     {
-        if(is_string($value) && !$value instanceof \Leno\ORM\Expr) {
+        if(is_string($value) && !$value instanceof \Leno\Database\Expr) {
             return '\''.$value.'\'';  
         }
         return $value;
@@ -589,7 +483,7 @@ abstract class Row
             $format = '%s %s (%s)';
             $field = $this->getFieldExpr($item['field']);
             $expr = $in[$item['expr']];
-            if ($item['value'] instanceof \Leno\ORM\Row) {
+            if ($item['value'] instanceof self) {
                 $value = $item['value']->getSql();
                 $this->params = array_merge($this->params, $item['value']->getParams());
             } elseif (is_array($item['value'])) {
@@ -622,7 +516,7 @@ abstract class Row
         $expr = [ 'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
             'lt' => '<', 'gte' => '>=', 'lte' => '<=', ];
         if (isset($expr[$item['expr']])) {
-            if(!($item['value'] instanceof \Leno\ORM\Expr)) {
+            if(!($item['value'] instanceof \Leno\Database\Expr)) {
                 $idx = $this->setParam($item['field'], $item['value']);
             } else {
                 $idx = $item['value'];
@@ -658,20 +552,7 @@ abstract class Row
         if(!$sql || empty($sql)) {
             return false;
         }
-        $driver = self::getAdapter();
-        $this->stmt = $driver->prepare($sql);
-        logger()->info('EXECUTING SQL: '.$sql, $this->params);
-        $result = $this->stmt->execute($this->params);
-        $this->param_dirty = true;
-        if(!$result) {
-            $error = sprintf("SQL Error[%s]: %s",
-                $this->stmt->errorCode(),
-                $this->stmt->errorInfo()[2]
-            );
-            logger()->info($error);
-            throw new \Leno\Exception ($error);
-        }
-        return $this;
+        return self::getAdapter()->execute($sql, $this->params);
     }
 
     abstract public function getSql();
