@@ -201,18 +201,6 @@ class Selector extends \Leno\ORM\Row
 
     public function execute($sql = null)
     {
-        $data = $this->field(
-            new \Leno\ORM\Expr('count(*)'), 'count'
-        )->limit(1)
-            ->execute()
-            ->fetchAll();
-        foreach($data as $row) {
-            return (int)$row['count'];
-        }
-    }
-
-    public function execute($sql = null)
-    {
         parent::execute();
         $this->stmt->setFetchMode(\PDO::FETCH_ASSOC);
         return $this->stmt;
