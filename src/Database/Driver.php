@@ -7,7 +7,7 @@ class Driver
 
     protected $busy = 0;
 
-    protected $driver_map = [
+    protected static $driver_map = [
         'pdo' => '\\Leno\\Database\\Driver\\PdoDriver'
     ];
 
@@ -17,12 +17,12 @@ class Driver
         return $this;
     }
 
-    public function getWeight()
+    public function getWeight() : int
     {
         return $this->max - $this->busy;
     }
 
-    public static function get($driver_label, $parameters = null)
+    public static function get($driver_label = 'pdo', $parameters = null)
     {
         $Driver = self::$driver_map[$driver_label];
         $driver_reflection = new \ReflectionClass($Driver);
@@ -37,10 +37,10 @@ class Driver
 
     private static function normalizePdoParams($params)
     {
-        $dsn = $params['adapter'] ?? 'mysql' . ':' . implode(';', [
-            'dbname='. $params['db'] ?? 'test_db',
-            'port='. $params['port'] ?? null,
-            'host='. $params['host'] ?? 'localhost',
+        $dsn = ($params['adapter'] ?? 'mysql') . ':' . implode(';', [
+            'dbname='. ($params['db'] ?? 'test_db'),
+            'port='. ($params['port'] ?? null),
+            'host='. ($params['host'] ?? 'localhost'),
         ]);
         return [
             $dsn,

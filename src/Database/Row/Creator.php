@@ -7,11 +7,10 @@ class Creator extends Row
 {
     public function create()
     {
-        parent::execute();
-        return $this;
+        return $this->execute();
     }
 
-    public function set($field, $val)
+    public function set(string $field, $val)
     {
         if(count($this->data) === 0) {
             $this->newRow();

@@ -1,5 +1,5 @@
 <?php
-namespace Leno\ORM;
+namespace Leno\Database;
 
 /**
  * 表达式的作用Row不会对表达式作任何处理

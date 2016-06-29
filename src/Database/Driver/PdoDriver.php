@@ -28,7 +28,7 @@ class PdoDriver extends Driver implements DriverInterface
         return $this->handler->beginTransaction();
     }
 
-    public function execute($sql, $params = null)
+    public function execute(string $sql, array $params = null)
     {
         $stmt = $this->handler->prepare($sql);
         logger()->info('EXECUTING SQL: '.$sql, $params);

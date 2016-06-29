@@ -6,7 +6,6 @@ namespace Leno\Database;
  */
 interface AdapterInterface
 {
-
     /**
      * 释放数据库事务保存点
      */
@@ -45,5 +44,10 @@ interface AdapterInterface
     /**
      * 返回一个执行sql的驱动
      */
-    protected function driver() : DriverInterface;
+    public function driver() : DriverInterface;
+
+    /**
+     * 返回一张表的约束信息
+     */
+    public function describeConstraint(string $table_name);
 }

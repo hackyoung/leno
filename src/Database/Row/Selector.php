@@ -58,7 +58,7 @@ class Selector extends Row
                 case 'group':
                     return $this->callGroup($series);
                 case 'field':
-                    return $this->callField($series);
+                    return $this->callField($series, $parameters);
             }
             throw new \Exception(get_class() . '::' . $method . ' Not Found');
         }

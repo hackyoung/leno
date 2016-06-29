@@ -223,7 +223,7 @@ abstract class Row
      */
     public function by($expr, $field, $value)
     {
-        $this->attachAdd();
+        $this->attachAdd(self::TYPE_CONDI_BY);
         $this->where[] = [
             'expr' => $expr,
             'field' => $field,
@@ -243,7 +243,7 @@ abstract class Row
      */
     public function on($expr, $field, $value)
     {
-        $this->attachAdd();
+        $this->attachAdd(self::TYPE_CONDI_ON);
         $this->on[] = [
             'expr' => $expr,
             'field' => $field,
@@ -302,7 +302,7 @@ abstract class Row
 
     public function quoteBegin()
     {
-        $this->attachAdd();
+        $this->attachAdd(self::TYPE_CONDI_BY);
         $this->where[] = self::EXP_QUOTE_BEGIN;
         return $this;
     }
@@ -315,7 +315,7 @@ abstract class Row
 
     public function onQuoteBegin()
     {
-        $this->attachAdd();
+        $this->attachAdd(self::TYPE_CONDI_ON);
         $this->on[] = self::EXP_QUOTE_BEGIN;
         return $this;
     }
@@ -473,15 +473,23 @@ abstract class Row
     /**
      * 补齐默认的and关系
      */
-    private function attachAdd()
+    private function attachAdd($type)
     {
+        switch($type) {
+            case self::TYPE_CONDI_ON:
+                $where = &$this->on;
+                break;
+            case self::TYPE_CONDI_BY:
+                $where = &$this->where;
+                break;
+        }
         $map = [
             self::R_OR,
             self::R_AND,
             self::EXP_QUOTE_BEGIN,
         ];
-        $len = count($this->where);
-        if($len > 0 && !in_array($this->where[$len - 1], $map)) {
+        $len = count($where);
+        if($len > 0 && !in_array($where[$len - 1], $map)) {
             $this->and();
         }
     }
@@ -495,7 +503,8 @@ abstract class Row
      */
     private function getCondition($type)
     {
-        switch($type) {
+        $ret = [];
+        switch ($type) {
             case self::TYPE_CONDI_BY:
                 $where = $this->where;
                 break;
@@ -503,16 +512,13 @@ abstract class Row
                 $where = $this->on;
                 break;
             default:
-                return [];
+                return $ret;
         }
-        $ret = [];
         $eq_arr = [
-            self::EXP_QUOTE_BEGIN,
-            self::EXP_QUOTE_END,
-            self::R_OR,
-            self::R_AND,
+            self::EXP_QUOTE_BEGIN, self::EXP_QUOTE_END,
+            self::R_OR, self::R_AND,
         ];
-        foreach($where as $item) {
+        foreach ($where as $item) {
             if(in_array($item, $eq_arr)) {
                 $ret[] = $item;
                 continue;

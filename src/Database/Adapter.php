@@ -11,6 +11,8 @@ abstract class Adapter implements AdapterInterface
 
     private $tables_info = [];
 
+    private $driver;
+
     private static $adapter_map = [
         'mysql' => '\\Leno\\Database\\Adapter\\MysqlAdapter',
         'pgsql' => '\\Leno\\Database\\Adapter\\PgsqlAdapter',
@@ -76,7 +78,12 @@ abstract class Adapter implements AdapterInterface
         return $this->tables_info[$table_name];
     }
 
-    protected function driver() : DriverInterface
+    public function describeConstraint(string $table_name)
+    {
+        return $this->_describeConstraint($table_name);
+    }
+
+    public function driver() : DriverInterface
     {
         if(!($this->driver instanceof DriverInterface)) {
             $this->driver = Connection::instance()->select();
@@ -92,4 +99,6 @@ abstract class Adapter implements AdapterInterface
     abstract protected function quote(string $key) : string;
 
     abstract protected function _describeTable(string $table_name);
+
+    abstract protected function _describeConstraint(string $table_name);
 }

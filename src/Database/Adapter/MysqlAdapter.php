@@ -5,13 +5,12 @@ use \Leno\Database\Adapter;
 
 class MysqlAdapter extends Adapter
 {
-
     protected function quote(string $value) : string
     {
         return '`'.$value.'`';
     }
 
-    protected _describeTable(string $table_name)
+    protected function _describeTable(string $table_name)
     {
         $result = $this->execute('DESCRIBE ' . $table_name);
         if($result === false) {
@@ -33,5 +32,9 @@ class MysqlAdapter extends Adapter
         } while($row);
 
         return $fields;
+    }
+
+    protected function _describeConstraint(string $table_name)
+    {
     }
 }

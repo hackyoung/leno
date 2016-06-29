@@ -3,7 +3,7 @@ namespace Leno\Database;
 
 use \Leno\Database\DriverInterface;
 use \Leno\Database\Driver;
-use \Leno\Singletion;
+use \Leno\Traits\Singleton;
 use \Leno\Configure;
 
 /**
@@ -13,7 +13,7 @@ use \Leno\Configure;
  */
 class Connection
 {
-    use Singletion;
+    use Singleton;
 
     protected $config;
 
@@ -24,6 +24,12 @@ class Connection
         $this->config = Configure::read('database');
     }
 
+    public function config ($config)
+    {
+        $this->config = $config;
+        return $this;
+    }
+
     /**
      * 通过加权轮询的方式返回一个合适的driver
      * 在一次http请求，同一次执行的请求仅有一条，这么做其实并不合适
@@ -31,6 +37,9 @@ class Connection
      */
     public function select() : DriverInterface
     {
+        if(empty($this->drivers)) {
+            return $this->drivers[] = $this->newDriver();
+        }
         $weighted_drivers = array_map(function($driver) {
             $weight = $driver->getWeight();
             return [$weight => $driver];
