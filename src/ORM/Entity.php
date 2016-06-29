@@ -10,8 +10,9 @@ use \Leno\Database\Adapter;
 use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
 use \Leno\ORM\Exception\PrimaryMissingException;
+use \Leno\Exception\MethodNotFoundException;
 
-class Entity
+class Entity implements \JsonSerializable
 {
     /**
      * 表名
@@ -34,15 +35,14 @@ class Entity
     public static $attributes = [];
 
     /**
-     * 主键定义，如果是单主键，则该变量是个字符串 比如user
-     * 如果是多主键，则是个数组不如 [user_id, book_id]
+     * 主键定义, 仅支持单主键 比如 user_id
      */
     public static $primary;
 
     /**
      * 唯一键定义，其格式如下
      * [
-     *      'unique_key_name' => [field, field],
+     *      'unique_key_name' => [field_1, field_2],
      * ]
      */
     public static $unique;
@@ -57,51 +57,36 @@ class Entity
 
     protected $dirty;
 
+    /**
+     * 保存Entity的属性值, 其格式如下
+     * [
+     *      'maybe_field' => [
+     *          'dirty' => bool,
+     *          'value' => mixed | [
+     *              mixed
+     *          ]
+     *      ]
+     * ]
+     */
     protected $values = [];
 
     public function __construct ($dirty = false)
     {
         $Entity = get_called_class();
+        if(!isset($Entity::$primary)) {
+            throw new PrimaryMissingException($Entity);
+        }
         $this->dirty = $dirty;
-        if(!is_array($Entity::$primary) && $this->getAttribute($primary)['type'] == 'uuid') {
-            $this->set($primary, uuid());
+        if($this->getAttribute($Entity::$primary)['type'] == 'uuid') {
+            $this->set($Entity::$primary, uuid());
         }
-        foreach($Entity::$primary as $primary) {
-            if($this->getAttribute($primary)['type'] == 'uuid') {
-                $this->set($primary, uuid());
-            }
-        }
-        throw new PrimaryMissingException;
-    }
-
-    public function save()
-    {
-        $mapper = new Mapper();
-        Row::beginTransaction();
-        try {
-            $data = $this->getData();
-            if($this->dirty()) {
-                $mapper->insert($data);
-            } else {
-                $by = $this->id();
-                if(!is_array($by)) {
-                    $by = [$Entity::$primary => $by];
-                }
-                $mapper->by($by)->update($data);
-            }
-            Row::commitTransaction();
-        } catch(\Exception $e) {
-            Row::rollback();
-            throw $e;
-        }
-        return $this->id();
     }
 
     public function __call($method, $args = null)
     {
         $series = array_filter(explode('_', unCamelCase($method, '_')));
         if(!isset($series[0])) {
-            throw new \Exception(get_class() .'::'.$method.' Not Defined');
+            throw new MethodNotFoundException(get_called_class() . '::' . $method);
         }
         $type = $series[0];
         array_splice($series, 0, 1);
@@ -114,10 +99,26 @@ class Entity
             case 'add':
                 return $this->add ($attr, $args[0]);
         }
-        if ($type == 'dirty') {
-            return $this->dirty ($args[0]);
+        throw new MethodNotFoundException(get_called_class() . '::' . $method);
+    }
+
+    public function save()
+    {
+        $mapper = new Mapper();
+        Row::beginTransaction();
+        try {
+            $data = $this->getData();
+            if($this->dirty()) {
+                $mapper->insert($data);
+            } else {
+                $mapper->update($data);
+            }
+            Row::commitTransaction();
+        } catch(\Exception $e) {
+            Row::rollback();
+            throw $e;
         }
-        throw new \Exception(get_called_class() .'::'.$method . ' Not Defined');
+        return $this->id();
     }
 
     public function get (string $attr)
@@ -158,6 +159,27 @@ class Entity
             return $this->values[$attr]['dirty'] ?? false;
         }
         return $this->dirty;
+    }
+
+    public function toArray()
+    {
+        $entity_array = [];
+        foreach($this->values as $key => $value_info) {
+            $entity_array[$key] = $value_info['value'];
+        }
+        return $entity_array;
+    }
+
+    /**
+     * TODO right implement
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+    private function getData()
+    {
     }
 
     private function getAttribute(string $attr)
