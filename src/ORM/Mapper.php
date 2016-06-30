@@ -14,6 +14,9 @@ class Mapper implements MapperInterface
     {
         $creator = new RowCreator($this->table_name);
         $dirty_data = $data->getDirty();
+        if(empty($dirty_data)) {
+            return true;
+        }
         foreach($dirty_data as $field => $value) {
             $creator->set($field, $value);
         }
@@ -24,6 +27,9 @@ class Mapper implements MapperInterface
     {
         $updator = new RowUpdator($this->table_name);
         $dirty_data = $data->getDirty();
+        if(empty($dirty_data)) {
+            return true;
+        }
         foreach($dirty_data as $field => $value) {
             $updator->set($field, $value);
         }
@@ -34,7 +40,7 @@ class Mapper implements MapperInterface
         return $updator->update();
     }
 
-    public function deletor(DataInterface $data)
+    public function remove(DataInterface $data)
     {
         $deletor = new RowDeletor($this->table_name);
         foreach($data->id() as $field => $value) {
@@ -44,16 +50,19 @@ class Mapper implements MapperInterface
         return $deletor->delete();
     }
 
-    public function find($id)
+    public function find($id, $entity = null)
     {
         $selector = new RowSelector($this->table_name);
+        if ($entity) {
+            $selector->selectEntity($entity);
+        }
         foreach($id as $field => $value) {
             $selector->by('eq', $field, $value);
         }
-        return $selector->getOne();
+        return $selector->findOne();
     }
 
-    public function selectTable($table_name)
+    public function selectTable(string $table_name)
     {
         $this->table_name = $table_name;
         return $this;

@@ -2,7 +2,7 @@
 namespace Leno\ORM;
 
 use \Leno\ORM\DataInterface;
-use \Leno\ORM\Type;
+use \Leno\Type;
 
 /**
  * Data是一个数据集，通过mapper，可以将它持久化存储，所有数据在写入Data的时候会通过
@@ -55,7 +55,7 @@ class Data implements DataInterface
      *
      * @return bool
      */
-    public function validate()
+    public function validate() : bool
     {
         foreach($this->config as $field => $config) {
             $Type = Type::getClass($config['type']);
@@ -73,7 +73,9 @@ class Data implements DataInterface
             if(!$value_info['dirty']) {
                 continue;
             }
-            $dirty_data[$field] = $value_info['value'];
+            $attr = $this->config[$field];
+            $Type = Type::get($attr['type']);
+            $dirty_data[$field] = (new $Type)->toDB($value_info['value']);
         }
         return $dirty_data;
     }

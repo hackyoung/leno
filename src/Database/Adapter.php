@@ -13,48 +13,44 @@ abstract class Adapter implements AdapterInterface
 
     private $driver;
 
+    private static $adapters = [];
+
     private static $adapter_map = [
         'mysql' => '\\Leno\\Database\\Adapter\\MysqlAdapter',
         'pgsql' => '\\Leno\\Database\\Adapter\\PgsqlAdapter',
     ];
 
+    private function __construct() {}
+
     public static function get($adapter_label = 'mysql')
     {
-        return new self::$adapter_map[$adapter_label];
+        if(!isset(self::$adapters[$adapter_label])) {
+            self::$adapters[$adapter_label] = new self::$adapter_map[$adapter_label];
+        }
+        return self::$adapters[$adapter_label];
     }
 
     public function beginTransaction() : bool
     {
-        if(!$this->transaction_counter++) {
+        if (!$this->transaction_counter++) {
             return $this->driver()->beginTransaction();
         }
-        $this->execute('SAVEPOINT '.$this->getSavePoint());
-        return $this->transactionCounter >= 0; 
+        $this->execute('SAVEPOINT trans'.$this->transaction_counter);
+        return $this->transaction_counter >= 0;
     }
 
     public function commitTransaction() : bool
     {
-        $save_point = $this->getSavePoint();
-        if(!--$this->transaction_counter) {
-           $this->releaseSavePoint($save_point);
-           return $this->driver()->commit();
+        if (!--$this->transaction_counter) {
+            return $this->driver()->commit();
         }
-        return $this->transaction_counter >= 0; 
-    }
-
-    public function releaseSavePoint(string $sp_pos) : bool
-    {
-        if($this->execute('RELEASE SAVEPOINT '.$sp_pos)) {
-            return true;
-        }
-        return false;
+        return $this->transaction_counter >= 0;
     }
 
     public function rollback()
     {
-        $save_point = $this->getSavePoint();
-        if (--$this->transactionCounter) {
-            $this->execute('ROLLBACK TO '.$save_point);
+        if (--$this->transaction_counter) {
+            $this->execute('ROLLBACK TO trans'.($this->transaction_counter + 1));
             return true;
         }
         return $this->driver()->rollback();
@@ -89,11 +85,6 @@ abstract class Adapter implements AdapterInterface
             $this->driver = Connection::instance()->select();
         }
         return $this->driver;
-    }
-
-    private function getSavePoint()
-    {
-        return 'trans_'.$this->transaction_counter;
     }
 
     abstract protected function quote(string $key) : string;

@@ -6,6 +6,7 @@ use \Leno\Database\Row\Creator as RowCreator;
 use \Leno\Database\Row\Updator as RowUpdator;
 use \Leno\Database\Row\Deletor as RowDeletor;
 use \Leno\Database\Row\Selector as RowSelector;
+use \Leno\Database\Expr;
 /*
     CREATE TABLE user_test (
         id CHAR(36) NOT NULL,
@@ -51,13 +52,12 @@ $ret = (new RowSelector('user_test'))->field([
     'id'
 ])->execute()->fetchAll();
  */
-/*
 $ret = (new RowSelector('user_test'))
     ->fieldName('user_name')
     ->fieldAge('user_age')
     ->fieldId()
+    ->byExpr(new Expr('id = hello'))
     ->execute()->fetchAll();
- */
 /*
 $ret = (new RowSelector('user_test'))
     ->field('name', 'user_name')

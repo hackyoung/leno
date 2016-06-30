@@ -13,5 +13,5 @@ interface MapperInterface
 
     public function remove (DataInterface $data);
 
-    public function find ($id);
+    public function find ($id, $Entity);
 }

@@ -4,7 +4,7 @@ namespace Leno\Type;
 use \Leno\Type\TypeStorageInterface; 
 use \Leno\Type\Exception\ValueNotUuidException;
 
-class UuidType extends \Leno\Type implements TypeStorageInterface
+abstract class UuidType extends \Leno\Type implements TypeStorageInterface
 {
     protected $regexp = '/^[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}$/i';
 
@@ -16,7 +16,7 @@ class UuidType extends \Leno\Type implements TypeStorageInterface
         return true;
     }
 
-    public function toDB($value)
+    public function toDB($value) : string
     {
         return (string)$value;
     }
@@ -26,8 +26,10 @@ class UuidType extends \Leno\Type implements TypeStorageInterface
         return $value;
     }
 
-    public function toType()
+    public function toType() : string
     {
-        return 'CHAR(36)';
+        return $this->_toType();
     }
+
+    abstract protected function _toType();
 }

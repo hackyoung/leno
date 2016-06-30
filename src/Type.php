@@ -49,7 +49,8 @@ abstract class Type implements TypeCheckInterface
         $this->allow_empty = $allow_empty;
     }
 
-    public function check($val) {
+    public function check($val) : bool
+    {
         if($val === null) {
             if($this->required) {
                 throw new ValueRequiredException($this->value_name, $val);
@@ -91,7 +92,7 @@ abstract class Type implements TypeCheckInterface
 
     public static function get($idx)
     {
-        $type = self::$types[self::$adapter][$idx] ?? self::$type[$idx] ?? null;
+        $type = self::$types[self::$adapter][$idx] ?? self::$types[$idx] ?? null;
         if($type == null) {
             throw new TypeMissingException($idx);
         }

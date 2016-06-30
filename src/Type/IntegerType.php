@@ -3,7 +3,7 @@ namespace Leno\Type;
 
 use \Leno\Type\NumberType;
 
-class IntegerNumber extends NumberType
+class IntegerType extends NumberType
 {
     protected $regexp = '/-?\d+/';
 }

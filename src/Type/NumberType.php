@@ -31,7 +31,7 @@ class NumberType extends \Leno\Type implements TypeStorageInterface
         return (string)$value;
     }
 
-    public function toType()
+    public function toType() : string
     {
         return 'INT';
     }

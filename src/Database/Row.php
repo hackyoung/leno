@@ -366,7 +366,7 @@ abstract class Row
 
     public static function commitTransaction()
     {
-        return self::getAdapter()->commit();
+        return self::getAdapter()->commitTransaction();
     }
 
     public static function rollback()
@@ -437,7 +437,7 @@ abstract class Row
     private function callCondition($series, $value, $type=self::TYPE_CONDI_BY)
     {
         $exprs = [
-            'gt', 'lt', 'gte', 'lte', 'in', 'eq', 'like',
+            'gt', 'lt', 'gte', 'lte', 'in', 'eq', 'like', 'expr',
         ];
         if(isset($series[0]) && $series[0] === 'not') {
             $not = true;
@@ -454,7 +454,7 @@ abstract class Row
             $expr = $series[0];
         }
         array_splice($series, 0, 1);
-        $field = implode('_', $series);
+        $field = implode('_', $series) ?? null;
         switch($type) {
             case self::TYPE_CONDI_ON:
                 return $this->on($expr, $field, $value[0]);
@@ -534,6 +534,9 @@ abstract class Row
      */
     private function expr($item)
     {
+        if($item['expr'] == 'expr') {
+            return $item['value'];
+        }
         return $this->exprLike($item) ?? $this->exprIn($item) ?? $this->exprR($item);
     }
 

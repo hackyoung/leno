@@ -36,6 +36,8 @@ class Selector extends Row
      */
     protected $limit = [];
 
+    private $entity;
+
     /**
      * __call魔术方法,提供group,order,field系列函数入口
      *
@@ -235,13 +237,20 @@ class Selector extends Row
     {
         $ret = [];
         $result = $this->execute();
-        if(!$result) {
+        if(!$result || !$this->entity) {
             return $result;
         }
+        $Entity = $this->entity;
         foreach($result as $k=>$row) {
-            $ret[$k] = $this->toMapper($row);
+            $ret[$k] = $Entity::newFromDB($row);
         }
         return $ret;
+    }
+
+    public function selectEntity($entity)
+    {
+        $this->entity = $entity;
+        return $this;
     }
 
     /**

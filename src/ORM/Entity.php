@@ -1,13 +1,15 @@
 <?php
 namespace Leno\ORM;
 
+use \Leno\Database\Selector as RowSelector;
 use \Leno\Database\Row;
 use \Leno\Database\Adapter;
 use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
+
 use \Leno\ORM\Exception\PrimaryMissingException;
-use \Leno\Exception\MethodNotFoundException;
 use \Leno\ORM\Exception\EntityNotFoundException;
+use \Leno\Exception\MethodNotFoundException;
 
 class Entity implements \JsonSerializable
 {
@@ -47,11 +49,23 @@ class Entity implements \JsonSerializable
     /**
      * 外键定义，该键不是关联到具体的表，而是关联到Entity, 格式如下
      * [
-     *      'field_name' => EntityClass,
+     *      'name' => [
+     *          'entity' => EntityClass,
+     *          'foreign' => 'entity_field_name',
+     *          'local' => 'self_field_name'
+     *      ]
      * ]
      */
     public static $foreign;
 
+    /**
+     * 索引定义
+     */
+    public static $index;
+
+    /**
+     * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
+     */
     protected $dirty;
 
     /**
@@ -114,11 +128,12 @@ class Entity implements \JsonSerializable
         if($this->beforeSave() === false) {
             return false;
         }
-        $mapper = new Mapper();
+        $Entity = get_called_class();
+        $mapper = (new Mapper())->selectTable($Entity::$table);
         Row::beginTransaction();
         try {
             $data = $this->getDataWithSave();
-            if ($this->dirty() && $this->beforeInsert() !== false) {
+            if (!$this->dirty()) {
                 $this->beforeInsert() !== false && $mapper->insert($data);
             } else {
                 $this->beforeUpdate() !== false && $mapper->update($data);
@@ -136,13 +151,31 @@ class Entity implements \JsonSerializable
         if($this->beforeRemove() === false) {
             return false;
         }
-        $mapper = new Mapper();
+        $Entity = get_called_class();
+        $mapper = (new Mapper())->selectTable($Entity::$table);
         return $mapper->remove($this->getDataWithRemove());
     }
 
     public function get (string $attr)
     {
-        return $this->$values[$attr]['value'] ?? null;
+        $self = get_called_class();
+        if(!isset($self::$foreign[$attr])) {
+            return $this->values[$attr]['value'] ?? null;
+        }
+        $Entity = $self::$foreign[$attr]['entity'];
+        $selector = $Entity::selector()->registerEntity($Entity);
+        $type = $Entity::$attributes[$self::$primary]['type'];
+        $field = $selector->getFieldExpr($self::$foreign[$attr]['foreign']);
+        if($type == 'array') {
+            $entitys = $selector->byExpr(
+                $Type::get('array')->in($this->id(), $field)
+            )->find();
+            $this->set($self::$foreign[$attr]['local'], $entitys);
+            return $entitys;
+        }
+        $entitys = $selector->by('eq', $field, $this->id())->find();
+        $this->set($self::$foreign[$attr]['local'], $entitys);
+        return $entitys;
     }
 
     public function setForcely (string $attr, $value, bool $dirty = true)
@@ -170,6 +203,12 @@ class Entity implements \JsonSerializable
             return $this;
         }
         return $this->pAdd($attr, $value);
+    }
+
+    public function id()
+    {
+        $self = get_called_class();
+        return $this->get($self::$primary);
     }
 
     public function dirty (string $attr = null) : bool
@@ -232,7 +271,7 @@ class Entity implements \JsonSerializable
             }
             $values[$field] = $value;
         }
-        return new Data($value, $Entity::$attributes, $Entity::$primary);
+        return new Data($values, $self::$attributes, $self::$primary);
     }
 
     private function getDataWithRemove()
@@ -251,7 +290,7 @@ class Entity implements \JsonSerializable
     {
         $self = get_called_class(); 
         if($value instanceof $self) {
-            $Entity = $self::$foreign[$attr] ?? null;
+            $Entity = self::getEntityByField($attr);
             if(!$Entity || !($value instanceof $Entity)) {
                 throw new \Leno\Exception ('value type error');
             }
@@ -274,7 +313,7 @@ class Entity implements \JsonSerializable
             throw new \Leno\Exception ('You Attempt Add Value To None Array Type : '.$attr);
         }
         if($value instanceof $self) {
-            $Entity = $self::$foreign[$attr] ?? null;
+            $Entity = self::getEntityByField($attr);
             if(!$Entity || !($value instanceof $Entity)) {
                 throw new \Leno\Exception ('value type error');
             }
@@ -306,15 +345,18 @@ class Entity implements \JsonSerializable
     public static function find($id)
     {
         $Entity = get_called_class();
-        $data = (new Mapper)->selectTable($Entity::$table)
-            ->find([$Entity::$primary => $id]);
-        if(!$data) {
-            return false;
-        }
-        $entity = new $Entity(false);
+        return (new Mapper)->selectTable($Entity::$table)->find([
+            $Entity::$primary => $id
+        ], $Entity);
+    }
+
+    public static function newFromDB(array $row)
+    {
+        $Entity = get_called_class();
+        $entity = new $Entity(true);
         foreach($Entity::$attributes as $field => $attr) {
-            $value = $data[$field] ?? $attr['default'] ?? null;
-            if($attr['sensitive']) {
+            $value = $row[$field] ?? $attr['default'] ?? null;
+            if($attr['sensitive'] ?? false) {
                 $entity->setForcely($field, $value, false);
                 continue;
             }
@@ -330,5 +372,16 @@ class Entity implements \JsonSerializable
             throw new EntityNotFoundException(get_called_class(), $id);
         }
         return $entity;
+    }
+
+    public static function getEntityByField(string $field)
+    {
+        $Entity = get_called_class();
+        foreach($Entity::$foreign as $foreign) {
+            if($foreign['local'] != $field) {
+                continue;
+            }
+            return $foreign['entity'];
+        }
     }
 }

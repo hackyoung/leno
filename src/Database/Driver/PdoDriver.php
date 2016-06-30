@@ -11,6 +11,7 @@ class PdoDriver extends Driver implements DriverInterface
     public function __construct($dsn, $user, $pass, $options = null)
     {
         $this->handler = new \PDO($dsn, $user, $pass, $options);
+        $this->handler->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
     public function rollback()
@@ -31,12 +32,12 @@ class PdoDriver extends Driver implements DriverInterface
     public function execute(string $sql, array $params = null)
     {
         $stmt = $this->handler->prepare($sql);
-        logger()->info('EXECUTING SQL: '.$sql, $params);
+        logger()->info('EXECUTING SQL: '.$sql, $params ?? []);
         $this->busy++;
         $result = $stmt->execute($params);
         $this->busy--;
         if(!$result) {
-            // TODO 处理异常
+
         }
         return $stmt;
     }

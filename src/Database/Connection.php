@@ -40,17 +40,20 @@ class Connection
         if(empty($this->drivers)) {
             return $this->drivers[] = $this->newDriver();
         }
-        $weighted_drivers = array_map(function($driver) {
+        $drivers = array_map(function($driver) {
             $weight = $driver->getWeight();
-            return [$weight => $driver];
+            return [
+                'weight' => $weight,
+                'driver' => $driver
+            ];
         }, $this->drivers);
-        krsort($weighted_drivers);
-        foreach($weighted_drivers as $weight=>$driver) {
-            if ($weight <= 0) {
+        array_multisort(array_column($drivers, 'weight'), SORT_DESC, $drivers);
+        foreach($drivers as $driver_info) {
+            if ($driver_info['weight'] <= 0) {
                 // 如果第一个driver的weight都为0,说明已经没有driver可用
                 return $this->drivers[] = $this->newDriver();
             }
-            return $driver;
+            return $driver_info['driver'];
         }
     }
 

@@ -7,11 +7,6 @@ namespace Leno\Database;
 interface AdapterInterface
 {
     /**
-     * 释放数据库事务保存点
-     */
-    public function releaseSavePoint(string $sp_pos) : bool;
-
-    /**
      * 开始一个事物
      */
     public function beginTransaction() : bool;
