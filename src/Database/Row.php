@@ -83,21 +83,14 @@ abstract class Row
      */
     protected $data = [];
 
-    /**
-     * 保存create,update,delete之后adapter返回的结果
-     */
-    protected $result;
-
     protected $params = [];
-
-    protected $param_dirty = false;
 
     /**
      * 构造函数
      *
      * @param string table 表明
      */
-    public function __construct($table)
+    public function __construct(string $table)
     {
         $this->table = $table;
     }

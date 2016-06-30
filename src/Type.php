@@ -8,20 +8,30 @@ use \Leno\Type\TypeCheckInterface;
 
 abstract class Type implements TypeCheckInterface
 {
-    public static $types = [
-        'int'       =>    '\Leno\Type\IntegerType',
-        'integer'   =>    '\Leno\Type\IntegerType',
-        'number'    =>    '\Leno\Type\NumberType',
-        'enum'      =>    '\Leno\Type\EnumType',
-        'string'    =>    '\Leno\Type\StringType',
-        'uuid'      =>    '\Leno\Type\UuidType',
-        'uri'       =>    '\Leno\Type\UriType',
-        'url'       =>    '\Leno\Type\UrlType',
-        'ip'        =>    '\Leno\Type\Ipv4Type',
-        'ipv4'      =>    '\Leno\Type\Ipv4Type',
-        'email'     =>    '\Leno\Type\EmailType',
-        'phone'     =>    '\Leno\Type\PhoneType',
-        'datetime'  =>    '\Leno\Type\DatetimeType',
+    protected static $adapter = 'mysql';
+
+    protected static $types = [
+        'mysql' => [
+            'array' => '\\Leno\\Type\\Mysql\\ArrayType', 
+            'datetime' => '\\Leno\\Type\\Mysql\\DatetimeType',
+            'uuid' => '\\Leno\\Type\\Mysql\\UuidType'
+        ],
+        'pgsql' => [
+            'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
+            'datetime' => '\\Leno\\Type\\Pgsql\\DatetimeType',
+            'uuid' => '\\Leno\\Type\\Pgsql\\UuidType'
+        ],
+        'int' => '\Leno\Type\IntegerType',
+        'integer' => '\Leno\Type\IntegerType',
+        'number' => '\Leno\Type\NumberType',
+        'enum' => '\Leno\Type\EnumType',
+        'string' => '\Leno\Type\StringType',
+        'uri' => '\Leno\Type\UriType',
+        'url' => '\Leno\Type\UrlType',
+        'ip' => '\Leno\Type\Ipv4Type',
+        'ipv4' => '\Leno\Type\Ipv4Type',
+        'email' => '\Leno\Type\EmailType',
+        'phone' => '\Leno\Type\PhoneType',
         'json'      =>    '\Leno\Type\JsonType',
     ];
 
@@ -81,15 +91,19 @@ abstract class Type implements TypeCheckInterface
 
     public static function get($idx)
     {
-        if(!isset(self::$types[$idx])) {
+        $type = self::$types[self::$adapter][$idx] ?? self::$type[$idx] ?? null;
+        if($type == null) {
             throw new TypeMissingException($idx);
         }
-        return self::$types[$idx];
+        return $type;
     }
 
-    public static function register($idx, $class)
+    public static function register($type, $class, $adapter = null)
     {
-        self::$types[$idx] = $class;
+        if($adapter !== null) {
+            self::$types[$adapter][$type] = $class;
+        }
+        self::$types[$type] = $class;
     }
 
     abstract protected function _check($value) : bool;

@@ -39,8 +39,8 @@ class Data implements DataInterface
     /**
      * 构造函数
      *
-     * @param array data 当传入该参数，data的所有写入Data的数据都会默认标记为dirty,其余的set操作则默认标记为不是dirty的数据
-     * @param array config 如果传递该参数，则Data的config将会设置为传递的config
+     * @param array data 当传入该参数
+     * @param array config 如果传递该参数
      *
      */
     public function __construct(array $data, array $config, string $primary)
@@ -59,7 +59,7 @@ class Data implements DataInterface
     {
         foreach($this->config as $field => $config) {
             $Type = Type::getClass($config['type']);
-            (new $Type(($config['null'] ?? true), true))
+            $type = (new $Type(($config['null'] ?? true), true))
                 ->setExtra($config['extra'])
                 ->check($this->data[$field]['value'] ?? null);
         }
