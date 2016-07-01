@@ -395,6 +395,7 @@ class Entity implements \JsonSerializable
     private function getDataWithSave()
     {
         $values = [];
+        $self = get_called_class();
         foreach($this->values as $field => $value) {
             if($value['value'] instanceof self) {
                 $value['value'] = $value['value']->save();

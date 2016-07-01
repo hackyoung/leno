@@ -32,13 +32,14 @@ class PdoDriver extends Driver implements DriverInterface
     public function execute(string $sql, array $params = null)
     {
         $stmt = $this->handler->prepare($sql);
-        logger()->info('EXECUTING SQL: '.$sql, $params ?? []);
         $this->busy++;
-        $result = $stmt->execute($params);
-        $this->busy--;
-        if(!$result) {
-
+        try {
+            $stmt->execute($params);
+        } catch (\Exception $e) {
+            $this->busy--;
+            throw $e;
         }
+        $this->busy--;
         return $stmt;
     }
 }

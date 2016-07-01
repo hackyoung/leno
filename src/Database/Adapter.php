@@ -4,7 +4,9 @@ namespace Leno\Database;
 use \Leno\Database\DriverInterface;
 use \Leno\Database\AdapterInterface;
 use \Leno\Database\Connection;
-
+/**
+ *
+ */
 abstract class Adapter implements AdapterInterface
 {
     private $transaction_counter = 0;
@@ -63,7 +65,13 @@ abstract class Adapter implements AdapterInterface
 
     public function execute(string $sql, $params = null)
     {
-        return $this->driver()->execute($sql, $params);
+        self::logger()->info('execute sql: '.$sql, $params ?? []);
+        try {
+            return $this->driver()->execute($sql, $params);
+        } catch (\Exception $e) {
+            self::logger()->error('sql error: '.$e->getMessage());
+            throw $e;
+        }
     }
 
     public function describeTable(string $table_name)
@@ -85,6 +93,11 @@ abstract class Adapter implements AdapterInterface
             $this->driver = Connection::instance()->select();
         }
         return $this->driver;
+    }
+
+    protected static function logger()
+    {
+        return logger('adapter');
     }
 
     abstract protected function quote(string $key) : string;

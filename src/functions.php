@@ -112,7 +112,7 @@ function uuid()
     return implode('-', $arr);
 }
 
-function logger($level = \Monolog\Logger::DEBUG, $name = 'default')
+function logger($name = 'default', $level = \Monolog\Logger::DEBUG)
 {
     return \Leno\Worker::instance()->logger($level, $name);
 }
