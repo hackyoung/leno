@@ -235,12 +235,18 @@ class Selector extends Row
      */
     public function find()
     {
-        $ret = [];
+        $Entity = $this->entity;
+        if ($Entity) {
+            $attrs = $Entity::$attributes;
+            foreach($attrs as $field => $attr) {
+                $this->field($field);
+            }
+        }
         $result = $this->execute();
-        if(!$result || !$this->entity) {
+        if(!$result || !$Entity) {
             return $result;
         }
-        $Entity = $this->entity;
+        $ret = [];
         foreach($result as $k=>$row) {
             $ret[$k] = $Entity::newFromDB($row);
         }
@@ -268,23 +274,29 @@ class Selector extends Row
      */
     public function count()
     {
-        $sql = sprintf('SELECT count(*) as c FROM %s %s WHERE %s %s %s',
-            $this->quote($this->table), $this->useJoin(),
-            $this->useWhere(), $this->useGroup(), 
-            $this->useOrder(), $this->useLimit()
+        $Entity = $this->entity;
+        if($Entity) {
+            $field = $this->quote($Entity::$table.'.'.$Entity::$primary);
+        } else {
+            $field = '*';
+        }
+        $sql = sprintf('SELECT count(%s) as counter FROM %s %s WHERE %s %s %s',
+            $field, $this->quote($this->table),
+            $this->useJoin(), $this->useWhere(),
+            $this->useGroup(), $this->useOrder()
         );
         $result = $this->execute($sql);
         if(!$result) {
             return 0;
         }
         foreach ($result as $k=>$row) {
-            return $row['c'];
+            return $row['counter'];
         }
     }
 
     public function execute($sql = null)
     {
-        $stmt = parent::execute();
+        $stmt = parent::execute($sql);
         $stmt->setFetchMode(\PDO::FETCH_ASSOC);
         return $stmt;
     }
@@ -292,7 +304,7 @@ class Selector extends Row
     public function getSql()
     {
         $this->params = [];
-        return sprintf('SELECT %s FROM %s %s WHERE %s %s %s',
+        return sprintf('SELECT %s FROM %s %s WHERE %s %s %s %s',
             $this->useField(), $this->quote($this->table),
             $this->useJoin(), $this->useWhere(), $this->useGroup(), 
             $this->useOrder(), $this->useLimit()
@@ -338,13 +350,6 @@ class Selector extends Row
             $this->limit['row'] ?? 0,
             $this->limit['limit'] ?? -1
         );
-    }
-
-    private function toMapper($row)
-    {
-        $Mapper = $this->getMapper();
-        $mapper = (new $Mapper($row))->setFresh(false);
-        return $mapper;
     }
 
     private function callGroup($series)
