@@ -299,7 +299,10 @@ class Entity implements \JsonSerializable
         if(!isset($self::$foreign[$attr])) {
             return $this->values[$attr]['value'] ?? null;
         }
-        $Entity = $self::getEntityByField($attr);
+        $Entity = $self::$foreign[$attr]['entity'] ?? false;
+        if(!$Entity) {
+            throw \Leno\Exception($attr . ' Not Found');
+        }
         $foreign_selector = $Entity::selector()->registerEntity($Entity);
         $current_value = $this->values[$attr]['value'];
         if ($current_value) {
@@ -308,13 +311,16 @@ class Entity implements \JsonSerializable
         $foreign_key = $self::$foreign[$attr]['foreign_key'];
         $field = $foreign_selector->getFieldExpr($foreign_key);
         $value = $this->get($local_key);
-        $entity = $foreign_selector->by('eq', $field, $value)->findOne();
+        $entity = $foreign_selector->by('eq', $field, $value)->find();
+        if ($entity && count($entity) == 1) {
+            $entity = $entity[0];
+        }
         $this->set($attr, $entity);
         return $entity;
     }
 
     /**
-     * 强制设置属性值，该方法会忽略sentitive，直接设置value
+     * 强制设置属性值，该方法会忽略sensitive，直接设置value
      */
     public function setForcely (string $attr, $value, bool $dirty = true)
     {
@@ -399,24 +405,11 @@ class Entity implements \JsonSerializable
         $self = get_called_class();
         foreach($this->values as $field => $value) {
             if($value['value'] instanceof self) {
-                $value['value'] = $value['value']->save();
-                continue;
-            }
-            if(is_array($value['value'])) {
-                $new_value_list = [];
-                foreach($value['value'] as $each_value) {
-                    if($each_value instanceof self) {
-                        $new_value_list[] = $each_value->save();
-                    }
+                if($foreign = $self::$foreign[$field]) {
+                    $value[$foreign['local_key']] = $value['value']->save();
+                    continue;
                 }
-                $Entity = get_called_class();
-                $foreign = $Entity::$foreign;
-
-                // 如果是通过数组字段进行表关联的，则需要保存其值
-                if(!isset($foreign[$field])) {
-                    $value['value'] = $new_value_list;
-                }
-                continue;
+                throw new \Leno\Exception('mistake happen');
             }
             $values[$field] = $value;
         }
@@ -459,10 +452,7 @@ class Entity implements \JsonSerializable
     private function _add(string $attr, $value)
     {
         if($value instanceof self) {
-            $Entity = self::getEntityByField($attr);
-            if(!$Entity || !($value instanceof $Entity)) {
-                throw new \Leno\Exception ('value type error');
-            }
+            throw new \Leno\Exception ('value type error');
         }
         if(!isset($this->values[$attr])) {
             $this->values[$attr] = [
@@ -501,10 +491,10 @@ class Entity implements \JsonSerializable
      */
     public static function find($id)
     {
-        $Entity = get_called_class();
-        return (new Mapper)->selectTable($Entity::$table)->find([
-            $Entity::$primary => $id
-        ], $Entity);
+        $self = get_called_class();
+        return (new Mapper)->selectTable($self::$table)->find([
+            $self::$primary => $id
+        ], $self);
     }
 
     /**
@@ -518,9 +508,9 @@ class Entity implements \JsonSerializable
      */
     public static function newFromDB(array $row)
     {
-        $Entity = get_called_class();
-        $entity = new $Entity(true);
-        foreach($Entity::$attributes as $field => $attr) {
+        $self = get_called_class();
+        $entity = new $self(true);
+        foreach($self::$attributes as $field => $attr) {
             $value = Type::get($attr['type'])->toPHP(
                 $row[$field] ?? $attr['default'] ?? null
             );
@@ -548,16 +538,5 @@ class Entity implements \JsonSerializable
             throw new EntityNotFoundException(get_called_class(), $id);
         }
         return $entity;
-    }
-
-    public static function getEntityByField(string $attr)
-    {
-        $Entity = get_called_class();
-        foreach($Entity::$foreign as $foreign) {
-            if($foreign['local_key'] != $attr) {
-                continue;
-            }
-            return $foreign['entity'];
-        }
     }
 }

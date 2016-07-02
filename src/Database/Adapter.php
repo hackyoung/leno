@@ -69,7 +69,7 @@ abstract class Adapter implements AdapterInterface
         try {
             return $this->driver()->execute($sql, $params);
         } catch (\Exception $e) {
-            self::logger()->error('sql error: '.$e->getMessage());
+            self::logger()->err('sql error: '.$e->getMessage());
             throw $e;
         }
     }

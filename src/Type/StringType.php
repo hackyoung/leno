@@ -31,7 +31,10 @@ class StringType extends \Leno\Type implements TypeStorageInterface
 
     public function toType() : string
     {
-        $max_length = $this->extra['max_length'];
+        $max_length = $this->extra['max_length'] ?? null;
+        if($max_length === null) {
+            throw new \Leno\Exception ('need max length');
+        }
         return 'VARCHAR('.$max_length.')';
     }
 

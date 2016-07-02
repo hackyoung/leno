@@ -12,15 +12,7 @@ class User extends Entity
         'name' => ['type' => 'string', 'sensitive' => true, 'null' => false, 'extra' => [
             'max_length' => 64
         ], 'default' => 'the default'],
-        'book_id' => ['type' => 'array'],
         'age' => ['type' => 'integer', 'null' => false, 'default' => 20]
-    ];
-
-    public static $foreign = [
-        'book' => [
-            'entity' => '\\Test\\Model\\Book',
-            'local' => 'book_id'
-        ]
     ];
 
     public static $primary = 'id';

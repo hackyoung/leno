@@ -1,6 +1,9 @@
 <?php
 namespace Leno\Shell;
 
+use \Leno\Database\Table;
+use \Leno\Type;
+
 class Build extends \Leno\Shell
 {
     protected $needed_args = [
@@ -76,10 +79,10 @@ class Build extends \Leno\Shell
             logger()->warn('Find A Class: ' . $Entity. ' But No Table\attributes Assign Ingnore');
             return;
         }
-        $table = new \Leno\ORM\Table($re->getStaticPropertyValue('table'));
+        $table = new Table($re->getStaticPropertyValue('table'));
         foreach($re->getStaticPropertyValue('attributes') as $field => $info) {
             $attr = [
-                'type' => Type::get($info['type'])->toType(),
+                'type' => Type::get($info['type'])->setExtra($info['extra'] ?? [])->toType(),
                 'null' => 'NOT NULL',
             ];
             if (($info['null'] ?? true) === false) {

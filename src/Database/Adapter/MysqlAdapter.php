@@ -12,13 +12,14 @@ class MysqlAdapter extends Adapter
 
     protected function _describeTable(string $table_name)
     {
-        $result = $this->execute('DESCRIBE ' . $table_name);
-        if($result === false) {
+        try {
+            $result = $this->execute('DESCRIBE ' . $table_name);
+        } catch (\Exception $e) {
             return false;
         }
         $fields = [];
         do {
-            $row = $result->fetch(self::FETCH_ASSOC);
+            $row = $result->fetch(\PDO::FETCH_ASSOC);
             $attr = [
                 'type' => strtoupper($row['Type']),
                 'null' => 'NULL'
@@ -33,7 +34,6 @@ class MysqlAdapter extends Adapter
                 $fields[$row['Field']] = $attr;
             }
         } while($row);
-
         return $fields;
     }
 

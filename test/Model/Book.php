@@ -9,11 +9,10 @@ class Book extends Entity
 
     public static $attributes = [
         'id' => ['type' => 'uuid', 'null' => false],
-        'name' => ['type' => 'string', 'sensitive' => true, 'null' => false, 'extra' => [
+        'name' => ['type' => 'string', 'null' => false, 'extra' => [
             'max_length' => 64
         ], 'default' => 'the default'],
-        'author_id' => ['type' => 'array'],
-        'age' => ['type' => 'integer', 'null' => false, 'default' => 20]
+        'author_id' => ['type' => 'uuid'],
     ];
 
     public static $foreign = [

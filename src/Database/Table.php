@@ -3,6 +3,9 @@ namespace Leno\Database;
 
 use \Leno\Database\Adapter;
 
+/**
+ *
+ */
 class Table
 {
     protected $name;
@@ -60,7 +63,7 @@ class Table
 
     public function save()
     {
-        $dbInfo = self::Adapter()->describeTable($this->getName());
+        $dbInfo = self::getAdapter()->describeTable($this->getName());
         if($dbInfo === false) {
             return $this->addTable();
         }
@@ -90,7 +93,7 @@ class Table
 
     protected function alterTable()
     {
-        $dbInfo = self::Adapter()->describeTable($this->getName());
+        $dbInfo = self::getAdapter()->describeTable($this->getName());
         $add = [];
         $alter = [];
         foreach($this->fields as $field => $attr) {
@@ -123,13 +126,7 @@ class Table
             implode(', ', $fixed_part)
         );
         $adapter = self::getAdapter();
-        logger()->info('Table: '.$this->getName() . ' execute sql: '.$this->sql);
-        $result = $adapter->exec($this->sql);
-        if($result === false) {
-            logger()->info('Table: '.$this->getName() . ' execute sql state: '.$adapter->errorInfo()[2]);
-            throw new \Exception($adapter->errorInfo()[2]);
-        }
-        return $result;
+        return $adapter->execute($this->sql);
     }
 
     protected function addTable()
@@ -137,7 +134,7 @@ class Table
         $tmp = 'CREATE TABLE %s (%s)';
         $fields = [];
         foreach($this->fields as $field => $attr) {
-            $fields[] = self::getAdapter()->keyQuote($field) . ' ' . implode(' ', array_values($attr));
+            $fields[] = $this->getExprOfField($field, $attr);
         }
         $this->sql = sprintf($tmp, $this->getName(), implode(', ', $fields));
         $adapter = self::getAdapter();
@@ -166,9 +163,7 @@ class Table
     {
         $ret = [];
         foreach($add_set as $field => $attr) {
-            $ret[] = sprintf('ADD COLUMN %s %s', self::getAdapter()->keyQuote($field),
-                implode(' ', array_values($attr))
-            );
+            $ret[] = sprintf('ADD COLUMN %s', $this->getExprOfField($field, $attr));
         }
         return implode(', ', $ret);
     }
@@ -177,9 +172,9 @@ class Table
     {
         $ret = [];
         foreach($alter_set as $field => $attr) {
-            $field = self::getAdapter()->keyQuote($field);
-            $ret[] = sprintf('CHANGE %s %s %s', $field, $field,
-                implode(' ', array_values($attr))
+            $full_name = self::getAdapter()->keyQuote($field);
+            $ret[] = sprintf('CHANGE %s %s', $full_name, 
+                $this->getExprOfField($field, $attr)
             );
         }
         return implode(', ', $ret);
@@ -192,6 +187,14 @@ class Table
             $ret[] = sprintf('DROP %s', self::getAdapter()->keyQuote($field));
         }
         return implode(', ', $ret);
+    }
+
+    private function getExprOfField($field, $attr)
+    {
+        if(isset($attr['default'])) {
+            $attr['default'] = 'DEFAULT \''.$attr['default'].'\'';
+        }
+        return self::getAdapter()->keyQuote($field) . ' ' . implode(' ', array_values($attr));
     }
 
     public static function getAdapter()

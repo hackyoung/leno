@@ -4,7 +4,7 @@ namespace Leno\Type;
 use \Leno\Type\TypeStorageInterface;
 use \Leno\Type\Exception\ValueNotArrayException;
 
-abstract class ArrayType extends Leno\Type implements TypeStorageInterface
+abstract class ArrayType extends \Leno\Type implements TypeStorageInterface
 {
     /**
      * [
@@ -18,9 +18,10 @@ abstract class ArrayType extends Leno\Type implements TypeStorageInterface
      */
     protected $config;
 
-    public function __construct($config)
+    public function setExtra ($extra)
     {
-        $this->config = $config;
+        $this->config = $extra;
+        return $this;
     }
 
     protected function _check($value) : bool
