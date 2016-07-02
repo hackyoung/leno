@@ -146,8 +146,8 @@ class Table
         if($field1['type'] !== $field2['type']) {
             return false;
         }
-        $null1 = $field1['null'] ?? 'NULL';
-        $null2 = $field2['null'] ?? 'NULL';
+        $null1 = $field1['null'] ?? 'NOT NULL';
+        $null2 = $field2['null'] ?? 'NOT NULL';
         if($null1 !== $null2) {
             return false;
         } 

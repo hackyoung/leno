@@ -85,7 +85,7 @@ class Build extends \Leno\Shell
                 'type' => Type::get($info['type'])->setExtra($info['extra'] ?? [])->toType(),
                 'null' => 'NOT NULL',
             ];
-            if (($info['null'] ?? true) === false) {
+            if (($info['null'] ?? false) === true) {
                 $attr['null'] = 'NULL';
             }
             if($info['default'] ?? false) {
