@@ -57,7 +57,7 @@ abstract class Driver implements DriverInterface
         return $this->max - $this->busy;
     }
 
-    public static function get($driver_label = 'pdo', $parameters = null)
+    public static function get(string $driver_label = 'pdo', $parameters = null)
     {
         $Driver = self::$driver_map[$driver_label];
         $driver_reflection = new \ReflectionClass($Driver);

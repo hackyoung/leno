@@ -34,6 +34,9 @@ class Data implements DataInterface
      */
     protected $config = [];
 
+    /**
+     * 保存该Data的主键
+     */
     protected $primary;
 
     /**
@@ -43,10 +46,9 @@ class Data implements DataInterface
      * @param array config 如果传递该参数
      *
      */
-    public function __construct(array $data, array $config, string $primary)
+    public function __construct(array $config, string $primary)
     {
         $this->config = $config;
-        $this->data = $data;
         $this->primary = $primary;
     }
 
@@ -85,5 +87,46 @@ class Data implements DataInterface
     {
         $value = $this->data[$this->primary]['value'] ?? null;
         return [$this->primary => $value];
+    }
+
+    public function get(string $attr)
+    {
+        return $this->data[$attr]['value'] ?? null;
+    }
+
+    public function set(string $attr, $value, bool $dirty)
+    {
+        $exists_value = $this->data[$attr]['value'] ?? null;
+        if($value == $exists_value) {
+            return $this;
+        }
+        $this->data[$attr] = [
+            'dirty' => $dirty,
+            'value' => $value
+        ];
+        return $this;
+    }
+
+    public function add(string $attr, $value)
+    {
+        if(!isset($this->data[$attr])) {
+            $this->data[$attr] = [
+                'dirty' => true,
+                'value' => [ $value ] 
+            ];
+            return $this;
+        }
+        $exists_value = $this->values[$attr]['value'];
+        if(!is_array($exists_value)) {
+            $exists_value = [ $exists_value ];
+        }
+        if(!in_array($value, $exists_value)) {
+            $this->data[$attr] = [
+                'dirty' => true,
+                'value' => $exists_value + $value
+            ];
+            return $this;
+        }
+        return $this;
     }
 }

@@ -140,17 +140,12 @@ class Entity implements \JsonSerializable
     protected $dirty;
 
     /**
-     * 保存Entity的属性值, 其格式如下
+     * 保存关系的关联对象
      * [
-     *      'maybe_field' => [
-     *          'dirty' => bool,
-     *          'value' => mixed | [
-     *              mixed
-     *          ]
-     *      ]
+     *      'maybe_field' => EntityObj
      * ]
      */
-    protected $values = [];
+    protected $entities = [];
 
     /**
      * 构造函数，设置主键值，设置默认值,
@@ -165,6 +160,7 @@ class Entity implements \JsonSerializable
         if(!isset($Entity::$primary)) {
             throw new PrimaryMissingException($Entity);
         }
+        $this->data = new Data($Entity::$attributes, $Entity::$primary);
         $this->dirty = $dirty;
         if($this->getAttribute($Entity::$primary)['type'] == 'uuid') {
             $this->set($Entity::$primary, uuid());
@@ -206,13 +202,7 @@ class Entity implements \JsonSerializable
             case 'set':
                 return $this->set ($attr, $args[0]);
             case 'get':
-                $all_attr = array_merge(
-                    array_keys($self::$foreign), array_keys($this->values)
-                );
-                if(in_array($attr, $all_attr)) {
-                    return $this->get ($attr);
-                }
-                break;
+                return $this->get ($attr);
             case 'add':
                 return $this->add ($attr, $args[0]);
         }
@@ -239,11 +229,15 @@ class Entity implements \JsonSerializable
         $mapper = (new Mapper())->selectTable($Entity::$table);
         Row::beginTransaction();
         try {
-            $data = $this->getDataWithSave();
+            foreach($this->entities as $entity) {
+                $entity->save();
+            }
             if (!$this->dirty()) {
-                $this->beforeInsert() !== false && $mapper->insert($data);
+                $this->beforeInsert() !== false &&
+                $mapper->insert($this->data);
             } else {
-                $this->beforeUpdate() !== false && $mapper->update($data);
+                $this->beforeUpdate() !== false &&
+                $mapper->update($this->data);
             }
             Row::commitTransaction();
         } catch(\Exception $e) {
@@ -267,7 +261,7 @@ class Entity implements \JsonSerializable
         }
         $Entity = get_called_class();
         $mapper = (new Mapper())->selectTable($Entity::$table);
-        return $mapper->remove($this->getDataWithRemove());
+        return $mapper->remove($this->data);
     }
 
     /**
@@ -296,27 +290,24 @@ class Entity implements \JsonSerializable
     public function get (string $attr)
     {
         $self = get_called_class();
-        if(!isset($self::$foreign[$attr])) {
-            return $this->values[$attr]['value'] ?? null;
+        $entity_value = $this->entities[$attr] ?? false;
+        if($entity_value) {
+            return $entity_value;
         }
         $Entity = $self::$foreign[$attr]['entity'] ?? false;
-        if(!$Entity) {
-            throw \Leno\Exception($attr . ' Not Found');
+        if($Entity) {
+            $foreign_selector = $Entity::selector()->registerEntity($Entity);
+            $foreign_key = $self::$foreign[$attr]['foreign_key'];
+            $field = $foreign_selector->getFieldExpr($foreign_key);
+            $value = $this->data->get($local_key);
+            $entity = $foreign_selector->by('eq', $field, $value)->find();
+            if ($entity && count($entity) == 1) {
+                $entity = $entity[0];
+            }
+            $this->entities[$attr] = $entity;
+            return $entity;
         }
-        $foreign_selector = $Entity::selector()->registerEntity($Entity);
-        $current_value = $this->values[$attr]['value'];
-        if ($current_value) {
-            return $current_value;
-        }
-        $foreign_key = $self::$foreign[$attr]['foreign_key'];
-        $field = $foreign_selector->getFieldExpr($foreign_key);
-        $value = $this->get($local_key);
-        $entity = $foreign_selector->by('eq', $field, $value)->find();
-        if ($entity && count($entity) == 1) {
-            $entity = $entity[0];
-        }
-        $this->set($attr, $entity);
-        return $entity;
+        return $this->data->get($attr);
     }
 
     /**
@@ -324,7 +315,7 @@ class Entity implements \JsonSerializable
      */
     public function setForcely (string $attr, $value, bool $dirty = true)
     {
-        return $this->_set($attr, $value, $dirty);
+        $this->data->set($attr, $value, bool $dirty = true);
     }
 
     /**
@@ -337,7 +328,18 @@ class Entity implements \JsonSerializable
         if($config && ($config['sensitive'] ?? false)) {
             return $this;
         }
-        return $this->_set($attr, $value, $dirty);
+        if($value instanceof self) {
+            $self = get_called_class(); 
+            $foreign = $self::$foreign[$attr];
+            if(!($value instanceof ($foreign['entity'] ?? null))) {
+                throw new \Leno\Exception ('value type error');
+            }
+            $this->entities[$attr] = $value;
+            $this->data->set($foreign['local_key'], $value->id())
+            return $this;
+        }
+        $this->data->set($attr, $value, $dirty);
+        return $this;
     }
 
     public function add (string $attr, $value)
@@ -346,7 +348,7 @@ class Entity implements \JsonSerializable
         if(!$config || ($config['sensitive'] ?? false)) {
             return $this;
         }
-        return $this->_add($attr, $value);
+        return $this->data->add($attr, $value);
     }
 
     public function id()
@@ -355,24 +357,9 @@ class Entity implements \JsonSerializable
         return $this->get($self::$primary);
     }
 
-    public function dirty (string $attr = null) : bool
+    public function dirty () : bool
     {
-        if ($attr) {
-            return $this->values[$attr]['dirty'] ?? false;
-        }
         return $this->dirty;
-    }
-
-    public function toArray()
-    {
-        $entity_array = [];
-        foreach($this->values as $key => $value_info) {
-            $config = $this->getAttribute($key);
-            if($config && !($config['sensitive'] ?? false)) {
-                $entity_array[$key] = $value_info['value'];
-            }
-        }
-        return $entity_array;
     }
 
     protected function beforeSave()
@@ -399,80 +386,10 @@ class Entity implements \JsonSerializable
         return $this->toArray();
     }
 
-    private function getDataWithSave()
-    {
-        $values = [];
-        $self = get_called_class();
-        foreach($this->values as $field => $value) {
-            if($value['value'] instanceof self) {
-                if($foreign = $self::$foreign[$field]) {
-                    $value[$foreign['local_key']] = $value['value']->save();
-                    continue;
-                }
-                throw new \Leno\Exception('mistake happen');
-            }
-            $values[$field] = $value;
-        }
-        return new Data($values, $self::$attributes, $self::$primary);
-    }
-
-    private function getDataWithRemove()
-    {
-        $Entity = get_called_class();
-        // TODO 解决依赖关系
-        return new Data($this->values, $Entity::$attributes, $Entity::$primary);
-    }
-
     private function getAttribute(string $attr)
     {
         $Entity = get_called_class();
         return $Entity::$attributes[$attr] ?? null;
-    }
-
-    private function _set(string $attr, $value, bool $dirty)
-    {
-        $self = get_called_class(); 
-        if($value instanceof $self) {
-            $Entity = self::getEntityByField($attr);
-            if(!$Entity || !($value instanceof $Entity)) {
-                throw new \Leno\Exception ('value type error');
-            }
-        }
-        $exists_value = $this->values[$attr]['value'] ?? null;
-        if($value == $exists_value) {
-            return $this;
-        }
-        $this->values[$attr] = [
-            'dirty' => $dirty,
-            'value' => $value
-        ];
-        return $this;
-    }
-
-    private function _add(string $attr, $value)
-    {
-        if($value instanceof self) {
-            throw new \Leno\Exception ('value type error');
-        }
-        if(!isset($this->values[$attr])) {
-            $this->values[$attr] = [
-                'dirty' => true,
-                'value' => [ $value ] 
-            ];
-            return $this;
-        }
-        $exists_value = $this->values[$attr]['value'];
-        if(!is_array($exists_value)) {
-            $exists_value = [ $exists_value ];
-        }
-        if(!in_array($value, $exists_value)) {
-            $this->values[$attr] = [
-                'dirty' => true,
-                'value' => $exists_value + $value
-            ];
-            return $this;
-        }
-        return $this;
     }
 
     /**

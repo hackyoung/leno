@@ -39,5 +39,14 @@ class MysqlAdapter extends Adapter
 
     protected function _describeConstraint(string $table_name)
     {
+        $result = $this->execute('SHOW KEYS FROM ' . $table_name);
+        $ret = [];
+        do {
+            $row = $result->fetch(\PDO::FETCH_ASSOC);
+            if($row['Key_name'] == 'PRIMARY') {
+                $ret['primary'] = $row['Column_name'];
+                continue;
+            }
+        } while($row);
     }
 }

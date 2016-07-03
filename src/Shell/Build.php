@@ -82,7 +82,7 @@ class Build extends \Leno\Shell
         $table = new Table($re->getStaticPropertyValue('table'));
         foreach($re->getStaticPropertyValue('attributes') as $field => $info) {
             $attr = [
-                'type' => Type::get($info['type'])->setExtra($info['extra'] ?? [])->toType(),
+                'type' => Type::get($info['type'])->setExtra($info['extra'] ?? [])->toDbType(),
                 'null' => 'NOT NULL',
             ];
             if (($info['null'] ?? false) === true) {

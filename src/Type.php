@@ -15,17 +15,17 @@ abstract class Type implements TypeCheckInterface
             'array' => '\\Leno\\Type\\Mysql\\ArrayType', 
             'datetime' => '\\Leno\\Type\\Mysql\\DatetimeType',
             'uuid' => '\\Leno\\Type\\Mysql\\UuidType',
-            'int' => '\\Leno\\Type\\Mysql\\IntegerType'
-            'integer' => '\\Leno\\Type\\Mysql\\IntegerType'
-            'number' => '\\Leno\\Type\\Mysql\\NumberType',
+            'int' => '\\Leno\\Type\\Mysql\\IntegerType',
+            'integer' => '\\Leno\\Type\\Mysql\\IntegerType',
+            'number' => '\\Leno\\Type\\Mysql\\NumberType'
         ],
         'pgsql' => [
             'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
             'datetime' => '\\Leno\\Type\\Pgsql\\DatetimeType',
-            'uuid' => '\\Leno\\Type\\Pgsql\\UuidType'
-            'int' => '\\Leno\\Type\\Pgsql\\IntegerType'
-            'integer' => '\\Leno\\Type\\Pgsql\\IntegerType'
-            'number' => '\\Leno\\Type\\Pgsql\\NumberType',
+            'uuid' => '\\Leno\\Type\\Pgsql\\UuidType',
+            'int' => '\\Leno\\Type\\Pgsql\\IntegerType',
+            'integer' => '\\Leno\\Type\\Pgsql\\IntegerType',
+            'number' => '\\Leno\\Type\\Pgsql\\NumberType'
         ],
         'enum' => '\\Leno\\Type\\EnumType',
         'string' => '\\Leno\\Type\\StringType',

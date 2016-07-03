@@ -68,6 +68,7 @@ class Table
             return $this->addTable();
         }
         return $this->alterTable();
+        //self::getAdapter()->describeConstraint($this->getName());
     }
 
     public function setField($field, $attr)
@@ -153,7 +154,7 @@ class Table
         } 
         $dft1 = $field1['default'] ?? false;
         $dft2 = $field2['default'] ?? false;
-        if($dft1 !== $dft2) {
+        if($dft1 != $dft2) {
             return false;
         }
         return true;

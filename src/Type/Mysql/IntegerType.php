@@ -1,5 +1,5 @@
 <?php
-namespace Leno\Type;
+namespace Leno\Type\Mysql;
 
 class IntegerType extends \Leno\Type\IntegerType
 {

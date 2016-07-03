@@ -59,6 +59,6 @@ class Connection
 
     private function newDriver()
     {
-        return Driver::get($this->config['driver'], $this->config);   
+        return Driver::get(($this->config['driver'] ?? 'pdo'), $this->config);   
     }
 }
