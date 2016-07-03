@@ -346,6 +346,9 @@ class Selector extends Row
 
     protected function useLimit()
     {
+        if(empty($this->limit)) {
+            return '';
+        }
         return sprintf('LIMIT %s, %s',
             $this->limit['row'] ?? 0,
             $this->limit['limit'] ?? -1

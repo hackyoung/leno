@@ -9,6 +9,7 @@ use \Leno\ORM\Mapper;
 use \Leno\Type;
 
 use \Leno\ORM\Exception\PrimaryMissingException;
+use \Leno\ORM\Exception\EntityNotFoundException;
 use \Leno\Exception\MethodNotFoundException;
 
 /**
@@ -18,8 +19,7 @@ use \Leno\Exception\MethodNotFoundException;
  * 可以持久化存储,但是这样只会增加程序的复杂性).
  *
  * Entity具有定义好的属性，这些属性可以通过get，set，add方法
- * 操作对应的值，可以持久化存储的实体可以通过save/remove方法
- * 对起存储操作
+ * 操作对应的值，可以持久化存储的实体可以通过save/remove方法 * 对起存储操作
  *
  * Entity之间有关系，所有的Entity操作都会考虑其和另外的Entity
  * 的依赖关系
@@ -294,13 +294,13 @@ class Entity implements \JsonSerializable
         if($entity_value) {
             return $entity_value;
         }
-        $Entity = $self::$foreign[$attr]['entity'] ?? false;
-        if($Entity) {
-            $foreign_selector = $Entity::selector()->registerEntity($Entity);
-            $foreign_key = $self::$foreign[$attr]['foreign_key'];
-            $field = $foreign_selector->getFieldExpr($foreign_key);
-            $value = $this->data->get($local_key);
-            $entity = $foreign_selector->by('eq', $field, $value)->find();
+        $foreign = $self::$foreign[$attr] ?? false;
+        if($foreign) {
+            $foreign_selector = $foreign['entity']::selector();
+            $value = $this->data->get($foreign['local_key']);
+            $entity = $foreign_selector->by(
+                'eq', $foreign['foreign_key'], $value
+            )->find();
             if ($entity && count($entity) == 1) {
                 $entity = $entity[0];
             }
@@ -335,7 +335,7 @@ class Entity implements \JsonSerializable
                 throw new \Leno\Exception ('value type error');
             }
             $this->entities[$attr] = $value;
-            $this->data->set($foreign['local_key'], $value->id());
+            $this->data->set($foreign['local_key'], $value->id(), $dirty);
             return $this;
         }
         $this->data->set($attr, $value, $dirty);
@@ -362,6 +362,19 @@ class Entity implements \JsonSerializable
         return $this->dirty;
     }
 
+    public function toArray()
+    {
+        return $this->data->toArray();
+    }
+
+    /**
+     * TODO right implement
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
     protected function beforeSave()
     {
     }
@@ -376,14 +389,6 @@ class Entity implements \JsonSerializable
 
     protected function beforeRemove()
     {
-    }
-
-    /**
-     * TODO right implement
-     */
-    public function jsonSerialize()
-    {
-        return $this->toArray();
     }
 
     private function getAttribute(string $attr)

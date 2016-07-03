@@ -3,21 +3,29 @@ define ('TEST_MVC', false);
 require_once(__DIR__ . '/boot.php');
 
 use \Leno\ORM\Exception\EntityNotFoundException;
-
+/*
 $user = new \Test\Model\User;
-var_dump($user);
+$book = new \Test\Model\Book;
+$book->setName('Javascript 从入门到放弃')
+    ->setAuthor($user);
 
 $user->setName('hello')
-    ->setAge(14)
-    ->save();
-/*
-try {
-    $user = \Test\Model\User::findOrFail('2a3c4c5f-e6d1-b9e8-87ff-d09bf891d200');
-} catch (EntityNotFoundException $e) {
-    var_dump($e->getMessage());
-}
+    ->setAge(14);
+
+var_dump($user);
+
+$book->save();
  */
-var_dump($user->toArray());
+$book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');
+
+var_dump($book->getAuthor()->getName());
+$book->setAuthor((new \Test\Model\User)->setName('hello world world'));
+
+var_dump($book->getAuthor()->getName());
+
+$book->save();
+
+//var_dump($user->toArray());
 //$user->remove();
 
 /*

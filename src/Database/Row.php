@@ -349,6 +349,7 @@ abstract class Row
 
     public function setParam($field, $value)
     {
+        $field = preg_replace('/[\`\"\'\.]/', '', $field);
         $idx = ':'.$this->table .'_'. $field . '_' .randString(16);
         $this->params[$idx] = $value;
         return $idx;

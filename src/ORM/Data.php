@@ -116,7 +116,7 @@ class Data implements DataInterface
             ];
             return $this;
         }
-        $exists_value = $this->values[$attr]['value'];
+        $exists_value = $this->data[$attr]['value'];
         if(!is_array($exists_value)) {
             $exists_value = [ $exists_value ];
         }
@@ -128,5 +128,14 @@ class Data implements DataInterface
             return $this;
         }
         return $this;
+    }
+
+    public function toArray()
+    {
+        $ret = [];
+        foreach($this->data as $field => $data) {
+            $ret[$field] = $data['value'];
+        }
+        return $ret;
     }
 }
