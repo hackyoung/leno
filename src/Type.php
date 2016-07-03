@@ -17,7 +17,9 @@ abstract class Type implements TypeCheckInterface
             'uuid' => '\\Leno\\Type\\Mysql\\UuidType',
             'int' => '\\Leno\\Type\\Mysql\\IntegerType',
             'integer' => '\\Leno\\Type\\Mysql\\IntegerType',
-            'number' => '\\Leno\\Type\\Mysql\\NumberType'
+            'number' => '\\Leno\\Type\\Mysql\\NumberType',
+            'bool' => '\\Leno\\Type\\Mysql\\BoolType',
+            'boolean' => '\\Leno\\Type\\Mysql\\BoolType'
         ],
         'pgsql' => [
             'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
