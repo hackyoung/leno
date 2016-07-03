@@ -124,6 +124,16 @@ class Entity implements \JsonSerializable
      *          'entity' => EntityClass,
      *          'foreign_key' => 'entity_field_name',
      *          'local_key' => 'self_field_name'
+     *      ],
+     *      'name' => [
+     *          'entity' => EntityClass,          
+     *          'local_key' => 'self_field_name',
+     *          'foreign_key' => 'entity_field_name'
+     *          'bridge' => [
+     *              'entity' => EntityClass,
+     *              'local' => 'bridge_field_name',
+     *              'foreign' => 'bridge_field_name'
+     *          ]
      *      ]
      * ]
      */
@@ -146,6 +156,8 @@ class Entity implements \JsonSerializable
      * ]
      */
     protected $entities = [];
+
+    protected $bridge_entities = [];
 
     /**
      * 构造函数，设置主键值，设置默认值,
@@ -229,15 +241,17 @@ class Entity implements \JsonSerializable
         $mapper = (new Mapper())->selectTable($Entity::$table);
         Row::beginTransaction();
         try {
-            foreach($this->entities as $entity) {
-                $entity->save();
-            }
+            $this->saveOther();
+            $bridges = $this->saveBridge();
             if (!$this->dirty()) {
                 $this->beforeInsert() !== false &&
                 $mapper->insert($this->data);
             } else {
                 $this->beforeUpdate() !== false &&
                 $mapper->update($this->data);
+            }
+            foreach ($bridges as $bridge) {
+                $bridge->save();
             }
             Row::commitTransaction();
         } catch(\Exception $e) {
@@ -290,24 +304,34 @@ class Entity implements \JsonSerializable
     public function get (string $attr)
     {
         $self = get_called_class();
-        $entity_value = $this->entities[$attr] ?? false;
-        if($entity_value) {
-            return $entity_value;
-        }
         $foreign = $self::$foreign[$attr] ?? false;
-        if($foreign) {
-            $foreign_selector = $foreign['entity']::selector();
-            $value = $this->data->get($foreign['local_key']);
-            $entity = $foreign_selector->by(
-                'eq', $foreign['foreign_key'], $value
-            )->find();
-            if ($entity && count($entity) == 1) {
-                $entity = $entity[0];
+        if(!$foreign) {
+            return $this->data->get($attr);
+        }
+        if(!isset($foreign['bridge'])) {
+            if($this->entities[$attr] ?? false) {
+                return $this->entities[$attr];
             }
-            $this->entities[$attr] = $entity;
+            $foreign_selector = $foreign['entity']::selector();
+            $entities = $foreign_selector->by(
+                'eq', $foreign['foreign_key'], $this->data->get($foreign['local_key'])
+            )->find();
+            if ($entities && count($entities) == 1) {
+                $entities = $entities[0];
+            }
+            $this->entities[$attr] = $entities;
             return $entity;
         }
-        return $this->data->get($attr);
+        if($this->bridge_entities[$attr] ?? false) {
+            return $this->bridge_entities[$attr];
+        }
+        $foreign_selector = $foreign['entity']::selector();
+        $bridge_selector = $foreign['bridge']['entity']::selector()->field(false)->on(
+            'eq', $foreign['brigde']['foreign'],
+            $foreign_selector->getFieldExpr($foreign['foreign_key'])
+        )->by('eq', $foreign['brigde']['local'], $this->data->get($foreign['local_key']));
+        $this->entities[$attr] = $foreign_selector->join($bridge_selector)->find();
+        return $this->entities[$attr];
     }
 
     /**
@@ -324,26 +348,39 @@ class Entity implements \JsonSerializable
      */
     public function set (string $attr, $value, bool $dirty = true)
     {
+        $self = get_called_class();
         $config = $this->getAttribute($attr);
-        if($config && ($config['sensitive'] ?? false)) {
+        if ($config && ($config['sensitive'] ?? false)) {
             return $this;
         }
-        if($value instanceof self) {
-            $self = get_called_class(); 
-            $foreign = $self::$foreign[$attr] ?? false;
-            if (!$foreign || !($value instanceof $foreign['entity'])) {
-                throw new \Leno\Exception ('value type error');
-            }
-            $this->entities[$attr] = $value;
-            $this->data->set($foreign['local_key'], $value->id(), $dirty);
+        if (!($value instanceof self)) {
+            $this->data->set($attr, $value, $dirty);
             return $this;
         }
-        $this->data->set($attr, $value, $dirty);
+        $foreign = $self::$foreign[$attr] ?? false;
+        if (!$foreign || !($value instanceof $foreign['entity'])) {
+            throw new \Leno\Exception ('value type error');
+        }
+        if (isset($foreign['bridge'])) {
+            $this->bridge_entities[$attr] = is_array($value) ? $value : [$value];
+            return $this;
+        }
+        $this->entities[$attr] = $value;
         return $this;
     }
 
     public function add (string $attr, $value)
     {
+        $self = get_called_class();
+        $foreign = $self::$foreign[$attr];
+        if($foreign['bridge'] ?? false) {
+            if (is_array($this->bridge_entities[$attr] ?? null)) {
+                $this->bridge_entities[$attr][] = $value;
+                return $this;
+            }
+            $this->bridge_entities[$attr] = [$value];
+            return $this;
+        }
         $config = $this->getAttribute($attr);
         if(!$config || ($config['sensitive'] ?? false)) {
             return $this;
@@ -395,6 +432,40 @@ class Entity implements \JsonSerializable
     {
         $Entity = get_called_class();
         return $Entity::$attributes[$attr] ?? null;
+    }
+
+    private function saveOther()
+    {
+        foreach ($this->entities as $entity) {
+            $entity->save();
+        }
+    }
+
+    private function saveBridge()
+    {
+        $self = get_called_class();
+        $bridges = [];
+        foreach($this->bridge_entities as $attr => $entities) {
+            $foreign = $self::$foreign[$attr];
+            array_map(function($entity) use (&$bridges, $foreign) {
+                $entity->save();
+
+                $local_val = $this->data->get($foreign['local_key']);
+                $foreign_val = $entity->get($foreign['foreign_key']);
+
+                $bridge = $foreign['bridge']['entity']::selector()
+                    ->by('eq', $foreign['bridge']['local'], $local_val)
+                    ->by('eq', $foreign['bridge']['foreign'], $foreign_val)
+                    ->findOne();
+                if (!$bridge) {
+                    $bridge = (new $foreign['bridge']['entity'])
+                        ->set($foreign['bridge']['local'], $local_val)
+                        ->set($foreign['bridge']['foreign'], $foreign_val);
+                }
+                $bridges[] = $bridge;
+            }, $entities);
+        }
+        return $bridges;
     }
 
     /**

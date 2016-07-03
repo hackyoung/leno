@@ -16,4 +16,17 @@ class User extends Entity
     ];
 
     public static $primary = 'id';
+
+    public static $foreign = [
+        'book' => [
+            'entity' => '\\Test\\Model\\Book',
+            'local_key' => 'id',
+            'foreign_key' => 'id',
+            'bridge' => [
+                'entity' => '\\Test\\Model\\UserBook',
+                'local' => 'author_id',
+                'foreign' => 'book_id'
+            ]
+        ]
+    ];
 }

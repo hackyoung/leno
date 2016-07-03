@@ -125,7 +125,6 @@ class Data implements DataInterface
                 'dirty' => true,
                 'value' => $exists_value + $value
             ];
-            return $this;
         }
         return $this;
     }
