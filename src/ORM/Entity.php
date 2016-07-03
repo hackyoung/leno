@@ -244,10 +244,16 @@ class Entity implements \JsonSerializable
             $this->saveOther();
             $bridges = $this->saveBridge();
             if (!$this->dirty()) {
-                $this->beforeInsert() !== false &&
+                if ($this->beforeInsert() === false) {
+                    Row::rollback();
+                    return false;
+                }
                 $mapper->insert($this->data);
             } else {
-                $this->beforeUpdate() !== false &&
+                if ($this->beforeUpdate() === false) {
+                    Row::rollback();
+                    return false;
+                }
                 $mapper->update($this->data);
             }
             foreach ($bridges as $bridge) {
@@ -369,11 +375,17 @@ class Entity implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * 有两种类型的属性值可以通过add方法添加
+     *  1. 属性的类型为array类型的
+     *  2. value为Entity类型，且与this是一对多关系
+     *
+     */
     public function add (string $attr, $value)
     {
         $self = get_called_class();
         $foreign = $self::$foreign[$attr];
-        if($foreign['bridge'] ?? false) {
+        if ($foreign['bridge'] ?? false) {
             if (is_array($this->bridge_entities[$attr] ?? null)) {
                 $this->bridge_entities[$attr][] = $value;
                 return $this;
@@ -382,7 +394,7 @@ class Entity implements \JsonSerializable
             return $this;
         }
         $config = $this->getAttribute($attr);
-        if(!$config || ($config['sensitive'] ?? false)) {
+        if (!$config || ($config['sensitive'] ?? false)) {
             return $this;
         }
         return $this->data->add($attr, $value);
