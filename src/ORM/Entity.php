@@ -315,7 +315,7 @@ class Entity implements \JsonSerializable
      */
     public function setForcely (string $attr, $value, bool $dirty = true)
     {
-        $this->data->set($attr, $value, bool $dirty = true);
+        $this->data->set($attr, $value, $dirty);
     }
 
     /**
@@ -330,12 +330,12 @@ class Entity implements \JsonSerializable
         }
         if($value instanceof self) {
             $self = get_called_class(); 
-            $foreign = $self::$foreign[$attr];
-            if(!($value instanceof ($foreign['entity'] ?? null))) {
+            $foreign = $self::$foreign[$attr] ?? false;
+            if (!$foreign || !($value instanceof $foreign['entity'])) {
                 throw new \Leno\Exception ('value type error');
             }
             $this->entities[$attr] = $value;
-            $this->data->set($foreign['local_key'], $value->id())
+            $this->data->set($foreign['local_key'], $value->id());
             return $this;
         }
         $this->data->set($attr, $value, $dirty);
