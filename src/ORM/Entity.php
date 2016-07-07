@@ -311,10 +311,10 @@ class Entity implements \JsonSerializable
     {
         $self = get_called_class();
         $foreign = $self::$foreign[$attr] ?? false;
-        if(!$foreign) {
+        if (!$foreign) {
             return $this->data->get($attr);
         }
-        if(!isset($foreign['bridge'])) {
+        if (!isset($foreign['bridge'])) {
             if($this->entities[$attr] ?? false) {
                 return $this->entities[$attr];
             }
@@ -328,7 +328,7 @@ class Entity implements \JsonSerializable
             $this->entities[$attr] = $entities;
             return $entity;
         }
-        if($this->bridge_entities[$attr] ?? false) {
+        if ($this->bridge_entities[$attr] ?? false) {
             return $this->bridge_entities[$attr];
         }
         $foreign_selector = $foreign['entity']::selector();

@@ -11,7 +11,6 @@ use \Leno\Routing\Target;
  */
 class Router
 {
-
     use \Leno\Traits\Magic;
 
     /**
@@ -111,6 +110,7 @@ class Router
     /**
      * 执行路由操作，该方法会先查看路由器上面是否设置规则，如有规则则按规则路由，
      * 如果没有设置规则，则根据path路由
+     *
      * @return \Leno\Http\Response
      */
     public function route()

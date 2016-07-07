@@ -5,8 +5,9 @@ use \Leno\Routing\Router;
 
 class Rule
 {
-
     protected $router;
+
+    protected $parameters;
 
     public function __construct(Router $router)
     {
