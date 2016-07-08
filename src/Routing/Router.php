@@ -49,6 +49,12 @@ class Router
      * [
      *      'regexp' => 'router_class_name|target_path'
      * ]
+     *
+     * ### example
+     *
+     * rules = [
+     *      '/hello/{$1}/world/{$2}' => '/hello/world/{$1}/{$2}',
+     * ];
      */
     protected $rules = [];
 

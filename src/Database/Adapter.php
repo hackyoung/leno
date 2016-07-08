@@ -5,9 +5,6 @@ use \Leno\Database\DriverInterface;
 use \Leno\Database\AdapterInterface;
 use \Leno\Database\Connection;
 
-/**
- *
- */
 abstract class Adapter implements AdapterInterface
 {
     private $transaction_counter = 0;

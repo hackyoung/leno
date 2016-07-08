@@ -147,7 +147,7 @@ class Entity implements \JsonSerializable
     /**
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
      */
-    protected $dirty;
+    protected $fresh;
 
     /**
      * 保存关系的关联对象
@@ -166,14 +166,14 @@ class Entity implements \JsonSerializable
      * @param bool dirty 该值为true则表示该Entity已经在数据库中有存储记录
      * 因此，save的时候做更新操作，反之，做插入操作
      */
-    public function __construct ($dirty = false)
+    public function __construct ($fresh = true)
     {
         $Entity = get_called_class();
         if(!isset($Entity::$primary)) {
             throw new PrimaryMissingException($Entity);
         }
         $this->data = new Data($Entity::$attributes, $Entity::$primary);
-        $this->dirty = $dirty;
+        $this->fresh = $fresh;
         if($this->getAttribute($Entity::$primary)['type'] == 'uuid') {
             $this->set($Entity::$primary, uuid());
         }
@@ -243,7 +243,7 @@ class Entity implements \JsonSerializable
         try {
             $this->saveOther();
             $bridges = $this->saveBridge();
-            if (!$this->dirty()) {
+            if ($this->fresh) {
                 if ($this->beforeInsert() === false) {
                     Row::rollback();
                     return false;
@@ -257,14 +257,16 @@ class Entity implements \JsonSerializable
                 $mapper->update($this->data);
             }
             foreach ($bridges as $bridge) {
-                $bridge->save();
+                $bridge->dirty() && $bridge->save();
             }
             Row::commitTransaction();
         } catch(\Exception $e) {
             Row::rollback();
             throw $e;
         }
-        return $this->id();
+        $this->dirty = true;
+        $this->data->setAllDirty(false);
+        return $this;
     }
 
     /**
@@ -333,9 +335,9 @@ class Entity implements \JsonSerializable
         }
         $foreign_selector = $foreign['entity']::selector();
         $bridge_selector = $foreign['bridge']['entity']::selector()->field(false)->on(
-            'eq', $foreign['brigde']['foreign'],
+            'eq', $foreign['bridge']['foreign'],
             $foreign_selector->getFieldExpr($foreign['foreign_key'])
-        )->by('eq', $foreign['brigde']['local'], $this->data->get($foreign['local_key']));
+        )->by('eq', $foreign['bridge']['local'], $this->data->get($foreign['local_key']));
         $this->entities[$attr] = $foreign_selector->join($bridge_selector)->find();
         return $this->entities[$attr];
     }
@@ -372,6 +374,7 @@ class Entity implements \JsonSerializable
             return $this;
         }
         $this->entities[$attr] = $value;
+        $this->data->set($foreign['local_key'], $value->id(), true);
         return $this;
     }
 
@@ -408,7 +411,7 @@ class Entity implements \JsonSerializable
 
     public function dirty () : bool
     {
-        return $this->dirty;
+        return $this->data->dirty();
     }
 
     public function toArray()
@@ -449,7 +452,7 @@ class Entity implements \JsonSerializable
     private function saveOther()
     {
         foreach ($this->entities as $entity) {
-            $entity->save();
+            $entity->dirty() && $entity->save();
         }
     }
 
@@ -460,7 +463,7 @@ class Entity implements \JsonSerializable
         foreach($this->bridge_entities as $attr => $entities) {
             $foreign = $self::$foreign[$attr];
             array_map(function($entity) use (&$bridges, $foreign) {
-                $entity->save();
+                $entity->dirty() && $entity->save();
 
                 $local_val = $this->data->get($foreign['local_key']);
                 $foreign_val = $entity->get($foreign['foreign_key']);

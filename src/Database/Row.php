@@ -389,7 +389,7 @@ abstract class Row
     {
         $ret = $this->getWhere();
         if(empty($ret)) {
-            $ret = [1];
+            $ret = ['1 = 1'];
         }
         foreach($this->joins as $join) {
             $joinWhere = $join['row']->getWhere();

@@ -129,6 +129,16 @@ class Data implements DataInterface
         return $this;
     }
 
+    public function dirty()
+    {
+        foreach($this->data as $data) {
+            if($data['dirty']) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function toArray()
     {
         $ret = [];
@@ -136,5 +146,13 @@ class Data implements DataInterface
             $ret[$field] = $data['value'];
         }
         return $ret;
+    }
+
+    public function setAllDirty($dirty = true)
+    {
+        foreach ($this->data as $field => $data) {
+            $this->data[$field]['dirty'] = $dirty;
+        }
+        return $this;
     }
 }
