@@ -1,10 +1,12 @@
 <?php
-namespace Leno\Database;
+namespace Leno\Database\QueryBuilder\Expr;
+
+use \Leno\Database\QueryBuilder\Expr;
 
 /**
  * 表达式的作用Row不会对表达式作任何处理
  */
-class Expr
+class NormalExpr extends Expr
 {
     private $value;
 
@@ -13,7 +15,7 @@ class Expr
         $this->value = $val;
     }
 
-    public function __tostring()
+    protected function stringlify()
     {
         return $this->value . '';
     }

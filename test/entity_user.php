@@ -5,6 +5,7 @@ require_once(__DIR__ . '/boot.php');
 use \Leno\ORM\Exception\EntityNotFoundException;
 use \Test\Model\User;
 use \Test\Model\Book;
+
 /*
 $user = (new User)->setName('young');
 $user->addBook((new Book)->setName('php')->setAuthor($user)->save());
