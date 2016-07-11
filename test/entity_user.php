@@ -6,12 +6,13 @@ use \Leno\ORM\Exception\EntityNotFoundException;
 use \Test\Model\User;
 use \Test\Model\Book;
 /*
+$start = microtime(true);
 $user = (new User)->setName('young');
 $user->addBook((new Book)->setName('php')->setAuthor($user)->save());
 $user->addBook((new Book)->setName('css')->setAuthor($user)->save());
 
 $user->save();
-
+echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 $user = new \Test\Model\User;
 $book = new \Test\Model\Book;
 $book->setName('Javascript 从入门到放弃')
@@ -22,10 +23,10 @@ $user->setName('hello')
 
 var_dump($user);
 $book->save();
-
-$user = User::findOrFail('a9c9f4b4-0c88-b666-473b-ed8e923440de');
+$start = microtime(true);
+$user = User::findOrFail('ffecd91b-f241-cb97-023f-e35e86374ae3');
 var_dump($user->getBook());
-
+echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 $book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');
 
 var_dump($book->getAuthor()->getName());
