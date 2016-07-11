@@ -29,7 +29,7 @@ class Condition
         if ($this->condition[-1] instanceof Expr) {
             $this->and();
         }
-        $this->condition[] = self::EXP_QUOTE_END;
+        $this->condition[] = self::EXP_QUOTE_BEGIN;
         return $this;
     }
 
