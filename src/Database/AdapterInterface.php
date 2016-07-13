@@ -32,17 +32,21 @@ interface AdapterInterface
     public function execute(string $sql, $params);
 
     /**
-     * 返回一张表的结构
-     */
-    public function describeTable(string $table_name);
-
-    /**
      * 返回一个执行sql的驱动
      */
     public function driver() : DriverInterface;
 
     /**
+     * 返回一张表的结构
+     */
+    public function describeColumns(string $table_name);
+
+    /**
      * 返回一张表的约束信息
      */
-    public function describeConstraint(string $table_name);
+    public function describeIndexes(string $table_name);
+
+    public function describeForeignKeys(string $table_name);
+
+    public function describePrimaryKeys(string $table_name);
 }

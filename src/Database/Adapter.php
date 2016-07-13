@@ -72,7 +72,12 @@ abstract class Adapter implements AdapterInterface
         }
     }
 
-    public function describeTable(string $table_name)
+    public function asyncExecute(string $sql, $params = null)
+    {
+        async_execute([$this, 'execute'], [$sql, $params]);
+    }
+
+    public function describeColumns(string $table_name)
     {
         if (!isset($this->tables_info[$table_name])) {
             return $this->tables_info[$table_name] = $this->_describeTable($table_name);
@@ -80,9 +85,19 @@ abstract class Adapter implements AdapterInterface
         return $this->tables_info[$table_name];
     }
 
-    public function describeConstraint(string $table_name)
+    public function describeIndexes(string $table_name)
     {
-        return $this->_describeConstraint($table_name);
+        return $this->_describeIndexes($table_name);
+    }
+
+    public function describeForeignKeys(string $table_name)
+    {
+        return $this->_describeForeignKeys($table_name);
+    }
+
+    public function describeUniqueKeys(string $table_name)
+    {
+        return $this->_describeUniqueKeys($table_name);
     }
 
     public function driver() : DriverInterface
@@ -100,7 +115,11 @@ abstract class Adapter implements AdapterInterface
 
     abstract protected function quote(string $key) : string;
 
-    abstract protected function _describeTable(string $table_name);
+    abstract protected function _describeColumns(string $table_name);
 
-    abstract protected function _describeConstraint(string $table_name);
+    abstract protected function _describeIndexes(string $table_name);
+
+    abstract protected function _describeForeignKeys(string $table_name);
+
+    abstract protected function _describeUniqueKeys(string $table_name);
 }

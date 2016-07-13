@@ -30,7 +30,7 @@ class Table
 
     protected $foreign_keys = [];
 
-    protected $primary_key;
+    protected $primary_key = [];
 
     public function __construct($name, $fields = [])
     {

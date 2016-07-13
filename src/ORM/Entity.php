@@ -19,7 +19,7 @@ use \Leno\Exception\MethodNotFoundException;
  * 可以持久化存储,但是这样只会增加程序的复杂性).
  *
  * Entity具有定义好的属性，这些属性可以通过get，set，add方法
- * 操作对应的值，可以持久化存储的实体可以通过save/remove方法 * 对起存储操作
+ * 操作对应的值，可以持久化存储的实体可以通过save/remove方法
  *
  * Entity之间有关系，所有的Entity操作都会考虑其和另外的Entity
  * 的依赖关系
@@ -166,6 +166,9 @@ class Entity implements \JsonSerializable
      * @param bool dirty 该值为true则表示该Entity已经在数据库中有存储记录
      * 因此，save的时候做更新操作，反之，做插入操作
      */
+
+    protected $relation_ship;
+
     public function __construct ($fresh = true)
     {
         $Entity = get_called_class();
@@ -187,6 +190,7 @@ class Entity implements \JsonSerializable
             }
             $this->set($field, $attr['default']);
         }
+        $this->relation_ship = new RelationShip($Entity::$foreign, $this);
     }
 
     /**
@@ -228,9 +232,7 @@ class Entity implements \JsonSerializable
      *  - beforeUpdate      向数据库中更新数据时，回调用该方法，如果该方法返回false，怎终止保存操作
      * 保存数据时，应该解决Entity之间的依赖关系
      *
-     * @see self::getDataWithSave
-     * 
-     * @return id|false
+     * @return self|false
      */
     public function save()
     {
@@ -241,8 +243,7 @@ class Entity implements \JsonSerializable
         $mapper = (new Mapper())->selectTable($Entity::$table);
         Row::beginTransaction();
         try {
-            $this->saveOther();
-            $bridges = $this->saveBridge();
+            $this->relation_ship->save();
             if ($this->fresh) {
                 if ($this->beforeInsert() === false) {
                     Row::rollback();
@@ -256,9 +257,7 @@ class Entity implements \JsonSerializable
                 }
                 $mapper->update($this->data);
             }
-            foreach ($bridges as $bridge) {
-                $bridge->dirty() && $bridge->save();
-            }
+            $this->relation_ship->saveBridge();
             Row::commitTransaction();
         } catch(\Exception $e) {
             Row::rollback();
@@ -316,30 +315,7 @@ class Entity implements \JsonSerializable
         if (!$foreign) {
             return $this->data->get($attr);
         }
-        if (!isset($foreign['bridge'])) {
-            if($this->entities[$attr] ?? false) {
-                return $this->entities[$attr];
-            }
-            $foreign_selector = $foreign['entity']::selector();
-            $entities = $foreign_selector->by(
-                'eq', $foreign['foreign_key'], $this->data->get($foreign['local_key'])
-            )->find();
-            if ($entities && count($entities) == 1) {
-                $entities = $entities[0];
-            }
-            $this->entities[$attr] = $entities;
-            return $entity;
-        }
-        if ($this->bridge_entities[$attr] ?? false) {
-            return $this->bridge_entities[$attr];
-        }
-        $foreign_selector = $foreign['entity']::selector();
-        $bridge_selector = $foreign['bridge']['entity']::selector()->field(false)->on(
-            'eq', $foreign['bridge']['foreign'],
-            $foreign_selector->getFieldExpr($foreign['foreign_key'])
-        )->by('eq', $foreign['bridge']['local'], $this->data->get($foreign['local_key']));
-        $this->entities[$attr] = $foreign_selector->join($bridge_selector)->find();
-        return $this->entities[$attr];
+        return $this->relation_ship->get($attr);
     }
 
     /**
@@ -365,16 +341,7 @@ class Entity implements \JsonSerializable
             $this->data->set($attr, $value, $dirty);
             return $this;
         }
-        $foreign = $self::$foreign[$attr] ?? false;
-        if (!$foreign || !($value instanceof $foreign['entity'])) {
-            throw new \Leno\Exception ('value type error');
-        }
-        if (isset($foreign['bridge'])) {
-            $this->bridge_entities[$attr] = is_array($value) ? $value : [$value];
-            return $this;
-        }
-        $this->entities[$attr] = $value;
-        $this->data->set($foreign['local_key'], $value->id(), true);
+        $this->relation_ship->set($attr, $value);
         return $this;
     }
 
@@ -387,13 +354,9 @@ class Entity implements \JsonSerializable
     public function add (string $attr, $value)
     {
         $self = get_called_class();
-        $foreign = $self::$foreign[$attr];
+        $foreign = $self::$foreign[$attr] ?? false;
         if ($foreign['bridge'] ?? false) {
-            if (is_array($this->bridge_entities[$attr] ?? null)) {
-                $this->bridge_entities[$attr][] = $value;
-                return $this;
-            }
-            $this->bridge_entities[$attr] = [$value];
+            $this->relation_ship->add ($attr, $value);
             return $this;
         }
         $config = $this->getAttribute($attr);
@@ -406,7 +369,15 @@ class Entity implements \JsonSerializable
     public function id()
     {
         $self = get_called_class();
-        return $this->get($self::$primary);
+        $primary_keys = $self::$primary;
+        if (!is_array($primary_keys)) {
+            return $this->data->get($primary_keys);
+        }
+        $primary_values = [];
+        foreach ($primary_keys as $key) {
+            $primary_values[$key] = $this->data->get($key);
+        }
+        return $primary_values;
     }
 
     public function dirty () : bool
@@ -447,40 +418,6 @@ class Entity implements \JsonSerializable
     {
         $Entity = get_called_class();
         return $Entity::$attributes[$attr] ?? null;
-    }
-
-    private function saveOther()
-    {
-        foreach ($this->entities as $entity) {
-            $entity->dirty() && $entity->save();
-        }
-    }
-
-    private function saveBridge()
-    {
-        $self = get_called_class();
-        $bridges = [];
-        foreach($this->bridge_entities as $attr => $entities) {
-            $foreign = $self::$foreign[$attr];
-            array_map(function($entity) use (&$bridges, $foreign) {
-                $entity->dirty() && $entity->save();
-
-                $local_val = $this->data->get($foreign['local_key']);
-                $foreign_val = $entity->get($foreign['foreign_key']);
-
-                $bridge = $foreign['bridge']['entity']::selector()
-                    ->by('eq', $foreign['bridge']['local'], $local_val)
-                    ->by('eq', $foreign['bridge']['foreign'], $foreign_val)
-                    ->findOne();
-                if (!$bridge) {
-                    $bridge = (new $foreign['bridge']['entity'])
-                        ->set($foreign['bridge']['local'], $local_val)
-                        ->set($foreign['bridge']['foreign'], $foreign_val);
-                }
-                $bridges[] = $bridge;
-            }, $entities);
-        }
-        return $bridges;
     }
 
     /**

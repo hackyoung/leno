@@ -116,3 +116,18 @@ function logger($name = 'default', $level = \Monolog\Logger::DEBUG)
 {
     return \Leno\Worker::instance()->logger($level, $name);
 }
+
+function async_execute(callable $callback, array $args = [])
+{
+    try {
+        $pid = pcntl_fork();
+    } catch (\Exception $ex) {
+        throw new \Exception ('你的环境不支持pcntl_fork');
+    }
+    if ($pid == -1) {
+        throw new \Exception ('pcntl_fork 失败');
+    } else if ($pid) {
+        return;
+    }
+    call_user_func_array($callback, $args);
+}
