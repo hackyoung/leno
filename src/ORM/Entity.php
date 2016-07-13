@@ -96,8 +96,7 @@ class Entity implements \JsonSerializable
      *      'field_name' => [
      *          'type' => (string),     // 类型
      *          'default' => (mixed),   // 默认值
-     *          'null' => (bool),       // 是否允许为空
-     *          'extra' => [],          // 类型验证时需要的字段,
+     *          'is_nullable' => (bool),       // 是否允许为空
      *          'sensitive' => (bool)   // 该配置定义了属性是不是敏感属性, 敏感信息在toArray的时候会忽略且仅能通过setForcely方法设置其值
      *      ]
      * ]
@@ -148,16 +147,6 @@ class Entity implements \JsonSerializable
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
      */
     protected $fresh;
-
-    /**
-     * 保存关系的关联对象
-     * [
-     *      'maybe_field' => EntityObj
-     * ]
-     */
-    protected $entities = [];
-
-    protected $bridge_entities = [];
 
     /**
      * 构造函数，设置主键值，设置默认值,

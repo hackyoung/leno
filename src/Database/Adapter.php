@@ -9,7 +9,13 @@ abstract class Adapter implements AdapterInterface
 {
     private $transaction_counter = 0;
 
-    private $tables_info = [];
+    private $tables_column = [];
+
+    private $tables_index = [];
+
+    private $tables_foreign_key = [];
+
+    private $tables_unique_key = [];
 
     private $driver;
 
@@ -79,25 +85,34 @@ abstract class Adapter implements AdapterInterface
 
     public function describeColumns(string $table_name)
     {
-        if (!isset($this->tables_info[$table_name])) {
-            return $this->tables_info[$table_name] = $this->_describeTable($table_name);
+        if (!isset($this->tables_column[$table_name])) {
+            return $this->tables_column[$table_name] = $this->_describeColumns($table_name);
         }
-        return $this->tables_info[$table_name];
+        return $this->tables_column[$table_name];
     }
 
     public function describeIndexes(string $table_name)
     {
-        return $this->_describeIndexes($table_name);
+        if (!isset($this->tables_index[$table_name])) {
+            return $this->tables_index[$table_name] = $this->_describeIndexes($table_name);
+        }
+        return $this->tables_index[$table_name];
     }
 
     public function describeForeignKeys(string $table_name)
     {
-        return $this->_describeForeignKeys($table_name);
+        if (!isset($this->tables_foreign_key[$table_name])) {
+            return $this->tables_foreign_key[$table_name] = $this->_describeForeignKeys($table_name);
+        }
+        return $this->tables_foreign_key[$table_name];
     }
 
     public function describeUniqueKeys(string $table_name)
     {
-        return $this->_describeUniqueKeys($table_name);
+        if (!isset($this->table_unique_key[$table_name])) {
+            return $this->table_unique_key[$table_name] = $this->_describeUniqueKeys($table_name);
+        }
+        return $this->table_unique_key[$table_name];
     }
 
     public function driver() : DriverInterface
@@ -115,11 +130,31 @@ abstract class Adapter implements AdapterInterface
 
     abstract protected function quote(string $key) : string;
 
+    /**
+     * @return [
+     *      'field_name' => ['type' => '', 'null' => '', 'default' => '']
+     * ]
+     */
     abstract protected function _describeColumns(string $table_name);
 
+    /**
+     * @return [
+     *      'constraint_name' => ['field_name']
+     * ]
+     */
     abstract protected function _describeIndexes(string $table_name);
 
+    /**
+     * @return [
+     *      'constraint_name' => [local => [], table => 'table_name', foreign => []]
+     * ]
+     */
     abstract protected function _describeForeignKeys(string $table_name);
 
+    /**
+     * @return [
+     *      'constraint_name' => ['field_name']
+     * ]
+     */
     abstract protected function _describeUniqueKeys(string $table_name);
 }

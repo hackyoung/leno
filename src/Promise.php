@@ -58,14 +58,12 @@ abstract class Promise
             }
             if ($this->status == self::PENDING) {
                 $this->args = [call_user_func_array($context['fulfilled'], $this->args)];
+                continue;
             }
-            if ($this->status == self::REJECTED) {
-                if (!is_callable($context['rejected'])) {
-                    return;
-                }
+            if ($this->status == self::REJECTED && is_callable($context['rejected'])) {
                 call_user_func($context['rejected']);
-                return;
             }
+            return;
         }
         $this->status = self::FULFILLED;
     }
