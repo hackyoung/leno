@@ -91,8 +91,7 @@ abstract class Adapter implements AdapterInterface
         return $this->tables_column[$table_name];
     }
 
-    public function describeIndexes(string $table_name)
-    {
+    public function describeIndexes(string $table_name) {
         if (!isset($this->tables_index[$table_name])) {
             return $this->tables_index[$table_name] = $this->_describeIndexes($table_name);
         }

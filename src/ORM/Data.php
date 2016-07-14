@@ -24,7 +24,8 @@ class Data implements DataInterface
      * 保存Data的配置信息，这些信息用于参数验证，其结构为 [
      *      'value' => [
      *          'type' => '',
-     *          'null' => '', 
+     *          'is_nullable' => '', 
+     *          'default' => '',
      *          'extra' => []
      *      ],
      * ];
@@ -61,7 +62,7 @@ class Data implements DataInterface
     {
         foreach($this->config as $field => $config) {
             $type = Type::get($config['type']);
-            $type->setRequried($config['null'] ?? true)
+            $type->setRequried($config['is_nullable'] ?? true)
                 ->setAllowEmpty(true)
                 ->setExtra($config['extra'])
                 ->check($this->data[$field]['value'] ?? null);

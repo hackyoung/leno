@@ -2,10 +2,10 @@
 namespace Leno\Database;
 
 use \Leno\Database\Adapter;
+use \Leno\Database\Constraint\Foreign;
+use \Leno\Database\Constraint\Unique;
+use \Leno\Database\Constraint\Primary;
 
-/**
- *
- */
 class Table
 {
     protected $name;
@@ -30,6 +30,8 @@ class Table
 
     protected $foreign_keys = [];
 
+    protected $indexes = [];
+
     protected $primary_key = [];
 
     public function __construct($name, $fields = [])
@@ -51,24 +53,34 @@ class Table
 
     public function setForeignKeys($foreign_key)
     {
-        $this->foreign_key = $foreign_key;
+        $this->foreign_keys = $foreign_key;
         return $this;
     }
 
     public function setPrimaryKeys($primary_key)
     {
-        $this->primary_key = $primary_key;
+        $this->primary_keys = $primary_key;
         return $this;
     }
 
     public function save()
     {
-        $dbInfo = self::getAdapter()->describeTable($this->getName());
-        if($dbInfo === false) {
-            return $this->addTable();
+        $dbInfo = self::getAdapter()->describeColumns($this->name);
+        self::getAdapter()->beginTransaction();
+        try {
+            if (empty($dbInfo)) {
+                $this->addTable();
+            } else {
+                $this->alterTable();
+            }
+            (new Primary($this->name, $this->primary_key))->save();
+            (new Unique($this->name, $this->unique_keys))->save();
+            (new Foreign($this->name, $this->foreign_keys))->save();
+            self::getAdapter()->commitTransaction();
+        } catch (\Exception $ex) {
+            self::getAdapter()->rollback();
+            throw $ex;
         }
-        return $this->alterTable();
-        //self::getAdapter()->describeConstraint($this->getName());
     }
 
     public function setField($field, $attr)
@@ -94,7 +106,7 @@ class Table
 
     protected function alterTable()
     {
-        $dbInfo = self::getAdapter()->describeTable($this->getName());
+        $dbInfo = self::getAdapter()->describeColumns($this->name);
         $add = [];
         $alter = [];
         foreach($this->fields as $field => $attr) {
@@ -147,8 +159,8 @@ class Table
         if($field1['type'] !== $field2['type']) {
             return false;
         }
-        $null1 = $field1['null'] ?? 'NOT NULL';
-        $null2 = $field2['null'] ?? 'NOT NULL';
+        $null1 = $field1['is_nullable'] ?? false;
+        $null2 = $field2['is_nullable'] ?? false;
         if($null1 !== $null2) {
             return false;
         } 
@@ -192,10 +204,16 @@ class Table
 
     private function getExprOfField($field, $attr)
     {
-        if(isset($attr['default'])) {
-            $attr['default'] = 'DEFAULT \''.$attr['default'].'\'';
+        $field_expr = self::getAdapter()->keyQuote($field) .' '. $attr['type'];
+        if ($attr['is_nullable'] ?? false) {
+            $field_expr .= ' NULL';   
+        } else {
+            $field_expr .= ' NOT NULL';   
         }
-        return self::getAdapter()->keyQuote($field) . ' ' . implode(' ', array_values($attr));
+        if(isset($attr['default'])) {
+            $field_expr .= ' DEFAULT \''.$attr['default'].'\'';
+        }
+        return $field_expr;
     }
 
     public static function getAdapter()

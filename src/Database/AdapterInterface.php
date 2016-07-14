@@ -48,5 +48,5 @@ interface AdapterInterface
 
     public function describeForeignKeys(string $table_name);
 
-    public function describePrimaryKeys(string $table_name);
+    public function describeUniqueKeys(string $table_name);
 }

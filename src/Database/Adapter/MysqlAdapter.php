@@ -15,21 +15,26 @@ class MysqlAdapter extends Adapter
         $sql = 'SELECT '.
             'DATA_TYPE as type,'.
             'COLUMN_NAME as field,'.
-            'COLUMN_DEFAULT as default,'.
+            'CHARACTER_MAXIMUM_LENGTH as length, '.
+            'COLUMN_DEFAULT as default_value,'.
             'IS_NULLABLE as is_nullable '.
-            'FROM COLUMNS WHERE TABLE_NAME = \''.$table_name.'\'';
+            'FROM information_schema.COLUMNS WHERE TABLE_NAME = \''.$table_name.'\'';
         $result = $this->execute($sql);
         $fields = [];
         foreach ($result as $row) {
-            $row = $result->fetch(\PDO::FETCH_ASSOC);
             $attr = [
                 'type' => strtoupper($row['type']),
                 'is_nullable' => true
             ];
+            if ($row['length']) {
+                $attr['type'] .= '('.$row['length'].')';
+            }
             if ($row['is_nullable'] === 'NO') {
                 $attr['is_nullable'] = false;
             }
-            $attr['default'] = $row['default'] == 'NULL' ? null : $row['default'];
+            if ($row['default_value']) {
+                $attr['default'] = $row['default_value'];
+            }
             $fields[$row['field']] = $attr;
         }
         return $fields;
@@ -37,13 +42,76 @@ class MysqlAdapter extends Adapter
 
     protected function _describeIndexes(string $table_name)
     {
+        $result = $this->execute('SHOW INDEXES FROM '.$table_name);
+
+        $indexes = [];
+
+        foreach ($result as $row) {
+            if (!isset($indexes[$row['Key_name']])) {
+                $indexes[$row['Key_name']] = [];
+            }
+            $indexes[$row['Key_name']][] = $row['Column_name'];
+        }
+
+        return $indexes;
     }
 
     protected function _describeUniqueKeys(string $table_name)
     {
+        $sql = 'SELECT '.
+            'CONSTRAINT_NAME AS name, '.
+            'TABLE_NAME AS local_table, '.
+            'COLUMN_NAME AS local_key, '.
+            'REFERENCED_TABLE_NAME AS foreign_table, '.
+            'REFERENCED_COLUMN_NAME AS foreign_key '.
+        'FROM '.
+            'information_schema.KEY_COLUMN_USAGE '.
+        'WHERE '.
+            'CONSTRAINT_NAME != \'PRIMARY\' AND '.
+            'TABLE_NAME=\''.$table_name.'\' AND '.
+            'REFERENCED_TABLE_NAME IS NULL';
+
+        $result = $this->execute($sql);
+
+        $constraint = [];
+
+        foreach($result as $row) {
+            if (!isset($constraint[$row['name']])) {
+                $constraint[$row['name']] = [];
+            }
+            $constraint[$row['name']][] = $row['local_key'];
+        }
+
+        return $constraint;
     }
 
     protected function _describeForeignKeys(string $table_name)
     {
+        $sql = 'SELECT '.
+            'CONSTRAINT_NAME AS name, '.
+            'TABLE_NAME AS local_table, '.
+            'COLUMN_NAME AS local_key, '.
+            'REFERENCED_TABLE_NAME AS foreign_table, '.
+            'REFERENCED_COLUMN_NAME AS foreign_key '.
+        'FROM '.
+            'information_schema.KEY_COLUMN_USAGE '.
+        'WHERE '.
+            'CONSTRAINT_NAME != \'PRIMARY\' AND TABLE_NAME=\''.$table_name.'\'';
+
+        $result = $this->execute($sql);
+
+        $constraint = [];
+
+        foreach ($result as $row) {
+            if (!isset($constraint[$row['name']])) {
+                $constraint[$row['name']] = [
+                    'foreign_table' => $row['foreign_table'],
+                    'relation' => []
+                ];
+            }
+            $constraint[$row['name']]['relation'][$row['local_key']] = $row['foreign_key'];
+        }
+
+        return $constraint;
     }
 }
