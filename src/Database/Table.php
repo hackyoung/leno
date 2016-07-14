@@ -57,9 +57,9 @@ class Table
         return $this;
     }
 
-    public function setPrimaryKeys($primary_key)
+    public function setPrimaryKey($primary_key)
     {
-        $this->primary_keys = $primary_key;
+        $this->primary_key = $primary_key;
         return $this;
     }
 

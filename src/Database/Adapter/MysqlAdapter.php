@@ -114,4 +114,18 @@ class MysqlAdapter extends Adapter
 
         return $constraint;
     }
+
+    protected function _describePrimaryKey(string $table_name)
+    {
+        $sql = 'SELECT '.
+            'CONSTRAINT_NAME AS name, '.
+            'COLUMN_NAME AS field '.
+        'FROM '.
+            'information_schema.KEY_COLUMN_USAGE '.
+        'WHERE '.
+            'CONSTRAINT_NAME = \'PRIMARY\' AND TABLE_NAME=\''.$table_name.'\'';
+
+        $result = $this->execute($sql);
+        return $result->fetch()['field'] ?? null;
+    }
 }

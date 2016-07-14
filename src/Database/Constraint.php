@@ -23,6 +23,12 @@ abstract class Constraint
         if (!$this->db_info) {
             $this->db_info = $this->getFromDB();
         }
+        if (is_string($this->config)) {
+            if(!$this->equal($this->config, $this->db_info)) {
+                $this->doSave($this->config, $this->db_info);
+            }
+            return;
+        }
         $add = [];
         $remove = $this->db_info;
         foreach ($this->config as $key => $config) {

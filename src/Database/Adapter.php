@@ -17,6 +17,8 @@ abstract class Adapter implements AdapterInterface
 
     private $tables_unique_key = [];
 
+    private $tables_primary_key = [];
+
     private $driver;
 
     private static $adapters = [];
@@ -108,10 +110,18 @@ abstract class Adapter implements AdapterInterface
 
     public function describeUniqueKeys(string $table_name)
     {
-        if (!isset($this->table_unique_key[$table_name])) {
-            return $this->table_unique_key[$table_name] = $this->_describeUniqueKeys($table_name);
+        if (!isset($this->tables_unique_key[$table_name])) {
+            return $this->tables_unique_key[$table_name] = $this->_describeUniqueKeys($table_name);
         }
-        return $this->table_unique_key[$table_name];
+        return $this->tables_unique_key[$table_name];
+    }
+
+    public function describePrimaryKey(string $table_name)
+    {
+        if (!isset($this->tables_primary_key[$table_name])) {
+            return $this->tables_primary_key[$table_name] = $this->_describePrimaryKey($table_name);
+        }
+        return $this->tables_primary_key[$table_name];
     }
 
     public function driver() : DriverInterface
@@ -156,4 +166,6 @@ abstract class Adapter implements AdapterInterface
      * ]
      */
     abstract protected function _describeUniqueKeys(string $table_name);
+
+    abstract protected function _describePrimaryKey(string $table_name);
 }

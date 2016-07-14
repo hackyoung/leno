@@ -85,6 +85,7 @@ class Build extends \Leno\Shell
             $attr['type'] = Type::get($info['type'])->setExtra($info['extra'] ?? [])->toDbType();
             $table->setField($field, $attr);
         }
+        $table->setPrimaryKey($re->getStaticPropertyValue('primary'));
         $foreign = $re->getStaticPropertyValue('foreign');
         if (is_array($foreign)) {
             $table->setForeignKeys($this->normalizeForeign($foreign, $table));
