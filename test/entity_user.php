@@ -24,12 +24,12 @@ $user->setName('hello')
 
 var_dump($user);
 $book->save();
+ */
 $start = microtime(true);
-*/
 $user = User::findOrFail('c9250431-fd0c-6511-1d42-f0af24b2b367');
 var_dump($user->getBook());
-/*
 echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
+/*
 $book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');
 
 var_dump($book->getAuthor()->getName());

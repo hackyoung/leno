@@ -18,8 +18,8 @@ class RelationShip
      *          'foreign_key' => [
      *              'world_key_1' => 'entity_key_1',
      *              'world_key_2' => 'entity_key_2',
-     *              'entity' => ''
-     *          ]
+     *          ],
+     *          'entity' => ''
      *      ]
      * ];
      */
@@ -106,7 +106,9 @@ class RelationShip
     {
         foreach ($this->bridge_entities as $entity) {
             // TODO 如果抛出约束不满足的异常，忽略，写日志
-           $entity->save();
+            if ($entity->dirty()) {
+                $entity->save();
+            }
         }
         return $this;
     }
@@ -116,11 +118,13 @@ class RelationShip
         $selector = $config['entity']::selector();
         if (!is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
-                $selector->by('eq', $config['foreign_key'][$local], $this->primary_entity->get($local));
+                $local_value = $this->primary_entity->get($local);
+                $selector->by('eq', $config['foreign_key'][$local], $local_value);
             }
-        } else {
-            $selector->by('eq', $config['foreign_key'], $this->primary_entity->get($config['local_key']));
+            return $selector->find();
         }
+        $local_value = $this->primary_entity->get($config['local_key']);
+        $selector->by('eq', $config['foreign_key'], $local_value);
         return $selector->find();
     }
 
@@ -133,18 +137,26 @@ class RelationShip
 
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
-                $bridge_selector->by('eq', $bridge['local'][$local], $this->primary_entity->get($local));
+                $local_value = $this->primary_entity->get($local);
+                $bridge_selector->by('eq', $bridge['local'][$local], $local_value);
             }
         } else {
-            $bridge_selector->by('eq', $bridge['local'], $this->primary_entity->get($config['local_key']));
+            $local_value = $this->primary_entity->get($config['local_key']);
+            $bridge_selector->by('eq', $bridge['local'], $local_value);
         }
 
         if (is_array($config['foreign_key'])) {
             foreach ($config['foreign_key'] as $foreign) {
-                $bridge_selector->on('eq', $bridge['foreign'][$foreign], $selector->getFieldExpr($foreign));
+                $bridge_selector->on(
+                    'eq', $bridge['foreign'][$foreign],
+                    $selector->getFieldExpr($foreign)
+                );
             }
         } else {
-            $bridge_selector->on('eq', $bridge['foreign'], $selector->getFieldExpr($config['foreign_key']));
+            $bridge_selector->on(
+                'eq', $bridge['foreign'],
+                $selector->getFieldExpr($config['foreign_key'])
+            );
         }
 
         return $selector->join($bridge_selector)->find();
