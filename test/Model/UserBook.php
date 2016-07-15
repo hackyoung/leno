@@ -14,4 +14,21 @@ class UserBook extends Entity
     public static $primary = 'user_book_id';
 
     public static $table = 'user_book';
+
+    public static $unique = [
+        'user_book' => ['author_id', 'book_id']
+    ];
+
+    public static $foreign = [
+        'user' => [
+            'local_key' => 'author_id',
+            'foreign_key' => 'id',
+            'entity' => '\\Test\\Model\\User'
+        ],
+        'book' => [
+            'local_key' => 'book_id',
+            'foreign_key' => 'id',
+            'entity' => '\\Test\\Model\\Book'
+        ]
+    ];
 }

@@ -13,6 +13,7 @@ $user->addBook((new Book)->setName('css')->setAuthor($user)->save());
 
 $user->save();
 echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
+
 $user = new \Test\Model\User;
 $book = new \Test\Model\Book;
 $book->setName('Javascript 从入门到放弃')
@@ -24,8 +25,10 @@ $user->setName('hello')
 var_dump($user);
 $book->save();
 $start = microtime(true);
-$user = User::findOrFail('ffecd91b-f241-cb97-023f-e35e86374ae3');
+*/
+$user = User::findOrFail('c9250431-fd0c-6511-1d42-f0af24b2b367');
 var_dump($user->getBook());
+/*
 echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 $book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');
 

@@ -39,7 +39,7 @@ class HelloWorld extends \Leno\Shell
             $this->info('创建文件夹：'.$destination);
             mkdir($destination, 0755, true);
         }
-        while($filename = readdir($dir_handler)) {
+        while ($filename = readdir($dir_handler)) {
             if($filename == '.' || $filename == '..') {
                 continue;
             }

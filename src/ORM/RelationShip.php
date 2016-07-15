@@ -91,10 +91,13 @@ class RelationShip
             $entities = $this->secondary_entities;
         }
         foreach ($entities as $attr=>$entity) {
-            if (is_array ($entity)) {
-                $this->save($entity);
+            if (!is_array ($entity)) {
+                $this->saveEntity($attr, $entity);
+                continue;
             }
-            $this->saveEntity($attr, $entity);
+            foreach ($entity as $ett) {
+                $this->saveEntity($attr, $ett);
+            }
         }
         return $this;
     }
@@ -141,7 +144,7 @@ class RelationShip
                 $bridge_selector->on('eq', $bridge['foreign'][$foreign], $selector->getFieldExpr($foreign));
             }
         } else {
-            $bridge_selector->on('eq', $bridge['foreign'], $selector->getFieldExpr($config['foreign']));
+            $bridge_selector->on('eq', $bridge['foreign'], $selector->getFieldExpr($config['foreign_key']));
         }
 
         return $selector->join($bridge_selector)->find();
@@ -157,7 +160,7 @@ class RelationShip
         if (isset($config['bridge'])) {
             $bridge = new $config['bridge']['entity'];
             $bridge->set($config['bridge']['local'], $this->primary_entity->get($config['local_key']));
-            $bridge->set($config['bridge']['foreign'], $this->primary_entity->get($config['foreign_key']));
+            $bridge->set($config['bridge']['foreign'], $entity->get($config['foreign_key']));
             $this->bridge_entities[] = $bridge;
         }
     }

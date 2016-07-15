@@ -17,6 +17,10 @@ class User extends Entity
 
     public static $primary = 'id';
 
+    public static $unique = [
+        'user_name' => ['name']
+    ];
+
     public static $foreign = [
         'book' => [
             'entity' => '\\Test\\Model\\Book',

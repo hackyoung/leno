@@ -26,13 +26,13 @@ class Table
 
     protected $sql;
 
-    protected $unique_keys = [];
+    protected $unique_keys = false;
 
-    protected $foreign_keys = [];
+    protected $foreign_keys = false;
 
-    protected $indexes = [];
+    protected $indexes = false;
 
-    protected $primary_key = [];
+    protected $primary_key = false;
 
     public function __construct($name, $fields = [])
     {
@@ -73,9 +73,9 @@ class Table
             } else {
                 $this->alterTable();
             }
-            (new Primary($this->name, $this->primary_key))->save();
-            (new Unique($this->name, $this->unique_keys))->save();
-            (new Foreign($this->name, $this->foreign_keys))->save();
+            is_string($this->primary_key) && (new Primary($this->name, $this->primary_key))->save();
+            is_array($this->unique_keys) && (new Unique($this->name, $this->unique_keys))->save();
+            is_array($this->foreign_keys) && (new Foreign($this->name, $this->foreign_keys))->save();
             self::getAdapter()->commitTransaction();
         } catch (\Exception $ex) {
             self::getAdapter()->rollback();

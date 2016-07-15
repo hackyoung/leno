@@ -144,7 +144,9 @@ class Data implements DataInterface
     {
         $ret = [];
         foreach($this->data as $field => $data) {
-            $ret[$field] = $data['value'];
+            $attr = $this->config[$field];
+            $type = Type::get($attr['type']);
+            $ret[$field] = $type->toDB($value_info['value']);
         }
         return $ret;
     }

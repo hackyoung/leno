@@ -14,9 +14,10 @@ class Primary extends Constraint
     {
         $adapter = self::getAdapter();
         $adapter->beginTransaction();
-        var_dump($old);
         try {
-            $adapter->execute('ALTER TABLE '.$this->table_name.' DROP PRIMARY KEY');
+            if ($old) {
+                $adapter->execute('ALTER TABLE '.$this->table_name.' DROP PRIMARY KEY');
+            }
             $adapter->execute('ALTER TABLE '.$this->table_name.' ADD CONSTRAINT PRIMARY KEY('.$new.')');
             $adapter->commitTransaction();
         } catch (\Exception $ex) {

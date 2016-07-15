@@ -96,7 +96,7 @@ class MysqlAdapter extends Adapter
         'FROM '.
             'information_schema.KEY_COLUMN_USAGE '.
         'WHERE '.
-            'CONSTRAINT_NAME != \'PRIMARY\' AND TABLE_NAME=\''.$table_name.'\'';
+            'TABLE_NAME=\''.$table_name.'\' AND REFERENCED_TABLE_NAME IS NOT NULL';
 
         $result = $this->execute($sql);
 

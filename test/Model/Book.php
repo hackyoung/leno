@@ -15,6 +15,10 @@ class Book extends Entity
         'author_id' => ['type' => 'uuid'],
     ];
 
+    public static $unique = [
+        'book_name' => ['name']
+    ];
+
     public static $foreign = [
         'author' => [
             'entity' => '\\Test\\Model\\User',

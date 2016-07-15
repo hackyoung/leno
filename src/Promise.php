@@ -13,10 +13,6 @@ abstract class Promise
 
     protected $status = self::PENDING;
 
-    protected $pid;
-
-    protected $child_pid;
-
     protected $args = [];
 
 
@@ -31,15 +27,12 @@ abstract class Promise
 
     public function execute()
     {
-        $this->pid = posix_getpid();
         $pid = pcntl_fork();
         if ($pid == -1) {
             throw new PromiseForkException;
         } else if ($pid) {
-            $this->child_pid = $pid;
             return;
         }
-        pcntl_waitpid($this->pid, $status);
         $this->args[] = call_user_func([$this, '_execute']);
         $this->afterExecute();
     }
