@@ -56,11 +56,14 @@ class Selector extends Row
             array_splice($series, 0, 1);
             switch($type) {
                 case 'order':
-                    return $this->callOrder($series, $parameters);
+                    $field = implode('_', $series);
+                    return $this->order($field, $parameters[0] ?? self::ORDER_ASC);
                 case 'group':
-                    return $this->callGroup($series);
+                    $field = implode('_', $series);
+                    return $this->group($field);
                 case 'field':
-                    return $this->callField($series, $parameters);
+                    $field = implode('_', $series);
+                    return $this->field($field, $parameters[0] ?? false);
             }
             throw new \Exception(get_class() . '::' . $method . ' Not Found');
         }
@@ -200,7 +203,7 @@ class Selector extends Row
     public function getGroup()
     {
         return array_map(function($field) {
-            return $this->quote($this->table) . '.' .$this->quote($field);
+            return $this->getFieldExpr($field);
         }, $this->group);
     }
 
@@ -216,14 +219,16 @@ class Selector extends Row
     {
         $ret = [];
         foreach($this->order as $field=>$order) {
-            $ret[] = $this->quote($this->table) . '.' .$this->quote($field) . ' ' . $order;
+            $ret[] = $this->getFieldExpr($field) . ' ' . $order;
         }
         return $ret;
     }
 
     /**
-     * 执行查找操作，如果设置了Mapper类，该方法会将数据转换成Mapper对象
+     * 执行查找操作，如果设置了Entity类，该方法会将数据转换成Entity对象
+     *
      * ### sample
+     *
      * $selector = new Selector('table');
      * $selector->field([
      *    'hello',
@@ -353,23 +358,5 @@ class Selector extends Row
             $this->limit['row'] ?? 0,
             $this->limit['limit'] ?? -1
         );
-    }
-
-    private function callGroup($series)
-    {
-        $field = implode('_', $series);
-        return $this->group($field);
-    }
-
-    private function callOrder($series, $order)
-    {
-        $field = implode('_', $series);
-        return $this->order($field, $order[0] ?? self::ORDER_ASC);
-    }
-
-    private function callField($series, $alias)
-    {
-        $field = implode('_', $series);
-        return $this->field($field, $alias[0] ?? false);
     }
 }

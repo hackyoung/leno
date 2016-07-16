@@ -26,6 +26,7 @@ class Data implements DataInterface
      *          'type' => '',
      *          'is_nullable' => '', 
      *          'default' => '',
+     *          'sensitive' => '',
      *          'extra' => []
      *      ],
      * ];
@@ -51,6 +52,15 @@ class Data implements DataInterface
     {
         $this->config = $config;
         $this->primary = $primary;
+        if ($this->config[$primary]['type'] == 'uuid') {
+            $this->set($primary, uuid());
+        }
+        foreach ($this->config as $field => $attr) {
+            if (($attr['default'] ?? null) === null) {
+                continue;
+            }
+            $this->setForcely($field, $attr['default']);
+        }
     }
 
     /**
@@ -90,12 +100,12 @@ class Data implements DataInterface
         return [$this->primary => $value];
     }
 
-    public function get(string $attr)
+    public function get (string $attr)
     {
         return $this->data[$attr]['value'] ?? null;
     }
 
-    public function set(string $attr, $value, bool $dirty)
+    public function setForcely (string $attr, $value, bool $dirty = true)
     {
         $exists_value = $this->data[$attr]['value'] ?? null;
         if($value == $exists_value) {
@@ -108,7 +118,16 @@ class Data implements DataInterface
         return $this;
     }
 
-    public function add(string $attr, $value)
+    public function set (string $attr, $value, bool $dirty = true)
+    {
+        $config = $this->config[$attr] ?? null;
+        if (!$config || ($config['sensitive'] ?? false)) {
+            return $this;
+        }
+        return $this->setForcely($attr, $value, $dirty);
+    }
+
+    public function add (string $attr, $value)
     {
         if(!isset($this->data[$attr])) {
             $this->data[$attr] = [
@@ -146,7 +165,10 @@ class Data implements DataInterface
         foreach($this->data as $field => $data) {
             $attr = $this->config[$field];
             $type = Type::get($attr['type']);
-            $ret[$field] = $type->toDB($value_info['value']);
+            if ($attr['sensitive'] ?? false) {
+                continue;
+            }
+            $ret[$field] = $type->toDB($data['value']);
         }
         return $ret;
     }

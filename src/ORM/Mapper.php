@@ -53,13 +53,10 @@ class Mapper implements MapperInterface
     public function find($id, $entity = null)
     {
         $selector = new RowSelector($this->table_name);
-        if ($entity) {
-            $selector->selectEntity($entity);
-        }
         foreach($id as $field => $value) {
             $selector->by('eq', $field, $value);
         }
-        return $selector->findOne();
+        return $selector->selectEntity($entity)->findOne();
     }
 
     public function selectTable(string $table_name)

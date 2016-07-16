@@ -59,14 +59,12 @@ abstract class Driver implements DriverInterface
 
     public static function get(string $driver_label = 'pdo', $parameters = null)
     {
-        $Driver = self::$driver_map[$driver_label];
-        $driver_reflection = new \ReflectionClass($Driver);
-        switch($driver_label) {
-            case 'pdo':
-                return $driver_reflection->newInstanceArgs([$parameters]);
-            default:
-                throw new \Leno\Exception('不支持的driver');
+        $Driver = self::$driver_map[$driver_label] ?? false;
+        if (!$Driver) {
+            throw new \Leno\Exception ('不支持的driver: '.$driver_label);
         }
+        $driver_reflection = new \ReflectionClass($Driver);
+        return $driver_reflection->newInstanceArgs([$parameters]);
     }
 
     protected static function logger()

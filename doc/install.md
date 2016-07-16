@@ -1,5 +1,5 @@
 #安装
-    LenoPHP采用composer包管理器，且其源代码在github上托管。通过composer安装LenoPHP是一件很简单的事情。如果你不喜欢composer安装，可通过github直接获取源代码，但是其依赖有可能不是最新的。我们通过一个hello world项目的例子来示例怎么构建一个LenoPHP应用，其示例的需求如下
+    LenoPHP采用composer包管理器进行依赖管理，且其源代码在github上托管。通过composer安装LenoPHP是一件很简单的事情。如果你不喜欢composer安装，可通过github直接获取源代码，但是其依赖有可能不是最新的。我们通过一个hello world项目的例子来示例怎么构建一个LenoPHP应用，其示例的需求如下
 
 >>>需要在目录/srv/http/hello-world中建立一个LenoPHP的hello-world项目,
 >>>我们能通过访问www.hello-world.com访问到我们的项目
@@ -15,6 +15,7 @@
 ```
 
 你所使用的http服务器软件不一样则配置方式不一样，我们会介绍nginx服务器软件的配置
+
 ###nginx配置
 找到nginx.conf文件，在http{}中加入下面的代码
 ```json

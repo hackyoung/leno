@@ -44,7 +44,7 @@ class RelationShip
         }
         $foreign = $this->config[$attr] ?? false;
         if (!$foreign) {
-            throw new \Leno\Exception ('没有找到配置: '.$attr);
+            throw new \Leno\Exception ($attr.'\'s config not found');
         }
         if (!isset($foreign['bridge'])) {
             $this->secondary_entities[$attr] = $this->getNoBridge($foreign);
@@ -55,22 +55,29 @@ class RelationShip
         return $this->secondary_entities[$attr];
     }
 
-    public function set (string $attr, Entity $value)
+    public function set (string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
-        if (!$config || !($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ('没有找到配置');
+        if (!$config) {
+            throw new \Leno\Exception ($attr.'\'s config not found');
+        }
+        if (!($value instanceof $config['entity'])) {
+            throw new \Leno\Exception ('value is not a Entity');
         }
         $this->secondary_entities[$attr] = $value;
-        $this->primary_entity->set($config['local_key'], $value->get($config['foreign_key']));
+        $value_key = $value->get($config['foreign_key']);
+        $this->primary_entity->set($config['local_key'], $value_key);
         return $this;
     }
 
-    public function add (string $attr, Entity $value)
+    public function add (string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
         if (!$config || !($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ('没有找到配置');
+            throw new \Leno\Exception ($attr.'\'s config not found');
+        }
+        if (!($value instanceof $config['entity'])) {
+            throw new \Leno\Exception ('value is not a Entity');
         }
         $exists = $this->secondary_entities[$attr] ?? false;
         if (!$exists) {
@@ -116,7 +123,7 @@ class RelationShip
     private function getNoBridge($config)
     {
         $selector = $config['entity']::selector();
-        if (!is_array($config['local_key'])) {
+        if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $local_value = $this->primary_entity->get($local);
                 $selector->by('eq', $config['foreign_key'][$local], $local_value);
@@ -125,7 +132,11 @@ class RelationShip
         }
         $local_value = $this->primary_entity->get($config['local_key']);
         $selector->by('eq', $config['foreign_key'], $local_value);
-        return $selector->find();
+        $result = $selector->find();
+        if (count($result) == 1) {
+            return $result[0];
+        }
+        return $result;
     }
 
     private function getBridge($config)
@@ -169,11 +180,18 @@ class RelationShip
         if ($entity->dirty()) {
             $entity->save();
         }
-        if (isset($config['bridge'])) {
-            $bridge = new $config['bridge']['entity'];
-            $bridge->set($config['bridge']['local'], $this->primary_entity->get($config['local_key']));
-            $bridge->set($config['bridge']['foreign'], $entity->get($config['foreign_key']));
-            $this->bridge_entities[] = $bridge;
+        if (!isset($config['bridge'])) {
+            return;
         }
+        $bridge = new $config['bridge']['entity'];
+        $bridge->set(
+            $config['bridge']['local'],
+            $this->primary_entity->get($config['local_key'])
+        );
+        $bridge->set(
+            $config['bridge']['foreign'],
+            $entity->get($config['foreign_key'])
+        );
+        $this->bridge_entities[] = $bridge;
     }
 }
