@@ -56,7 +56,7 @@ class Mapper implements MapperInterface
         foreach($id as $field => $value) {
             $selector->by('eq', $field, $value);
         }
-        return $selector->selectEntity($entity)->findOne();
+        return $selector->setEntityClass($entity)->findOne();
     }
 
     public function selectTable(string $table_name)

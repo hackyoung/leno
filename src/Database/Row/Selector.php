@@ -36,7 +36,10 @@ class Selector extends Row
      */
     protected $limit = [];
 
-    private $entity;
+    /**
+     * select之后转为的entityClass
+     */
+    private $entityClass;
 
     /**
      * __call魔术方法,提供group,order,field系列函数入口
@@ -240,7 +243,7 @@ class Selector extends Row
      */
     public function find()
     {
-        $Entity = $this->entity;
+        $Entity = $this->entityClass;
         if ($Entity) {
             $attrs = $Entity::$attributes;
             foreach($attrs as $field => $attr) {
@@ -258,9 +261,9 @@ class Selector extends Row
         return $ret;
     }
 
-    public function selectEntity($entity)
+    public function setEntityClass($entityClass)
     {
-        $this->entity = $entity;
+        $this->entityClass = $entityClass;
         return $this;
     }
 
@@ -279,7 +282,7 @@ class Selector extends Row
      */
     public function count()
     {
-        $Entity = $this->entity;
+        $Entity = $this->entityClass;
         if($Entity) {
             $field = $this->quote($Entity::$table.'.'.$Entity::$primary);
         } else {

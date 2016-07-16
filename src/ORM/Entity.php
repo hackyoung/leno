@@ -380,7 +380,7 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function selector ()
     {
         $self = get_called_class();
-        return (new RowSelector($self::$table))->selectEntity($self);
+        return (new RowSelector($self::$table))->setEntityClass($self);
     }
 
     /**
