@@ -1,31 +1,17 @@
 <?php
 namespace Leno\Database;
 
-use \Leno\Database\Expr;
+use \Leno\Database\QueryBuilder\Expr\NormalExpr;
+use \Leno\Database\QueryBuilder\Expr\InExpr;
+use \Leno\Database\QueryBuilder\Expr\LikeExpr;
+use \Leno\Database\QueryBuilder\Expr\MathExpr;
+
+use \Leno\Database\QueryBuilder\Condition;
+
 use \Leno\Database\Adapter;
 
-abstract class Row
+abstract class QueryBuilder
 {
-    /**
-     * 用于查询条件的OR关系
-     */
-    const R_OR = 'OR'; 
-
-    /**
-     * 用于查询条件的AND关系
-     */
-    const R_AND = 'AND';
-
-    /**
-     * 用于查询条件的优先级
-     */
-    const EXP_QUOTE_BEGIN = '(';
-
-    /**
-     * 用于查询条件的优先级
-     */
-    const EXP_QUOTE_END = ')';
-
     /**
      * 左连接类型
      */
@@ -56,6 +42,8 @@ abstract class Row
      */
     const TYPE_CONDI_ON = 'on';
 
+    protected static $allow_expr = ['like', 'in', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte'];
+
     /**
      * 该行操作器操作的表名
      */
@@ -64,7 +52,7 @@ abstract class Row
     /**
      * 保存where查询条件
      */
-    protected $where = [];
+    protected $where;
 
     /**
      * 保存待join的selector
@@ -74,7 +62,7 @@ abstract class Row
     /**
      * 保存join的条件
      */
-    protected $on = [];
+    protected $on;
 
     /**
      * 保存待插入或者更新的data [
@@ -93,6 +81,8 @@ abstract class Row
     public function __construct(string $table)
     {
         $this->table = $table;
+        $this->where = new Condition();
+        $this->on = new Condition();
     }
 
     /**
@@ -105,8 +95,9 @@ abstract class Row
     public function __call($method, $parameters=null)
     {
         $series = explode('_', unCamelCase($method, '_'));
+        $class = get_called_class();
         if(!isset($series[0])) {
-            throw new \Exception(get_called_class() . '::' . $method . ' Not Found');
+            throw new \Exception($class . '::' . $method . ' Not Found');
         }
         $type = $series[0];
         array_splice($series, 0, 1);
@@ -120,7 +111,7 @@ abstract class Row
         if($type === 'reset') {
             return $this->reset(implode('_', $series));
         }
-        throw new \Exception(get_class() . '::' . $method . ' Not Found');
+        throw new \Exception($class . '::' . $method . ' Not Found');
     }
 
     /**
@@ -135,7 +126,7 @@ abstract class Row
                 unCamelCase(strtolower(str_replace('field', '', $key)))
             );
         }
-        throw new \Exception(get_class() . '::'.$key. ' Not Defined');
+        throw new \Exception(get_called_class() . '::'.$key. ' Not Defined');
     }
 
     /**
@@ -216,12 +207,10 @@ abstract class Row
      */
     public function by($expr, $field, $value)
     {
-        $this->attachAdd(self::TYPE_CONDI_BY);
-        $this->where[] = [
-            'expr' => $expr,
-            'field' => $field,
-            'value' => $value,
-        ];
+        if (!($field instanceof NormalExpr)) {
+            $field = $this->getFieldExpr($field);
+        }
+        $this->where->addExpr(Expr::get($expr, $field, $value));
         return $this;
     }
 
@@ -236,12 +225,10 @@ abstract class Row
      */
     public function on($expr, $field, $value)
     {
-        $this->attachAdd(self::TYPE_CONDI_ON);
-        $this->on[] = [
-            'expr' => $expr,
-            'field' => $field,
-            'value' => $value,
-        ];
+        if (!($field instanceof NormalExpr)) {
+            $field = $this->getFieldExpr($field);
+        }
+        $this->on->addExpr(Expr::get($expr, $field, $value));
         return $this;
     }
 
@@ -258,7 +245,7 @@ abstract class Row
      */
     public function or()
     {
-        $this->where[] = self::R_OR;
+        $this->where->or();
         return $this;
     }
 
@@ -276,46 +263,44 @@ abstract class Row
      */
     public function and()
     {
-        $this->where[] = self::R_AND;
+        $this->where->and();
         return $this;
     }
 
     public function onOr()
     {
-        $this->on[] = self::R_OR;
+        $this->on->or();
         return $this;
     }
 
     public function onAnd()
     {
-        $this->on[] = self::R_OR;
+        $this->on->and();
         return $this;
     }
 
 
     public function quoteBegin()
     {
-        $this->attachAdd(self::TYPE_CONDI_BY);
-        $this->where[] = self::EXP_QUOTE_BEGIN;
+        $this->where->quoteBegin();
         return $this;
     }
 
     public function quoteEnd()
     {
-        $this->where[] = self::EXP_QUOTE_END;
+        $this->where->quoteEnd();
         return $this;
     }
 
     public function onQuoteBegin()
     {
-        $this->attachAdd(self::TYPE_CONDI_ON);
-        $this->on[] = self::EXP_QUOTE_BEGIN;
+        $this->on->quoteBegin();
         return $this;
     }
 
     public function onQuoteEnd()
     {
-        $this->on[] = self::EXP_QUOTE_END;
+        $this->on_quoteEnd();
         return $this;
     }
 
@@ -324,17 +309,17 @@ abstract class Row
         $quoted = implode('.', array_map(function($item) {
             return self::getAdapter()->keyQuote($item);
         }, explode('.', $val)));
-        return new Expr($quoted);
+        return new NormalExpr($quoted);
     }
 
     public function getOn()
     {
-        return $this->getCondition(self::TYPE_CONDI_ON);
+        return $this->on;
     }
 
     public function getWhere()
     {
-        return $this->getCondition(self::TYPE_CONDI_BY);
+        return $this->where;
     }
 
     public function getName()
@@ -387,19 +372,14 @@ abstract class Row
 
     protected function useWhere()
     {
-        $ret = $this->getWhere();
-        if(empty($ret)) {
-            $ret = ['1 = 1'];
+        if ($this->where->empty()) {
+            $this->where->addExpr(new NormalExpr('1 = 1'));
         }
+        $ret = $this->where;
         foreach($this->joins as $join) {
-            $joinWhere = $join['row']->getWhere();
-            if(!empty($joinWhere)) {
-                $ret[] = self::R_AND;
-            }
-            $ret = array_merge($ret, $joinWhere);
-            $this->params = array_merge($this->params, $join['row']->getParams());
+            $ret->merge($join['row']->getWhere());
         }
-        return implode(' ', $ret);
+        return (string)$ret;
     }
 
     protected function useJoin()

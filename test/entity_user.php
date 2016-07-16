@@ -5,10 +5,18 @@ require_once(__DIR__ . '/boot.php');
 use \Leno\ORM\Exception\EntityNotFoundException;
 use \Test\Model\User;
 use \Test\Model\Book;
+<<<<<<< HEAD
 $start = microtime(true);
 $user = (new User)->setName('hackyoung');
 $user->addBook((new Book)->setName('php_1')->setAuthor($user)->save());
 $user->addBook((new Book)->setName('css_1')->setAuthor($user)->save());
+=======
+
+/*
+$user = (new User)->setName('young');
+$user->addBook((new Book)->setName('php')->setAuthor($user)->save());
+$user->addBook((new Book)->setName('css')->setAuthor($user)->save());
+>>>>>>> v0.3.0
 
 $user->save();
 echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
