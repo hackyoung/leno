@@ -53,7 +53,7 @@ class Build extends \Leno\Shell
 
     protected function synColumns($entities)
     {
-        $this->info('---------------------开始同步表结构---------------------------');
+        $this->info('---------------------开始同步表结构----------------------------');
         foreach ($entities as $entity_name => $re) {
             $this->info('同步Entity:<keyword>'.$entity_name.'</keyword>');
             $table_name = $re->getStaticPropertyValue('table');

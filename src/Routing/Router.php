@@ -165,7 +165,7 @@ class Router
             $this->response->write($content);
         }
         if($target->hasMethod('afterExecute')) {
-            $this->response = $target->invoke('afterExecute', $instance);
+            $this->response = $target->invoke('afterExecute', $instance) ?? $this->response;
         }
         return $this->response;
     }

@@ -1,26 +1,31 @@
 <?php
-namespace Controller;
 
-class App extends \Leno\Controller
+class Controller extends \Leno\Controller
 {
     protected $js = [
         '/lib/leno/js/jquery.js',
         '/lib/leno/js/leno.js',
+        '/js/base.js'
     ];
 
     protected $css = [
         '/lib/leno/css/leno.css',
+        '/css/style.css'
     ];
+
+    protected function initialize()
+    {
+    }
 
     protected function beforeRender()
     {
     }
 
-    protected function beforeExecute()
+    public function beforeExecute()
     {
     }
 
-    protected function afterExecute()
+    public function afterExecute()
     {
     }
 }
