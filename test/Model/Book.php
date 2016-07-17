@@ -12,6 +12,7 @@ class Book extends Entity
         'name' => ['type' => 'string', 'extra' => [
             'max_length' => 64
         ], 'default' => 'the default'],
+        'published' => ['type' => 'datetime'],
         'author_id' => ['type' => 'uuid'],
     ];
 

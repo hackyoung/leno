@@ -15,4 +15,12 @@ class App extends \Leno\Controller
     protected function beforeRender()
     {
     }
+
+    protected function beforeExecute()
+    {
+    }
+
+    protected function afterExecute()
+    {
+    }
 }

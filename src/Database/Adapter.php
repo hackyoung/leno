@@ -80,11 +80,6 @@ abstract class Adapter implements AdapterInterface
         }
     }
 
-    public function asyncExecute(string $sql, $params = null)
-    {
-        async_execute([$this, 'execute'], [$sql, $params]);
-    }
-
     public function describeColumns(string $table_name)
     {
         if (!isset($this->tables_column[$table_name])) {

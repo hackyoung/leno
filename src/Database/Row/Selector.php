@@ -49,24 +49,22 @@ class Selector extends Row
      *
      * @return this
      */
-    public function __call($method, $parameters=null)
+    public function __call($method, $args=null)
     {
         try {
-            return parent::__call($method, $parameters);
+            return parent::__call($method, $args);
         } catch(\Exception $ex) {
             $series = explode('_', unCamelCase($method, '_'));
             $type = $series[0];
             array_splice($series, 0, 1);
+            array_unshift($args, implode('_', $series));
             switch($type) {
                 case 'order':
-                    $field = implode('_', $series);
-                    return $this->order($field, $parameters[0] ?? self::ORDER_ASC);
+                    return call_user_func_array([$this, 'order'], $args);
                 case 'group':
-                    $field = implode('_', $series);
-                    return $this->group($field);
+                    return call_user_func_array([$this, 'group'], $args);
                 case 'field':
-                    $field = implode('_', $series);
-                    return $this->field($field, $parameters[0] ?? false);
+                    return call_user_func_array([$this, 'field'], $args);
             }
             throw new \Exception(get_class() . '::' . $method . ' Not Found');
         }
@@ -80,7 +78,7 @@ class Selector extends Row
      *
      * @return this
      */
-    public function order($field, $order)
+    public function order($field, $order = self::ORDER_ASC)
     {
         $this->order[$field] = $order;
         return $this;

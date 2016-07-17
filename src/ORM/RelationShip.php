@@ -1,6 +1,8 @@
 <?php
 namespace Leno\ORM;
 
+use \Leno\Database\Row\Selector as RowSelector;
+
 class RelationShip
 {
     /**
@@ -37,7 +39,7 @@ class RelationShip
         $this->primary_entity = $primary_entity;
     }
 
-    public function get ($attr)
+    public function get (string $attr, $callback = null)
     {
         if ($this->secondary_entities[$attr] ?? false) {
             return $this->secondary_entities[$attr];
@@ -47,11 +49,11 @@ class RelationShip
             throw new \Leno\Exception ($attr.'\'s config not found');
         }
         if (!isset($foreign['bridge'])) {
-            $this->secondary_entities[$attr] = $this->getNoBridge($foreign);
+            $this->secondary_entities[$attr] = $this->getNoBridge($foreign, $callback);
             return $this->secondary_entities[$attr];
         }
 
-        $this->secondary_entities[$attr] = $this->getBridge($foreign);
+        $this->secondary_entities[$attr] = $this->getBridge($foreign, $callback);
         return $this->secondary_entities[$attr];
     }
 
@@ -120,7 +122,7 @@ class RelationShip
         return $this;
     }
 
-    private function getNoBridge($config)
+    private function getNoBridge($config, $callback)
     {
         $selector = $config['entity']::selector();
         if (is_array($config['local_key'])) {
@@ -132,6 +134,12 @@ class RelationShip
         }
         $local_value = $this->primary_entity->get($config['local_key']);
         $selector->by('eq', $config['foreign_key'], $local_value);
+        if (is_callable($callback)) {
+            $selector = call_user_func($callback, $selector);
+        }
+        if (!($selector instanceof RowSelector)) {
+            return $selector;
+        }
         $result = $selector->find();
         if (count($result) == 1) {
             return $result[0];
@@ -139,7 +147,7 @@ class RelationShip
         return $result;
     }
 
-    private function getBridge($config)
+    private function getBridge($config, $callback)
     {
         $selector = $config['entity']::selector();
         $bridge = $config['bridge'];
@@ -169,8 +177,16 @@ class RelationShip
                 $selector->getFieldExpr($config['foreign_key'])
             );
         }
+        $selector = $selector->join($bridge_selector);
+        if (is_callable($callback)) {
+            $selector = call_user_func($callback, $selector);
+        }
 
-        return $selector->join($bridge_selector)->find();
+        if ($selector instanceof RowSelector) {
+            return $selector->find();
+        }
+
+        return $selector;
     }
 
     private function saveEntity (string $attr, Entity $entity)

@@ -201,7 +201,7 @@ class Entity implements \JsonSerializable, EntityInterface
      * $this->addHelloWorld('hello world') === $this->add('hello_world', 'hello world')
      * ```
      */
-    public function __call($method, $args = null)
+    public function __call($method, array $args = [])
     {
         $series = array_filter(explode('_', unCamelCase($method, '_')));
         if(!isset($series[0])) {
@@ -210,13 +210,14 @@ class Entity implements \JsonSerializable, EntityInterface
         $type = $series[0];
         array_splice($series, 0, 1);
         $attr = implode('_', $series);
+        array_unshift($args, $attr);
         switch($type) {
             case 'set':
-                return $this->set ($attr, $args[0]);
+                return call_user_func_array([$this, 'set'], $args);
             case 'get':
-                return $this->get ($attr);
+                return call_user_func_array([$this, 'get'], $args);
             case 'add':
-                return $this->add ($attr, $args[0]);
+                return call_user_func_array([$this, 'add'], $args);
         }
         throw new MethodNotFoundException(get_called_class() . '::' . $method);
     }
@@ -302,10 +303,10 @@ class Entity implements \JsonSerializable, EntityInterface
      * $user->getAddressId() == $user->get('address_id');
      * ```
      */
-    public function get (string $attr)
+    public function get (string $attr, callable $callback = null)
     {
         try {
-            return $this->relation_ship->get($attr);
+            return $this->relation_ship->get($attr, $callback);
         } catch (\Exception $ex) {
             return $this->data->get($attr);
         }

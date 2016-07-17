@@ -4,6 +4,7 @@ namespace Leno;
 use \Leno\View;
 use \Leno\View\Template;
 use \Leno\Type;
+use \Leno\Exception\MethodNotFoundException;
 
 abstract class Controller
 {
@@ -32,25 +33,15 @@ abstract class Controller
         $this->initialize();
     }
 
-    public function __call($method, $parameters = null)
+    public function __call($method, array $args = [])
     {
         $series = array_filter(explode('_', unCamelCase($method)));
-        if(empty($series[0])) {
-            throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+        $methods = array_splice($series, 0, 1);
+        array_unshift($args, implode('_', $series));
+        if (in_array($methods[0], ['get', 'set'])) {
+            return call_user_func_array([$this, $method], $args);
         }
-        switch($series[0]) {
-            case 'set':
-                array_splice($series, 0, 1);
-                $key = implode('_', $series);
-                return $this->set($key, $parameters[0]);
-                break;
-            case 'get':
-                array_splice($series, 0, 1);
-                $key = implode('_', $series);
-                return $this->get($key);
-                break;
-        }
-        throw new \Leno\Exception('Controller::'.$method.' Not Defined');
+        throw new MethodNotFoundException('Controller::'.$method);
     }
 
     protected function initialize()
