@@ -191,6 +191,20 @@ class Entity implements \JsonSerializable, EntityInterface
     }
 
     /**
+     * clone一个Entity会将其关系，数据都复制成另一个Entity对象
+     * 注意，其关系也会被复制一份出来，如果在clone之前其已经有
+     * Entity关系存在，如果对clone出来的Entity进行save，那么这
+     * 些关系也会save进数据库，慎行
+     */
+    public function __clone()
+    {
+        $this->fresh = true;
+        $Entity = get_called_class();
+        $this->data = clone $this->data;
+        $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
+    }
+
+    /**
      * 魔术方法定义可以方便的使用set，get，add方法,该方法有一些性能开销，那么请直接使用
      * set，get，add方法
      *

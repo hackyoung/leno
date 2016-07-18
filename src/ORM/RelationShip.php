@@ -57,6 +57,12 @@ class RelationShip
         return $this->secondary_entities[$attr];
     }
 
+    public function setPrimaryEntity(&$primary_entity)
+    {
+        $this->primary_entity = $primary_entity;
+        return $this;
+    }
+
     public function set (string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
@@ -127,13 +133,19 @@ class RelationShip
         $selector = $config['entity']::selector();
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
-                $local_value = $this->primary_entity->get($local);
-                $selector->by(RowSelector::EXP_EQ, $config['foreign_key'][$local], $local_value);
+                $selector->by(
+                    RowSelector::EXP_EQ,
+                    $config['foreign_key'][$local],
+                    $this->primary_entity->get($local)
+                );
             }
-            return $selector->find();
+        } else {
+            $selector->by(
+                RowSelector::EXP_EQ,
+                $config['foreign_key'],
+                $this->primary_entity->get($config['local_key'])
+            );
         }
-        $local_value = $this->primary_entity->get($config['local_key']);
-        $selector->by(RowSelector::EXP_EQ, $config['foreign_key'], $local_value);
         if (is_callable($callback)) {
             $selector = call_user_func($callback, $selector);
         }
@@ -156,12 +168,18 @@ class RelationShip
 
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
-                $local_value = $this->primary_entity->get($local);
-                $bridge_selector->by(RowSelector::EXP_EQ, $bridge['local'][$local], $local_value);
+                $bridge_selector->by(
+                    RowSelector::EXP_EQ,
+                    $bridge['local'][$local],
+                    $this->primary_entity->get($local)
+                );
             }
         } else {
-            $local_value = $this->primary_entity->get($config['local_key']);
-            $bridge_selector->by(RowSelector::EXP_EQ, $bridge['local'], $local_value);
+            $bridge_selector->by(
+                RowSelector::EXP_EQ,
+                $bridge['local'],
+                $this->primary_entity->get($config['local_key'])
+            );
         }
 
         if (is_array($config['foreign_key'])) {

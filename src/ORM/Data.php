@@ -63,6 +63,14 @@ class Data implements DataInterface
         }
     }
 
+    public function __clone()
+    {
+        if ($this->config[$this->primary]['type'] == 'uuid') {
+            $this->set($this->primary, uuid());
+        }
+        $this->setAllDirty();
+    }
+
     /**
      * 验证值是否合法
      *

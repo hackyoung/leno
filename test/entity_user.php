@@ -55,15 +55,19 @@ $start = microtime(true);
 //     var_dump($user->toArray());
 // }
 
-$user = User::findOrFail('11607d91-2c4e-2e0f-56c8-6c8739865587');
+$user = User::findOrFail('e8c8fa8d-e647-a8bc-2147-883db23f6ef5');
 
-$books = $user->getBook(function($selector) {
-    return $selector->orderPublished('DESC');
-});
+echo json_encode($user->getBook());
 
-foreach ($books as $book) {
-    var_dump($book->toArray());
-}
+// (clone $user)->setName('hello')->save();
+
+// $books = $user->getBook(function($selector) {
+//     return $selector->orderPublished('DESC');
+// });
+// 
+// foreach ($books as $book) {
+//     var_dump($book->toArray());
+// }
 
 echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 
