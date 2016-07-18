@@ -56,6 +56,18 @@ abstract class Row
      */
     const TYPE_CONDI_ON = 'on';
 
+    const EXP_GT = 'gt';
+    const EXP_GTE = 'gte';
+    const EXP_LT = 'lt';
+    const EXP_LTE = 'lte';
+    const EXP_EQ = 'eq';
+    const EXP_NOT_EQ = 'not_eq';
+    const EXP_IN = 'in';    
+    const EXP_NOT_IN = 'not_in';
+    const EXP_LIKE = 'like';
+    const EXP_NOT_LIKE = 'not_like';
+    const EXP_EXPR = 'expr';
+
     /**
      * 该行操作器操作的表名
      */
@@ -102,40 +114,23 @@ abstract class Row
      * @param array|null parameters 调用参数
      *
      */
-    public function __call($method, $parameters=null)
+    public function __call($method, array $args = [])
     {
         $series = explode('_', unCamelCase($method, '_'));
         if(!isset($series[0])) {
             throw new \Exception(get_called_class() . '::' . $method . ' Not Found');
         }
-        $type = $series[0];
-        array_splice($series, 0, 1);
+        $first = array_splice($series, 0, 1)[0];
+        $opers = array('set', 'reset');
+        if (in_array($first, $opers)) {
+            array_unshift($args, implode('_', $series));
+            return call_user_func_array([$this, $first], $args);
+        }
         $condi = [self::TYPE_CONDI_BY, self::TYPE_CONDI_ON];
-        if(in_array($type, $condi) && $ret = $this->callCondition($series, $parameters, $type)) {
+        if(in_array($first, $condi) && $ret = $this->callCondition($series, $args, $first)) {
            return $ret;
         }
-        if($type === 'set') {
-            return $this->set(implode('_', $series), $parameters[0]);
-        }
-        if($type === 'reset') {
-            return $this->reset(implode('_', $series));
-        }
         throw new \Exception(get_class() . '::' . $method . ' Not Found');
-    }
-
-    /**
-     *  __get魔术方法，返回其字段对应值
-     *
-     * @return mixed
-     */
-    public function __get($key)
-    {
-        if(preg_match('/^field/', $key)) {
-            return $this->getFieldExpr(
-                unCamelCase(strtolower(str_replace('field', '', $key)))
-            );
-        }
-        throw new \Exception(get_class() . '::'.$key. ' Not Defined');
     }
 
     /**
@@ -268,9 +263,9 @@ abstract class Row
      * ### example
      *
      * $hello = (new Selector('hello'))
-     *      ->byLikeName('you')
+     *      ->byNameLike('you')
      *        ->and()   // 可省略，默认为and连接
-     *      ->byEqAge(15)
+     *      ->byAgeEq(15)
      *      ->find();
      *
      */
@@ -435,33 +430,26 @@ abstract class Row
      *
      * @param array series 通过__call 传递的参数名得到的
      */
-    private function callCondition($series, $value, $type=self::TYPE_CONDI_BY)
+    private function callCondition($series, array $args, $type=self::TYPE_CONDI_BY)
     {
         $exprs = [
-            'gt', 'lt', 'gte', 'lte', 'in', 'eq', 'like', 'expr',
+            self::EXP_GT, self::EXP_LT, self::EXP_GTE, self::EXP_LTE,
+            self::EXP_IN, self::EXP_EQ, self::EXP_LIKE, self::EXP_EXPR,
+            self::EXP_NOT_IN, self::EXP_NOT_LIKE, self::EXP_NOT_EQ
         ];
-        if(isset($series[0]) && $series[0] === 'not') {
-            $not = true;
-            array_splice($series, 0, 1);
-        } else {
-            $not = false;
+        $expr = array_pop($series);
+        if (end($series) === 'not') {
+            $expr = array_pop($series).'_'.$expr;
         }
-        if(!isset($series[0]) || !in_array($series[0], $exprs)) {
-            return false;
+        if (!in_array($expr, $exprs)) {
+            throw new \Leno\Exception('不支持的表达式:'.$expr);
         }
-        if($not) {
-            $expr = 'not_'.$series[0];
-        } else {
-            $expr = $series[0];
-        }
-        array_splice($series, 0, 1);
         $field = implode('_', $series) ?? null;
-        switch($type) {
-            case self::TYPE_CONDI_ON:
-                return $this->on($expr, $field, $value[0]);
-            case self::TYPE_CONDI_BY:
-                return $this->by($expr, $field, $value[0]);
-        }
+        array_unshift($args, $expr, $field);
+        if (self::TYPE_CONDI_BY === $type) {
+            return call_user_func_array([$this, 'by'], $args);
+        } 
+        return call_user_func_array([$this, 'on'], $args);
     }
 
     /**
@@ -538,60 +526,61 @@ abstract class Row
         if($item['expr'] == 'expr') {
             return $item['value'];
         }
-        return $this->exprLike($item) ?? $this->exprIn($item) ?? $this->exprR($item);
+        return $this->exprR($item) ?? $this->exprLike($item) ?? $this->exprIn($item);
     }
 
     private function exprIn($item)
     {
         $in = [ 'in' => 'IN', 'not_in' => 'NOT IN', ];
-        if (isset($in[$item['expr']])) {
-            $format = '%s %s (%s)';
-            $field = $this->getFieldExpr($item['field']);
-            $expr = $in[$item['expr']];
-            if ($item['value'] instanceof self) {
-                $value = $item['value']->getSql();
-                $this->params = array_merge($this->params, $item['value']->getParams());
-            } elseif (is_array($item['value'])) {
-                $value = implode(',', array_map(function($it) use ($item) {
-                    $param_idx = $this->setParam($item['field'], $it);
-                    return $param_idx;
-                }, $item['value']));
-            } else {
-                $value = $item['value'];
-            }
-            return sprintf($format, $field, $expr, $value);
+        if (!isset($in[$item['expr']])) {
+            return;
         }
+        $field = $this->getFieldExpr($item['field']);
+        $expr = $in[$item['expr']];
+        if ($item['value'] instanceof self) {
+            $value = $item['value']->getSql();
+            $this->params = array_merge($this->params, $item['value']->getParams());
+        } elseif (is_array($item['value'])) {
+            $value = implode(',', array_map(function($it) use ($item) {
+                $param_idx = $this->setParam($item['field'], $it);
+                return $param_idx;
+            }, $item['value']));
+        } else {
+            $value = $item['value'];
+        }
+        return sprintf('%s %s (%s)', $field, $expr, $value);
     }
 
     private function exprLike($item)
     {
         $like = [ 'like' => 'LIKE', 'not_like' => 'NOT LIKE', ];
-        if(isset($like[$item['expr']])) {
-            $idx = $this->setParam($item['field'], '%'.$item['value'].'%');
-            return sprintf('%s %s %s', 
-                $this->getFieldExpr($item['field']),
-                $like[$item['expr']],
-                $idx
-            );
+        if(!isset($like[$item['expr']])) {
+            return;
         }
+        return sprintf('%s %s %s', 
+            $this->getFieldExpr($item['field']),
+            $like[$item['expr']],
+            $this->setParam($item['field'], '%'.$item['value'].'%')
+        );
     }
 
     private function exprR($item)
     {
-        $expr = [ 'eq' => '=', 'not_eq' => '!=', 'gt' => '>',
-            'lt' => '<', 'gte' => '>=', 'lte' => '<=', ];
-        if (isset($expr[$item['expr']])) {
-            if(!($item['value'] instanceof \Leno\Database\Expr)) {
-                $idx = $this->setParam($item['field'], $item['value']);
-            } else {
-                $idx = $item['value'];
-            }
-            return sprintf('%s %s %s',
-                    $this->getFieldExpr($item['field']),
-                    $expr[$item['expr']],
-                    $idx
-            );
+        $expr = [
+            self::EXP_EQ => '=', self::EXP_NOT_EQ => '!=', self::EXP_GT => '>',
+            self::EXP_LT => '<', self::EXP_GTE => '>=', self::EXP_LTE => '<='
+        ];
+        if (!isset($expr[$item['expr']])) {
+            return;
         }
+        if(!($item['value'] instanceof \Leno\Database\Expr)) {
+            $item['value'] = $this->setParam($item['field'], $item['value']);
+        }
+        return sprintf('%s %s %s',
+                $this->getFieldExpr($item['field']),
+                $expr[$item['expr']],
+                $item['value']
+        );
     }
 
     /**

@@ -48,15 +48,24 @@ $book->save();
  */
 
 $start = microtime(true);
-$i = 10000;
-while($i--) {
-    $user = User::findOrFail('0b21cd66-5f78-c2b4-0c62-a9a29bea3754');
+// $users = User::selector()
+//     ->byNameNotLike('hack')
+//     ->find();
+// foreach ($users as $user) {
+//     var_dump($user->toArray());
+// }
 
-    $books = $user->getBook(function($selector) {
-        return $selector->orderPublished('DESC');
-    });
+$user = User::findOrFail('11607d91-2c4e-2e0f-56c8-6c8739865587');
+
+$books = $user->getBook(function($selector) {
+    return $selector->orderPublished('DESC');
+});
+
+foreach ($books as $book) {
+    var_dump($book->toArray());
 }
-echo "使用时间：".((microtime(true) - $start)/10)."Ms\n";
+
+echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 
 /*
 $book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');

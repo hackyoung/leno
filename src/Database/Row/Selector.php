@@ -49,7 +49,7 @@ class Selector extends Row
      *
      * @return this
      */
-    public function __call($method, $args=null)
+    public function __call($method, array $args = [])
     {
         try {
             return parent::__call($method, $args);
@@ -150,13 +150,17 @@ class Selector extends Row
      * ### sample
      * $selector = new Selector('hello');
      * $selector->limit(1, 100);        // 查询1-100行数据
-     * $selector->limit(10, 20);        // 查询10-20行数据
-     * $selector->limit(10);            // 查询10行之后的所有数据
+     * $selector->limit(10, 20);        // 查询10-30行数据
+     * $selector->limit(10);            // 查询1-10行数据
      *
      * @return this
      */
-    public function limit(int $row, int $limit = -1)
+    public function limit(int $row, int $limit = null)
     {
+        if ($limit == null) {
+            $row = 1;
+            $limit = $row;
+        }
         $this->limit = [
             'row' => $row,
             'limit' => $limit,
@@ -356,7 +360,7 @@ class Selector extends Row
             return '';
         }
         return sprintf('LIMIT %s, %s',
-            $this->limit['row'] ?? 0,
+            $this->limit['row'] ?? 1,
             $this->limit['limit'] ?? -1
         );
     }
