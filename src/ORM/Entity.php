@@ -443,5 +443,4 @@ class Entity implements \JsonSerializable, EntityInterface
     protected function beforeUpdate() { }
 
     protected function beforeRemove() { }
-
 }

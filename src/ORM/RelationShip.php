@@ -128,12 +128,12 @@ class RelationShip
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $local_value = $this->primary_entity->get($local);
-                $selector->by('eq', $config['foreign_key'][$local], $local_value);
+                $selector->by(RowSelector::EXP_EQ, $config['foreign_key'][$local], $local_value);
             }
             return $selector->find();
         }
         $local_value = $this->primary_entity->get($config['local_key']);
-        $selector->by('eq', $config['foreign_key'], $local_value);
+        $selector->by(RowSelector::EXP_EQ, $config['foreign_key'], $local_value);
         if (is_callable($callback)) {
             $selector = call_user_func($callback, $selector);
         }
@@ -157,23 +157,23 @@ class RelationShip
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $local_value = $this->primary_entity->get($local);
-                $bridge_selector->by('eq', $bridge['local'][$local], $local_value);
+                $bridge_selector->by(RowSelector::EXP_EQ, $bridge['local'][$local], $local_value);
             }
         } else {
             $local_value = $this->primary_entity->get($config['local_key']);
-            $bridge_selector->by('eq', $bridge['local'], $local_value);
+            $bridge_selector->by(RowSelector::EXP_EQ, $bridge['local'], $local_value);
         }
 
         if (is_array($config['foreign_key'])) {
             foreach ($config['foreign_key'] as $foreign) {
                 $bridge_selector->on(
-                    'eq', $bridge['foreign'][$foreign],
+                    RowSelector::EXP_EQ, $bridge['foreign'][$foreign],
                     $selector->getFieldExpr($foreign)
                 );
             }
         } else {
             $bridge_selector->on(
-                'eq', $bridge['foreign'],
+                RowSelector::EXP_EQ, $bridge['foreign'],
                 $selector->getFieldExpr($config['foreign_key'])
             );
         }
