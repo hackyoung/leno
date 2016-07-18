@@ -179,6 +179,8 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     protected $relation_ship;
 
+    protected $clone_relation_ship = false;
+
     public function __construct ($fresh = true)
     {
         $this->fresh = $fresh;
@@ -191,17 +193,25 @@ class Entity implements \JsonSerializable, EntityInterface
     }
 
     /**
-     * clone一个Entity会将其关系，数据都复制成另一个Entity对象
-     * 注意，其关系也会被复制一份出来，如果在clone之前其已经有
-     * Entity关系存在，如果对clone出来的Entity进行save，那么这
-     * 些关系也会save进数据库，慎行
+     * clone一个Entity会将其关系，数据都复制成另一个Entity对象.注意，如果clone_relation_ship为true，则关系也会被复制一份出来，如果在clone之前其已经有 Entity关系存在，如果对clone出来的Entity进行save，那么这 些关系也会save进数据库，慎行
      */
     public function __clone()
     {
         $this->fresh = true;
         $Entity = get_called_class();
         $this->data = clone $this->data;
-        $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
+        if ($this->clone_relation_ship) {
+            $this->clone_relation_ship = false;
+            $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
+            return;
+        }
+        $this->relation_ship = new RelationShip($Entity::$foreign, $this);
+    }
+
+    public function cloneAll($all = true)
+    {
+        $this->clone_relation_ship = $all;
+        return $this;
     }
 
     /**
@@ -221,17 +231,11 @@ class Entity implements \JsonSerializable, EntityInterface
         if(!isset($series[0])) {
             throw new MethodNotFoundException(get_called_class() . '::' . $method);
         }
-        $type = $series[0];
-        array_splice($series, 0, 1);
-        $attr = implode('_', $series);
-        array_unshift($args, $attr);
-        switch($type) {
-            case 'set':
-                return call_user_func_array([$this, 'set'], $args);
-            case 'get':
-                return call_user_func_array([$this, 'get'], $args);
-            case 'add':
-                return call_user_func_array([$this, 'add'], $args);
+        $type = array_splice($series, 0, 1)[0];
+        array_unshift($args, implode('_', $series));
+        $supports = ['set', 'get', 'add'];
+        if (in_array($type, $supports)) {
+            return call_user_func_array([$this, $type], $args);
         }
         throw new MethodNotFoundException(get_called_class() . '::' . $method);
     }
