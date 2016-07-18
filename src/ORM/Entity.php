@@ -2,7 +2,6 @@
 namespace Leno\ORM;
 
 use \Leno\Database\Row\Selector as RowSelector;
-use \Leno\Database\Row;
 use \Leno\Database\Adapter;
 use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
@@ -256,26 +255,26 @@ class Entity implements \JsonSerializable, EntityInterface
         }
         $Entity = get_called_class();
         $mapper = (new Mapper())->selectTable($Entity::$table);
-        Row::beginTransaction();
+        RowSelector::beginTransaction();
         try {
             $this->relation_ship->save();
             if ($this->fresh) {
                 if ($this->beforeInsert() === false) {
-                    Row::rollback();
+                    RowSelector::rollback();
                     return false;
                 }
                 $mapper->insert($this->data);
             } else {
                 if ($this->beforeUpdate() === false) {
-                    Row::rollback();
+                    RowSelector::rollback();
                     return false;
                 }
                 $mapper->update($this->data);
             }
             $this->relation_ship->saveBridge();
-            Row::commitTransaction();
+            RowSelector::commitTransaction();
         } catch(\Exception $e) {
-            Row::rollback();
+            RowSelector::rollback();
             throw $e;
         }
         $this->dirty = true;
