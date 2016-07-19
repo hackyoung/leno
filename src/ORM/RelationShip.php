@@ -39,9 +39,13 @@ class RelationShip
         $this->primary_entity = $primary_entity;
     }
 
-    public function get (string $attr, $callback = null)
+    public function get (string $attr, $cached = true, $callback = null)
     {
-        if ($this->secondary_entities[$attr] ?? false) {
+        if (is_callable($cached)) {
+            $callback = $cached;
+            $cached = true;
+        }
+        if ($cached && $this->secondary_entities[$attr] ?? false) {
             return $this->secondary_entities[$attr];
         }
         $foreign = $this->config[$attr] ?? false;
