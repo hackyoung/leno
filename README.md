@@ -170,6 +170,7 @@ $table->save();
 
 ###Controller
 
+```php
 namespace Controller;
 
 use \Leno\Controller as LenoController;
@@ -224,7 +225,7 @@ class Article extends LenoController
         // return Article list
     }
 }
-
+```
 
 #介绍 LenoPHP是一个简单干净的PHP框架，有如下特性:
 * 支持Mysql,和Pgsql,基于PDO的ORM,且方便拓展
