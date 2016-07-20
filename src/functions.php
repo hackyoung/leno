@@ -131,3 +131,16 @@ function async_execute(callable $callback, array $args = [])
     }
     call_user_func_array($callback, $args);
 }
+
+function baseClass($classname)
+{
+    try {
+        $class = new \ReflectionClass($classname);
+    } catch (\Exception $e) {
+        return;
+    }
+    while ($parent = $class->getParentClass()) {
+        $class = $parent;
+    }
+    return $class->getName();
+}

@@ -48,6 +48,16 @@ $book->save();
  */
 
 $start = microtime(true);
+$user = User::findOrFail('e8c8fa8d-e647-a8bc-2147-883db23f6ef5');
+var_dump(Book::selector()->byAuthor($user)->find());
+
+$books = Book::selector()->join(User::selector()
+    ->field('name', 'user_name')
+    ->onId(Book::selector()->getFieldExpr('author_id'))
+)->execute()->fetchAll();
+
+var_dump($books);
+
 // $users = User::selector()
 //     ->byNameNotLike('hack')
 //     ->find();
@@ -55,9 +65,8 @@ $start = microtime(true);
 //     var_dump($user->toArray());
 // }
 
-$user = User::findOrFail('e8c8fa8d-e647-a8bc-2147-883db23f6ef5');
-
-echo json_encode($user->getBook());
+// 
+// echo json_encode($user->getBook());
 
 // (clone $user)->setName('hello')->save();
 

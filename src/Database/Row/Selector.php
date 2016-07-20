@@ -37,11 +37,6 @@ class Selector extends Row
     protected $limit = [];
 
     /**
-     * select之后转为的entityClass
-     */
-    private $entityClass;
-
-    /**
      * __call魔术方法,提供group,order,field系列函数入口
      *
      * @param string method 方法名
@@ -261,12 +256,6 @@ class Selector extends Row
             $ret[$k] = $Entity::newFromDB($row);
         }
         return $ret;
-    }
-
-    public function setEntityClass($entityClass)
-    {
-        $this->entityClass = $entityClass;
-        return $this;
     }
 
     /**

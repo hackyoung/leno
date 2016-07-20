@@ -3,6 +3,7 @@ namespace Leno\Database;
 
 use \Leno\Database\Expr;
 use \Leno\Database\Adapter;
+use \Leno\ORM\EntityInterface;
 
 abstract class Row
 {
@@ -98,6 +99,11 @@ abstract class Row
     protected $params = [];
 
     /**
+     * select之后转为的entityClass
+     */
+    protected $entityClass;
+
+    /**
      * 构造函数
      *
      * @param string table 表明
@@ -139,11 +145,11 @@ abstract class Row
      * ### example
      * $hello = (new Selector('hello'))
      *      ->field('name', 'hello_name')
-     *      ->byEqName('hello');
+     *      ->byNameEq('hello');
      *
      * $world = (new Selector('world'))
      *      ->field('name', 'world_name')
-     *      ->join($hello->onEqId($world->getFieldExpr('id')));
+     *      ->join($hello->onIdEq($world->getFieldExpr('id')));
      *
      * $world->execute();
      *
@@ -154,6 +160,12 @@ abstract class Row
             'row' => $row,
             'type' => $type,
         ];
+        return $this;
+    }
+
+    public function setEntityClass($entityClass)
+    {
+        $this->entityClass = $entityClass;
         return $this;
     }
 
@@ -211,6 +223,16 @@ abstract class Row
      */
     public function by($expr, $field, $value)
     {
+        $Entity = \baseClass($this->entityClass);
+        if ($this->entityClass && $value instanceof $Entity) {
+            $reflection_entity = new \ReflectionClass($this->entityClass);
+            $foreign = $reflection_entity->getStaticPropertyValue('foreign');
+            if (!isset($foreign[$field])) {
+                throw new \Leno\Exception ('Can\'t filter by entity without foreign setting');
+            }
+            $value = $value->get($foreign[$field]['foreign_key']);
+            $field = $foreign[$field]['local_key'];
+        }
         $this->attachAdd(self::TYPE_CONDI_BY);
         $this->where[] = [
             'expr' => $expr,
@@ -437,7 +459,12 @@ abstract class Row
             self::EXP_IN, self::EXP_EQ, self::EXP_LIKE, self::EXP_EXPR,
             self::EXP_NOT_IN, self::EXP_NOT_LIKE, self::EXP_NOT_EQ
         ];
-        $expr = array_pop($series);
+        $expr = end($series);
+        if (!in_array($expr, $exprs)) {
+            $expr = self::EXP_EQ;
+        } else {
+            array_pop($series);
+        }
         if (end($series) === 'not') {
             $expr = array_pop($series).'_'.$expr;
         }
