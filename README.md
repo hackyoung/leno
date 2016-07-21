@@ -230,7 +230,8 @@ class Article extends LenoController
 }
 ```
 
-#介绍 LenoPHP是一个简单干净的PHP框架，有如下特性:
+#介绍
+LenoPHP是一个简单干净的PHP框架，有如下特性:
 * 支持Mysql,和Pgsql,基于PDO的ORM,且方便拓展
 * 支持继承,嵌套,条件输出,标签的模板系统
 * 设计清晰的路由,可自定义规则,支持RESTFUL路由风格,可自定义action绑定
