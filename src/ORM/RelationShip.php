@@ -27,16 +27,19 @@ class RelationShip
      */
     protected $config;
 
+    protected $foreign_by = [];
+
     protected $primary_entity;
 
     protected $secondary_entities = [];
 
     protected $bridge_entities = [];
 
-    public function __construct($config, &$primary_entity)
+    public function __construct($config, &$primary_entity, array $foreign_by = [])
     {
         $this->config = $config;
         $this->primary_entity = $primary_entity;
+        $this->foreign_by = $foreign_by;
     }
 
     public function get (string $attr, $cached = true, $callback = null)
@@ -45,18 +48,20 @@ class RelationShip
             $callback = $cached;
             $cached = true;
         }
-        if ($cached && $this->secondary_entities[$attr] ?? false) {
+        if ($cached && ($this->secondary_entities[$attr] ?? false)) {
             return $this->secondary_entities[$attr];
         }
         $foreign = $this->config[$attr] ?? false;
         if (!$foreign) {
-            throw new \Leno\Exception ($attr.'\'s config not found');
+            $foreign_by = $this->getForeiginBy($attr);
+            $ferc = new \ReflectionClass($foreign_by['entity']);
+            $this->secondary_entities[$attr] = $this->getBy($ferc, $foreign_by['attr'], $callback);
+            return $this->secondary_entities[$attr];
         }
         if (!isset($foreign['bridge'])) {
             $this->secondary_entities[$attr] = $this->getNoBridge($foreign, $callback);
             return $this->secondary_entities[$attr];
         }
-
         $this->secondary_entities[$attr] = $this->getBridge($foreign, $callback);
         return $this->secondary_entities[$attr];
     }
@@ -71,25 +76,44 @@ class RelationShip
     {
         $config = $this->config[$attr] ?? false;
         if (!$config) {
-            throw new \Leno\Exception ($attr.'\'s config not found');
-        }
-        if (!($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ('value is not a Entity');
+            $foreign_by = $this->getForeiginBy($attr);
+            if (!($value instanceof $foreign_by['entity'])) {
+                throw new \Leno\Exception ('value is not a '.$foreign_by['entity']);
+            }
+            $ferc = new \ReflectionClass($foreign_by['entity']);
+            $config = $ferc->getStaticPropertyValue('foreign')[$foreign_by['attr']] ?? false;
+            if (!$config) {
+                throw new \Leno\Exception ($attr.'\'s config of '.$foreign_by['entity']. ' not found');
+            }
+            $value->set($config['local_key'], $this->primary_entity->get($config['foreign_key']));
+        } elseif (!($value instanceof $config['entity'])) {
+            throw new \Leno\Exception ('value is not a instance of '.$config['entity']);
+        } else {
+            $value_key = $value->get($config['foreign_key']);
+            $this->primary_entity->set($config['local_key'], $value_key);
         }
         $this->secondary_entities[$attr] = $value;
-        $value_key = $value->get($config['foreign_key']);
-        $this->primary_entity->set($config['local_key'], $value_key);
         return $this;
     }
 
     public function add (string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
-        if (!$config || !($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ($attr.'\'s config not found');
-        }
-        if (!($value instanceof $config['entity'])) {
+        if (!$config) {
+            $foreign_by = $this->getForeiginBy($attr);
+            if (!($value instanceof $foreign_by['entity'])) {
+                throw new \Leno\Exception ('value is not a '.$foreign_by['entity']);
+            }
+            $ferc = new \ReflectionClass($foreign_by['entity']);
+            $config = $ferc->getStaticPropertyValue('foreign')[$foreign_by['attr']] ?? false;
+            if (!$config) {
+                throw new \Leno\Exception ($attr.'\'s config of '.$foreign_by['entity']. ' not found');
+            }
+            $value->set($config['local_key'], $this->primary_entity->get($config['foreign_key']));
+        } elseif(!($value instanceof $config['entity'])) {
             throw new \Leno\Exception ('value is not a Entity');
+        } else {
+            $value->set($config['foreign_key'], $this->primary_entity->get($config['local_key']));
         }
         $exists = $this->secondary_entities[$attr] ?? false;
         if (!$exists) {
@@ -130,6 +154,25 @@ class RelationShip
             }
         }
         return $this;
+    }
+
+    private function getBy($ferc, $attr, $callback = null)
+    {
+        $foreign = $ferc->getStaticPropertyValue('foreign');
+        $config = $foreign[$attr] ?? false;
+        if (!$config) {
+            throw new \Leno\Exception ($attr.'\'s config not found');
+        }
+        $selector = $ferc->getMethod('selector')->invoke(null);
+        $selector->by(
+            RowSelector::EXP_EQ,
+            $config['local_key'],
+            $this->primary_entity->get($config['foreign_key'])
+        );
+        if (is_callable($callback)) {
+            $selector = call_user_func($callback, $selector);
+        }
+        return $selector->find();
     }
 
     private function getNoBridge($config, $callback)
@@ -213,12 +256,11 @@ class RelationShip
 
     private function saveEntity (string $attr, Entity $entity)
     {
-        $config = $this->config[$attr];
-
         if ($entity->dirty()) {
             $entity->save();
         }
-        if (!isset($config['bridge'])) {
+        $config = $this->config[$attr] ?? [];
+        if ((!isset($config['bridge']))) {
             return;
         }
         $bridge = new $config['bridge']['entity'];
@@ -231,5 +273,14 @@ class RelationShip
             $entity->get($config['foreign_key'])
         );
         $this->bridge_entities[] = $bridge;
+    }
+
+    private function getForeiginBy(string $attr)
+    {
+        $foreign_by = $this->foreign_by[$attr] ?? false;
+        if (!$foreign_by) {
+            throw new \Leno\Exception ($attr.'\'s config not found');
+        }
+        return $foreign_by;
     }
 }

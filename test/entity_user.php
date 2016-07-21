@@ -4,7 +4,37 @@ require_once(__DIR__ . '/boot.php');
 
 use \Leno\ORM\Exception\EntityNotFoundException;
 use \Test\Model\User;
+use \Test\Model\Author;
 use \Test\Model\Book;
+
+$start = microtime(true);
+// $author = new Author;
+// $author->setName('hello world')
+//     ->setCreated(new \Datetime)
+//     ->save();
+
+$author = Author::findOrFail('479dfc05-7403-f1e2-d69c-b5b6f25a825c');
+
+echo json_encode($author->getBook(function($selector) {
+    return $selector->limit(1);
+}));
+$i = 1000;
+while($i--) {
+    echo "\n";
+    echo json_encode($author->getBook());
+}
+
+// $book = new Book;
+// $book->setName('javascript 从入门到放弃')
+//      ->setPublished(new \Datetime);
+// $author->setBook($book);
+// 
+// $book = new Book;
+// $book->setName('PHP从入门到放弃')
+//     ->setPublished(new \Datetime);
+// $author->addBook($book);
+// 
+// $author->save();
 
 /*
 $start = microtime(true);
@@ -47,16 +77,16 @@ var_dump($user);
 $book->save();
  */
 
-$start = microtime(true);
-$user = User::findOrFail('e8c8fa8d-e647-a8bc-2147-883db23f6ef5');
-var_dump(Book::selector()->byAuthor($user)->find());
+// $start = microtime(true);
+// $user = User::findOrFail('e8c8fa8d-e647-a8bc-2147-883db23f6ef5');
+// var_dump(Book::selector()->byAuthor($user)->find());
+// 
+// $books = Book::selector()->join(User::selector()
+//     ->field('name', 'user_name')
+//     ->onId(Book::selector()->getFieldExpr('author_id'))
+// )->execute()->fetchAll();
 
-$books = Book::selector()->join(User::selector()
-    ->field('name', 'user_name')
-    ->onId(Book::selector()->getFieldExpr('author_id'))
-)->execute()->fetchAll();
-
-var_dump($books);
+// var_dump($books);
 
 // $users = User::selector()
 //     ->byNameNotLike('hack')

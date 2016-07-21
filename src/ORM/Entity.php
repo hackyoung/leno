@@ -159,6 +159,8 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public static $foreign;
 
+    public static $foreign_by = [];
+
     /**
      * 索引定义
      */
@@ -188,7 +190,7 @@ class Entity implements \JsonSerializable, EntityInterface
             throw new PrimaryMissingException($Entity);
         }
         $this->data = new Data($Entity::$attributes, $Entity::$primary);
-        $this->relation_ship = new RelationShip($Entity::$foreign, $this);
+        $this->relation_ship = new RelationShip($Entity::$foreign, $this, $Entity::$foreign_by);
     }
 
     /**
@@ -204,7 +206,7 @@ class Entity implements \JsonSerializable, EntityInterface
             $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
             return;
         }
-        $this->relation_ship = new RelationShip($Entity::$foreign, $this);
+        $this->relation_ship = new RelationShip($Entity::$foreign, $this, $Entity::$foreign_by);
     }
 
     public function cloneAll($all = true)
@@ -237,6 +239,11 @@ class Entity implements \JsonSerializable, EntityInterface
             return call_user_func_array([$this, $type], $args);
         }
         throw new MethodNotFoundException(get_called_class() . '::' . $method);
+    }
+
+    public function __tostring()
+    {
+        return json_encode($this);
     }
 
     /**
@@ -320,10 +327,10 @@ class Entity implements \JsonSerializable, EntityInterface
      * $user->getAddressId() == $user->get('address_id');
      * ```
      */
-    public function get (string $attr, callable $callback = null)
+    public function get (string $attr, $cached = true, callable $callback = null)
     {
         try {
-            return $this->relation_ship->get($attr, $callback);
+            return $this->relation_ship->get($attr, $cached, $callback);
         } catch (\Exception $ex) {
             return $this->data->get($attr);
         }
@@ -364,7 +371,7 @@ class Entity implements \JsonSerializable, EntityInterface
         try {
             $this->relation_ship->add($attr, $value);
         } catch (\Exception $ex) {
-            return $this->data->add($attr, $value);
+            $this->data->add($attr, $value);
         }
         return $this;
     }

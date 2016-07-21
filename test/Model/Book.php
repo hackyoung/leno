@@ -22,7 +22,7 @@ class Book extends Entity
 
     public static $foreign = [
         'author' => [
-            'entity' => '\\Test\\Model\\User',
+            'entity' => '\\Test\\Model\\Author',
             'local_key' => 'author_id',
             'foreign_key' => 'id'
         ]

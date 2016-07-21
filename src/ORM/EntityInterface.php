@@ -22,7 +22,7 @@ interface EntityInterface
     /**
      * 获取一个Entity的属性值
      */
-    public function get(string $attr, callable $callback);
+    public function get(string $attr, $cached, callable $callback);
 
     /**
      * 将一个Entity持久化移除,该方法必须保证数据的完整性
