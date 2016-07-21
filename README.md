@@ -10,9 +10,9 @@
     |            |初     |
     |---Worker---|始    |业
     |            |化    |务
-    |                   |
-    |            |路    |逻
-    |---Router---|由    |辑
+    |                   |逻
+    |            |路    |辑
+    |---Router---|由     |
     |                    |
     |---Controller-------|
     |
@@ -59,6 +59,9 @@ $author->getBook(function($selector) {
 });
 
 // 只查Javascript从入门到放弃
+// 啥？第一个参数false是什么意思？哦，它禁用上次查询book的缓存
+// 默认是true，false的意思是给我再去数据库里找一次，条件变了
+
 $author->getBook(false, function($selector) {
     return $selector->byNameLike('javascript');
 });
