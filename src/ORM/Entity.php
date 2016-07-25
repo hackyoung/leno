@@ -125,7 +125,8 @@ class Entity implements \JsonSerializable, EntityInterface
      *      'name' => [
      *          'entity' => EntityClass,
      *          'foreign_key' => 'entity_field_name',
-     *          'local_key' => 'self_field_name'
+     *          'local_key' => 'self_field_name',
+     *          'get_one' => true   // 返回一个对象而不是一个数组
      *      ],
      *      'name' => [
      *          'entity' => EntityClass,
@@ -257,9 +258,10 @@ class Entity implements \JsonSerializable, EntityInterface
 
     /**
      * save将Entity进行持久化存储，该方法有几个回调会调用
-     *  - beforeSave        任何保存操作都会调用该方法，如果该方法返回false，则终止保存操作，返回false
-     *  - beforeInsert      向数据库中插入数据时，回调用该方法，如果该方法返回false，怎终止保存操作
-     *  - beforeUpdate      向数据库中更新数据时，回调用该方法，如果该方法返回false，怎终止保存操作
+     *
+     *  - beforeSave     任何保存操作都会调用该方法，如果该方法返回false，则终止保存操作，返回false
+     *  - beforeInsert   向数据库中插入数据时，回调用该方法，如果该方法返回false，怎终止保存操作
+     *  - beforeUpdate   向数据库中更新数据时，回调用该方法，如果该方法返回false，怎终止保存操作
      * 保存数据时，应该解决Entity之间的依赖关系
      *
      * @return self|false

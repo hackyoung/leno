@@ -289,6 +289,7 @@ class RelationShip
     private function getNoBridge ($config, $callback)
     {
         $selector = $config['entity']::selector();
+        $one = true;
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $selector->by(
@@ -301,6 +302,7 @@ class RelationShip
             $expr = RowSelector::EXP_EQ;
             if (is_array($value)) {
                 $expr = RowSelector::EXP_IN;
+                $one = false;
             }
             $selector->by($config['foreign_key'], $value, $expr);
         }
@@ -309,6 +311,9 @@ class RelationShip
         }
         if (!($selector instanceof RowSelector)) {
             return $selector;
+        }
+        if ($one && $config['get_one'] ?? true) {
+            return $selector->findOne();
         }
         return $selector->find();
     }
