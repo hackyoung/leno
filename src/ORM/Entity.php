@@ -230,6 +230,7 @@ class Entity implements \JsonSerializable, EntityInterface
      * set，get，add方法
      *
      * ### example
+     *
      * ```php
      * $this->setHelloWorld('hello world') === $this->set('hello_world', 'hello world')
      * $this->getHelloWorld() === $this->get('hello_world')
@@ -271,12 +272,7 @@ class Entity implements \JsonSerializable, EntityInterface
         if($this->beforeSave() === false) {
             return false;
         }
-        if ($this->fresh) {
-            $ret = $this->insert();
-        } else {
-            $ret = $this->update();
-        }
-        if ($ret) {
+        if ($this->insert() ?? $this->update()) {
             $this->dirty = true;
             $this->data->setAllDirty(false);
         }
@@ -323,11 +319,10 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function get (string $attr, $cached = true, callable $callback = null)
     {
-        try {
-            return $this->relation_ship->get($attr, $cached, $callback);
-        } catch (\Leno\Exception $ex) {
+        if ($this->data->hasAttr($attr)) {
             return $this->data->get($attr);
         }
+        return $this->relation_ship->get($attr, $cached, $callback);
     }
 
     /**
@@ -345,11 +340,11 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function set (string $attr, $value, bool $dirty = true) : EntityInterface
     {
-        try {
-            $this->relation_ship->set($attr, $value);
-        } catch (\Leno\Exception $ex) {
-            $this->data->set($attr, $value);
+        if ($this->data->hasAttr($attr)) {
+            $this->data->set($attr, $value, $dirty);
+            return $this;
         }
+        $this->relation_ship->set($attr, $value);
         return $this;
     }
 
@@ -362,11 +357,11 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function add (string $attr, $value) : EntityInterface
     {
-        try {
-            $this->relation_ship->add($attr, $value);
-        } catch (\Leno\Exception $ex) {
+        if ($this->data->hasAttr($attr)) {
             $this->data->add($attr, $value);
+            return $this;
         }
+        $this->relation_ship->add($attr, $value);
         return $this;
     }
 
@@ -381,12 +376,6 @@ class Entity implements \JsonSerializable, EntityInterface
     public function dirty () : bool
     {
         return $this->data->dirty();
-    }
-
-    public function hasAttr($attr)
-    {
-        $self = get_called_class();
-        return isset($self::$attributes[$attr]);
     }
 
     public function getAttrConfig($attr)
@@ -442,6 +431,29 @@ class Entity implements \JsonSerializable, EntityInterface
      * 的结果，请不要直接使用该方法，通过Entity::selector()->find()
      * 的方式，它会自动将row包装称Entity
      *
+     * 有时候我们需要关联其他表获取某些字段，我们允许将这些字段附带到这个entity上面
+     * 这样我们能够获取到更多的灵活性
+     * ###example
+     *
+     * ArticleEntity 拥有属性
+     *  title content
+     *
+     * PublishedArticleEntity 拥有属性
+     * atl_id like_num
+     *
+     *```php
+     * $article = PublishedArticleEntity::find('xx')->getArticle(function($selector) {
+     *      $published_selector = PublishedArticleEntity::Selector()
+     *          ->feildLikeNum('like_number')               // 通过left join抓取like_num字段的值
+     *          ->onAtlId($selector->getFeildExpr('atl_id'));
+     *      return $selector->join($published_selector);
+     * });
+     *
+     * $total_like_number = $article->getLikeNumber();      // 获取PublishedArticleEntity的属性值
+     *```
+     *
+     * 这样我们可以通过标准的get方法取值，我们把这种通过left join抓取的值称只为伪属性
+     *
      * @param array row 从数据库中查询出来的row信息
      *
      * @return Entity
@@ -450,10 +462,11 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         $self = get_called_class();
         $entity = new $self(false);
-        foreach($self::$attributes as $field => $attr) {
-            $value = Type::get($attr['type'])->toPHP(
-                $row[$field] ?? $attr['default'] ?? null
-            );
+        foreach($row as $field => $value) {
+            $attr = $self::$attributes[$field] ?? false;
+            if ($attr) {
+                $value = Type::get($attr['type'])->toPHP($value);
+            }
             $entity->setForcely($field, $value, false);
         }
         $entity_pool = EntityPool::instance();
@@ -526,6 +539,9 @@ class Entity implements \JsonSerializable, EntityInterface
 
     private function insert()
     {
+        if (!$this->fresh) {
+            return;
+        }
         RowSelector::beginTransaction();
         try {
             if ($this->beforeInsert() === false) {
@@ -547,6 +563,9 @@ class Entity implements \JsonSerializable, EntityInterface
 
     private function update()
     {
+        if ($this->fresh) {
+            return false;
+        }
         RowSelector::beginTransaction();
         try {
             if ($this->beforeUpdate() === false) {
