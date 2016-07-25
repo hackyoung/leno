@@ -81,7 +81,7 @@ class Data implements DataInterface
     {
         foreach($this->config as $field => $config) {
             $type = Type::get($config['type'])
-                    ->setRequired(!($config['is_nullable'] ?? true))
+                    ->setRequired(!($config['is_nullable'] ?? false))
                     ->setValueName($field)
                     ->setAllowEmpty(false)
                     ->setExtra($config['extra'] ?? []);
@@ -125,7 +125,7 @@ class Data implements DataInterface
     {
         $this->data[$attr] = [
             'dirty' => $dirty,
-            'value' => $value
+            'value' => ($value === '' ? null : $value)
         ];
         return $this;
     }

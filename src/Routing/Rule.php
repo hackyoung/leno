@@ -36,7 +36,7 @@ class Rule
         $path = (string)$this->path;
         $reg_arr = explode('/', $reg);
         foreach ($reg_arr as $r) {
-            $path = str_replace($r, '', $path);
+            $path = str_replace($r.'/', '', $path);
         }
         $parameters = array_values(array_filter(explode('/', $path)));
         return preg_replace_callback('/\$\{.*\}/U', 

@@ -271,34 +271,15 @@ class Entity implements \JsonSerializable, EntityInterface
         if($this->beforeSave() === false) {
             return false;
         }
-        $Entity = get_called_class();
-        $mapper = (new Mapper())->selectTable($Entity::$table);
-        RowSelector::beginTransaction();
-        try {
-            if ($this->fresh) {
-                if ($this->beforeInsert() === false) {
-                    RowSelector::rollback();
-                    return false;
-                }
-                $this->relation_ship->save();
-                $mapper->insert($this->data);
-                $this->relation_ship->saveBridge();
-                RowSelector::commitTransaction();
-            }
-            if ($this->beforeUpdate() === false) {
-                RowSelector::rollback();
-                return false;
-            }
-            $this->relation_ship->save();
-            $mapper->update($this->data);
-            $this->relation_ship->saveBridge();
-            RowSelector::commitTransaction();
-        } catch(\Exception $e) {
-            RowSelector::rollback();
-            $this->handleException($e);
+        if ($this->fresh) {
+            $ret = $this->insert();
+        } else {
+            $ret = $this->update();
         }
-        $this->dirty = true;
-        $this->data->setAllDirty(false);
+        if ($ret) {
+            $this->dirty = true;
+            $this->data->setAllDirty(false);
+        }
         return $this;
     }
 
@@ -541,6 +522,48 @@ class Entity implements \JsonSerializable, EntityInterface
             $ret[$self::getForeignKeyName($name)] = $config['local_key'];
         }
         return $ret;
+    }
+
+    private function insert()
+    {
+        RowSelector::beginTransaction();
+        try {
+            if ($this->beforeInsert() === false) {
+                RowSelector::rollback();
+                return false;
+            }
+            $this->relation_ship->save();
+            $Entity = get_called_class();
+            (new Mapper())->selectTable($Entity::$table)->insert($this->data);
+            $this->relation_ship->saveBridge();
+            RowSelector::commitTransaction();
+        } catch (\Exception $ex) {
+            RowSelector::rollback();
+            $this->handleException($e);
+            return false;
+        }
+        return true;
+    }
+
+    private function update()
+    {
+        RowSelector::beginTransaction();
+        try {
+            if ($this->beforeUpdate() === false) {
+                RowSelector::rollback();
+                return false;
+            }
+            $this->relation_ship->save();
+            $Entity = get_called_class();
+            (new Mapper())->selectTable($Entity::$table)->update($this->data);
+            $this->relation_ship->saveBridge();
+            RowSelector::commitTransaction();
+        } catch (\Exception $ex) {
+            RowSelector::rollback();
+            $this->handleException($e);
+            return false;
+        }
+        return true;
     }
 
     protected function beforeSave() { }
