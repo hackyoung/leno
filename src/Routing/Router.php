@@ -14,12 +14,12 @@ class Router
     use \Leno\Traits\Magic;
 
     /**
-     * 通常的路由模式 path类型为namespace/controller/method/{$param1}/{$param2}/...
+     * 通常的路由模式 path类型为path/controller/method/${params}/${params}
      */
     const MOD_NORMAL = 0;
 
     /**
-     * restful路由模式 path类型为namespace/controller/{$param1}/{$param2}/...
+     * restful路由模式 path类型为namespace/controller/${params}/${$params}
      */
     const MOD_RESTFUL = 1;
 
@@ -41,7 +41,7 @@ class Router
     protected $response;
 
     /**
-     * namespace/class/method/${param1}/${param2}
+     * some/web/path
      */
     protected $path;
 
@@ -51,9 +51,8 @@ class Router
      * ]
      *
      * ### example
-     *
      * rules = [
-     *      '/hello/{$1}/world/{$2}' => '/hello/world/{$1}/{$2}',
+     *      '/hello/regexp/world/regexp' => '/hello/world/{$1}/{$2}',
      * ];
      */
     protected $rules = [];
@@ -122,7 +121,7 @@ class Router
     public function route()
     {
         $this->beforeRoute();
-        $result = (new Rule($this))->handle();
+        $result = (new Rule($this->path, $this->rules))->handle($this);
         if($result instanceof self) {
             return $result->route();
         } 

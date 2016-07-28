@@ -86,7 +86,7 @@ class Target extends \ReflectionClass
             }, preg_replace('/\..*$/', '', array_pop($path)));
         }
         try {
-            return (new self(implode('\\', $path)))
+            return (new self(implode('\\', $path).'Controller'))
                 ->setMethod($action)
                 ->setParameters($parameters);
         } catch(\Exception $ex) {

@@ -5,28 +5,27 @@ use \Leno\Routing\Router;
 
 class Rule
 {
-    protected $router;
+    protected $path;
 
-    protected $parameters;
+    protected $rules;
 
-    public function __construct(Router $router)
+    public function __construct($path, $rules)
     {
-        $this->router = $router;
+        $this->path = $path;
+        $this->rules = $rules;
     }
 
-    public function handle()
+    public function handle(Router $router = null)
     {
-        $path = (string)$this->router->getPath();
-        $rules = $this->router->getRules();
+        $path = (string)$this->path;
+        $rules = $this->rules;
         foreach($rules as $reg => $rule) {
-            $regexp = preg_replace('/\$\{.*\}/U', '.*', $reg);
-            $regexp = preg_replace('/^\/|\/$/', '', $regexp);
-            $regexp = '/'.preg_replace('/\//', '\/', $regexp).'/';
+            $regexp = '/^'.str_replace('/','\/', str_replace('\/', '/', $reg)).'$/';
             if(!preg_match($regexp, $path)) {
                 continue;
             }
             if(preg_match('/Router$/', $rule)) {
-                return $this->resolvRouterRule($rule, $reg);
+                return $this->resolvRouterRule($rule, $reg, $router);
             }
             return $this->resolvPathRule($reg, $rule);
         }
@@ -34,19 +33,20 @@ class Rule
 
     private function resolvPathRule($reg, $rule)
     {
-        $path = (string)$this->router->getPath();
-        $reg = preg_replace('/\/{0,1}\$\{\d+\}\/{0,1}/', '|', $reg);
-        $reg = str_replace('|', ')|(', $reg);
-        $reg = '/('.str_replace('/', '\/', $reg).')/';
-        $parameters = explode('/', preg_replace($reg, '', $path));
+        $path = (string)$this->path;
+        $reg_arr = explode('/', $reg);
+        foreach ($reg_arr as $r) {
+            $path = str_replace($r, '', $path);
+        }
+        $parameters = array_values(array_filter(explode('/', $path)));
         return preg_replace_callback('/\$\{.*\}/U', 
-        function($matches) use (&$idx, $parameters) {
+        function($matches) use ($parameters) {
             $idx = (int)preg_replace('/\$|\{|\}/', '', $matches[0]) - 1;
             return '${'.$parameters[$idx].'}';
         }, $rule);
     }
 
-    private function resolvRouterRule($class, $regexp)
+    private function resolvRouterRule($class, $regexp, $router)
     {
         try {
             $rc = new \ReflectionClass($class);
@@ -55,11 +55,11 @@ class Rule
                 'router:'.$class.' not found'
             );
         }
-        $request = clone $this->router->getRequest();
+        $request = clone $router->getRequest();
         $request->withAttribute('path', preg_replace(
-            '/'.$regexp.'/', '', (string)$this->router->getPath()
+            '/'.$regexp.'/', '', (string)$this->path
         ));
-        $response = $this->router->getResponse();
+        $response = $router->getResponse();
         return $rc->newInstance($request, $response);
     }
 }
