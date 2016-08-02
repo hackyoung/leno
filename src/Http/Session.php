@@ -4,6 +4,11 @@ namespace Leno\Http;
 class Session
 {
     use \Leno\Traits\Magic;
+    use \Leno\Traits\Singleton;
+
+    private function __construct() {}
+
+    private function __clone () {}
 
     public function __call($method, array $args = [])
     {
