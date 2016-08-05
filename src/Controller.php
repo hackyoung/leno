@@ -184,7 +184,7 @@ abstract class Controller
             'DELETE' => $_POST,
             'PUT' => $_POST,
         ];
-        $method = strtoupper($this->request->getMethod());
+        $method = strtoupper($_POST['_method'] ?? $this->request->getMethod());
         return $source_map[$method];
     }
 }

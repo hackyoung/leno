@@ -17,8 +17,8 @@ class StringType extends \Leno\Type implements TypeStorageInterface
         if($regexp && !preg_match($regexp, $value)) {
             throw new ValueNotMatchedRegexpException($this->value_name, $value, $regexp);
         }
-        $len = strlen($val);
-        $max_length = $this->extra['max_length'];
+        $len = mb_strlen($value);
+        $max_length = $this->extra['max_length'] ?? null;
         if($max_length && $len > $max_length) {
             throw new ValueLengthException($this->value_name, $value);
         }
