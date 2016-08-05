@@ -105,7 +105,7 @@ abstract class Controller
                 $type->setAllowEmpty($rule['allow_empty']);
             }
             try {
-                $type->check($source[$key]);
+                $type->check($source[$key] ?? null);
             } catch(\Exception $e) {
                 throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
             }

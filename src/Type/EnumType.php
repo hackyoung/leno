@@ -25,7 +25,7 @@ class EnumType extends \Leno\Type implements TypeStorageInterface
         $enum_list = $this->extra;
         $len = 0;
         foreach($enum_list as $enum) {
-            $len = max($len, count((string)$enum));
+            $len = max($len, strlen((string)$enum));
         }
         return 'VARCHAR('.$len.')';
     }
