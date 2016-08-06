@@ -2115,7 +2115,6 @@ leno.editor = (function() {
     }
 
     lenoEditor.prototype.focus = function() {
-
         var frame = this.editorContent.getFrame();
         frame.focus();
         return this;
