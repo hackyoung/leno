@@ -160,8 +160,8 @@ class Router
         $response = $target->invoke(null, $instance);
         $content = ob_get_contents();
         ob_end_clean();
-        $this->request = $target->getProperty('request')->getValue();
-        $this->response = $target->getProperty('response')->getValue();
+        $this->request = $target->invoke('getRequest', $instance);
+        $this->response = $target->invoke('getResponse', $instance);
         if($this->handleResult($response)) {
             $this->response->write($content);
         }

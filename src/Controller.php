@@ -8,11 +8,11 @@ use \Leno\Exception\MethodNotFoundException;
 
 abstract class Controller
 {
-    protected $view_dir = ROOT . '/View';
-
     protected $request;
 
     protected $response;
+    
+    protected $view_dir = ROOT . '/View';
 
     protected $title = 'leno';
 
@@ -31,6 +31,16 @@ abstract class Controller
         $this->request = $request;
         $this->response = $response;
         $this->initialize();
+    }
+
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    public function getRequest()
+    {
+        return $this->request;
     }
 
     public function __call($method, array $args = [])

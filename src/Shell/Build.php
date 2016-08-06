@@ -122,7 +122,9 @@ class Build extends \Leno\Shell
                     continue;
                 }
                 $re = new \ReflectionClass($className);
-                if(!$re->hasProperty('table') || !$re->hasProperty('attributes')) {
+                $table = $re->hasProperty('table') && ($re->getStaticPropertyValue('table') ?? null);
+                $attr = $re->hasProperty('attributes') && ($re->getStaticPropertyValue('attributes') ?? null);
+                if(!$table || !$attr) {
                     continue;
                 }
                 $this->entities[$className] = $re;
