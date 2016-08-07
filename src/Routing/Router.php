@@ -79,6 +79,7 @@ class Router
 
     /**
      * 构造函数
+     *
      * @param \Leno\Http\Request request
      * @param \Leno\Http\Response resonse
      */
@@ -103,7 +104,9 @@ class Router
      * 路由时通过解析path路由到指定的controller，这里没有直接使用request::uri进行路由，
      * 其原因时，如果路由到的是另一个router而不是controller，那
      * 么用户在最终的controller中获得request对象中的uri将不是一个正确的uri
+     *
      * @param string path ###sample /cq/blog/index
+     *
      * @return this
      */
     public function setPath($path)
@@ -120,8 +123,8 @@ class Router
      */
     public function route()
     {
-        $this->beforeRoute();
         $result = (new Rule($this->path, $this->rules))->handle($this);
+        $this->beforeRoute();
         if($result instanceof self) {
             return $result->route();
         } 

@@ -98,9 +98,6 @@ class Build extends \Leno\Shell
 
     private function getEntities($entity_dir, $namespace)
     {
-        if (!empty($this->entities)) {
-            return $this->entities;
-        }
         if(!is_dir($entity_dir)) {
             $this->error($entity_dir . ' Is Not A Dir');
             return;
@@ -113,7 +110,7 @@ class Build extends \Leno\Shell
             $pathfile = $entity_dir . '/' .$filename;
             if(is_dir($pathfile)) {
                 $the_namespace = implode('\\', [$namespace, camelCase($filename)]);
-                $this->getEntities($pathfile, $the_namespace);
+                $this->entities += $this->getEntities($pathfile, $the_namespace);
                 continue;
             }
             if(preg_match('/\.php$/', $filename)) {
