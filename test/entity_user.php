@@ -13,17 +13,18 @@ $start = microtime(true);
 //     ->setCreated(new \Datetime)
 //     ->save();
 
-$author = Author::findOrFail('479dfc05-7403-f1e2-d69c-b5b6f25a825c');
-
-echo json_encode($author->getBook(function($selector) {
-    return $selector->limit(1);
-}));
-$i = 1000;
-while($i--) {
-    echo "\n";
-    echo json_encode($author->getBook());
-}
-
+var_dump(Author::selector()->byIdNull()->find());
+// $author = Author::findOrFail('479dfc05-7403-f1e2-d69c-b5b6f25a825c');
+// 
+// echo json_encode($author->getBook(function($selector) {
+//     return $selector->limit(1);
+// }));
+// $i = 1000;
+// while($i--) {
+//     echo "\n";
+//     echo json_encode($author->getBook());
+// }
+// 
 // $book = new Book;
 // $book->setName('javascript 从入门到放弃')
 //      ->setPublished(new \Datetime);
@@ -108,7 +109,7 @@ $book->save();
 //     var_dump($book->toArray());
 // }
 
-echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
+// echo "使用时间：".((microtime(true) - $start)*1000)."Ms\n";
 
 /*
 $book = \Test\Model\Book::findOrFail('55a58b9-0cae-622d-a0f1-582f8eaf3918');

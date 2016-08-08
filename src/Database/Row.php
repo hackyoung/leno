@@ -68,6 +68,8 @@ abstract class Row
     const EXP_LIKE = 'like';
     const EXP_NOT_LIKE = 'not_like';
     const EXP_EXPR = 'expr';
+    const EXPR_NULL = 'null';
+    const EXPR_NOT_NULL = 'not_null';
 
     /**
      * 该行操作器操作的表名
@@ -221,7 +223,7 @@ abstract class Row
      *      ->find();
      *
      */
-    public function by($expr, $field, $value)
+    public function by($expr, $field, $value = null)
     {
         $Entity = \baseClass($this->entityClass);
         if ($this->entityClass && $value instanceof $Entity) {
@@ -251,7 +253,7 @@ abstract class Row
      *
      * @return this
      */
-    public function on($expr, $field, $value)
+    public function on($expr, $field, $value = null)
     {
         $this->attachAdd(self::TYPE_CONDI_ON);
         $this->on[] = [
@@ -457,7 +459,8 @@ abstract class Row
         $exprs = [
             self::EXP_GT, self::EXP_LT, self::EXP_GTE, self::EXP_LTE,
             self::EXP_IN, self::EXP_EQ, self::EXP_LIKE, self::EXP_EXPR,
-            self::EXP_NOT_IN, self::EXP_NOT_LIKE, self::EXP_NOT_EQ
+            self::EXP_NOT_IN, self::EXP_NOT_LIKE, self::EXP_NOT_EQ,
+            self::EXPR_NULL, self::EXPR_NOT_NULL
         ];
         $expr = end($series);
         if (!in_array($expr, $exprs)) {
@@ -553,7 +556,17 @@ abstract class Row
         if($item['expr'] == 'expr') {
             return $item['value'];
         }
-        return $this->exprR($item) ?? $this->exprLike($item) ?? $this->exprIn($item);
+        return $this->exprR($item) ?? $this->exprLike($item) ?? $this->exprIn($item) ?? $this->exprNull($item);
+    }
+
+    private function exprNull($item)
+    {
+        $null = ['null' => 'IS NULL', 'not_null' => 'IS NOT NULL'];
+        if (!isset($null[$item['expr']])) {
+            return;
+        }
+        $field = $this->getFieldExpr($item['field']);
+        return new Expr($field . ' ' . $null[$item['expr']]);
     }
 
     private function exprIn($item)
