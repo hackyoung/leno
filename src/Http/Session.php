@@ -24,6 +24,6 @@ class Session
     public function get(string $key)
     {
         session_start();
-        return unserialize($_SESSION[$key]);
+        return unserialize($_SESSION[$key] ?? null);
     }
 }
