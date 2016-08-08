@@ -26,7 +26,7 @@ class Unique extends Constraint
         $adapter->beginTransaction();
         try {
             foreach ($remove as $key => $columns) {
-                $adapter->execute($sql . 'DROP UNIQUE KEY '.$key);
+                $adapter->execute($sql . 'DROP INDEX '.$key);
             }
             foreach ($add as $key => $columns) {
                 $sub_sql = sprintf(

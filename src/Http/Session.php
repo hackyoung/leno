@@ -3,10 +3,16 @@ namespace Leno\Http;
 
 class Session
 {
+    const STARTED = 1;
+
     use \Leno\Traits\Magic;
     use \Leno\Traits\Singleton;
 
-    private function __construct() {}
+    private $session_state;
+
+    private function __construct() {
+        $this->start();
+    }
 
     private function __clone () {}
 
@@ -17,13 +23,20 @@ class Session
 
     public function set(string $key, $value)
     {
-        session_start();
         $_SESSION[$key] = serialize($value);
     }
 
     public function get(string $key)
     {
-        session_start();
         return unserialize($_SESSION[$key] ?? null);
+    }
+
+    private function start()
+    {
+        if ($this->session_state == self::STARTED) {
+            return;
+        }
+        session_start();
+        $this->session_state = self::STARTED;
     }
 }
