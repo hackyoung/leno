@@ -274,7 +274,10 @@ class RelationShip
         if (is_callable($callback)) {
             $selector = call_user_func($callback, $selector);
         }
-        return $selector->find();
+        if ($selector instanceof RowSelector) {
+            return $selector->find();
+        }
+        return $selector;
     }
 
     private function getNoBridge ($config, $callback)
