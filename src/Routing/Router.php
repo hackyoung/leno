@@ -123,6 +123,7 @@ class Router
      */
     public function route()
     {
+        $this->beforeHandleRule();
         $result = (new Rule($this->path, $this->rules))->handle($this);
         $this->beforeRoute();
         if($result instanceof self) {
@@ -193,6 +194,9 @@ class Router
         return true;
     }
 
+    protected function beforeHandleRule()
+    {
+    }
 
     protected function beforeRoute()
     {

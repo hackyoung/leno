@@ -7,6 +7,7 @@ use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
 use \Leno\Type;
 use \Leno\ORM\EntityInterface;
+use \Leno\ORM\EntityPool;
 
 use \Leno\ORM\Exception\PrimaryMissingException;
 use \Leno\ORM\Exception\EntityNotFoundException;
@@ -262,22 +263,24 @@ class Entity implements \JsonSerializable, EntityInterface
         }
         $Entity = get_called_class();
         $mapper = (new Mapper())->selectTable($Entity::$table);
-        RowSelector::beginTransaction();
         try {
-            $this->relation_ship->save();
+            RowSelector::beginTransaction();
             if ($this->fresh) {
                 if ($this->beforeInsert() === false) {
                     RowSelector::rollback();
                     return false;
                 }
+                $this->relation_ship->save();
                 $mapper->insert($this->data);
-            } else {
-                if ($this->beforeUpdate() === false) {
-                    RowSelector::rollback();
-                    return false;
-                }
-                $mapper->update($this->data);
+                $this->relation_ship->saveBridge();
+                RowSelector::commitTransaction();
             }
+            if ($this->beforeUpdate() === false) {
+                RowSelector::rollback();
+                return false;
+            }
+            $this->relation_ship->save();
+            $mapper->update($this->data);
             $this->relation_ship->saveBridge();
             RowSelector::commitTransaction();
         } catch(\Exception $e) {
@@ -416,9 +419,18 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function find($id)
     {
         $self = get_called_class();
-        return (new Mapper)->selectTable($self::$table)->find([
+        $entity_pool = EntityPool::instance();
+        $cache_key = $entity_pool->getKey($self::$table, $id);
+        if ($entity_pool->is($cache_key)) {
+            return $entity_pool->get($cache_key);
+        }
+        $entity = (new Mapper)->selectTable($self::$table)->find([
             $self::$primary => $id
         ], $self);
+        if ($entity) {
+            $entity_pool->set($cache_key, $entity);
+        }
+        return $entity;
     }
 
     /**
@@ -440,6 +452,9 @@ class Entity implements \JsonSerializable, EntityInterface
             );
             $entity->setForcely($field, $value, false);
         }
+        $entity_pool = EntityPool::instance();
+        $key = $entity_pool->getKey($self::$table, $entity->id());
+        $entity_pool->set($key, $entity);
         return $entity;
     }
 
