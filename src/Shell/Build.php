@@ -130,7 +130,7 @@ class Build extends \Leno\Shell
         return $this->entities;
     }
 
-    private function normalizeForeign($foreign, $table)
+    private function normalizeForeign($foreign, $table_name)
     {
         $the_foreign = [];
         foreach ($foreign as $key => $config) {
@@ -139,7 +139,7 @@ class Build extends \Leno\Shell
             }
             $table = $config['entity']::$table;
             $relation_foreign = $config['foreign_key'];
-            $the_key = $key.'_'.$table.'_fk';
+            $the_key = $table_name . '_' . $key.'_'.$table.'_fk';
             $the_foreign[$the_key] = [
                 'foreign_table' => $table,
                 'relation' => []

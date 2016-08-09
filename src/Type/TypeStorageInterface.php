@@ -11,7 +11,7 @@ interface TypeStorageInterface
     /**
      * 将属于该类型的一个值转换为数据库友好的可存储的值
      */
-    public function toDB ($value) : string;
+    public function toDB ($value);
 
     /**
      * 将数据库友好的值转换为php友好的值
