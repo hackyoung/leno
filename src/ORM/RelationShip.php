@@ -291,10 +291,12 @@ class RelationShip
                 );
             }
         } else {
-            $selector->by(
-                RowSelector::EXP_EQ, $config['foreign_key'],
-                $this->primary_entity->get($config['local_key'])
-            );
+            $value = $this->primary_entity->get($config['local_key']);
+            $expr = RowSelector::EXP_EQ;
+            if (is_array($value)) {
+                $expr = RowSelector::EXP_IN;
+            }
+            $selector->by($expr, $config['foreign_key'], $value);
         }
         if (is_callable($callback)) {
             $selector = call_user_func($callback, $selector);
@@ -302,11 +304,7 @@ class RelationShip
         if (!($selector instanceof RowSelector)) {
             return $selector;
         }
-        $result = $selector->find();
-        if (count($result) == 1) {
-            return $result[0];
-        }
-        return $result;
+        return $selector->find();
     }
 
     private function getBridge ($config, $callback)
