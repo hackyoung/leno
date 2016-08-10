@@ -11,6 +11,8 @@ use \Leno\ORM\EntityPool;
 
 use \Leno\ORM\Exception\PrimaryMissingException;
 use \Leno\ORM\Exception\EntityNotFoundException;
+use \Leno\ORM\Exception\UniqueException;
+use \Leno\ORM\Exception\ForeignException;
 use \Leno\Exception\MethodNotFoundException;
 
 /**
@@ -269,8 +271,8 @@ class Entity implements \JsonSerializable, EntityInterface
         }
         $Entity = get_called_class();
         $mapper = (new Mapper())->selectTable($Entity::$table);
+        RowSelector::beginTransaction();
         try {
-            RowSelector::beginTransaction();
             if ($this->fresh) {
                 if ($this->beforeInsert() === false) {
                     RowSelector::rollback();
@@ -291,7 +293,7 @@ class Entity implements \JsonSerializable, EntityInterface
             RowSelector::commitTransaction();
         } catch(\Exception $e) {
             RowSelector::rollback();
-            throw $e;
+            $this->handleException($e);
         }
         $this->dirty = true;
         $this->data->setAllDirty(false);
@@ -398,6 +400,18 @@ class Entity implements \JsonSerializable, EntityInterface
         return $this->data->dirty();
     }
 
+    public function hasAttr($attr)
+    {
+        $self = get_called_class();
+        return isset($self::$attributes[$attr]);
+    }
+
+    public function getAttrConfig($attr)
+    {
+        $self = get_called_class();
+        return $self::$attributes[$attr] ?? null;
+    }
+
     public function toArray() : array
     {
         return $this->data->toArray();
@@ -439,17 +453,6 @@ class Entity implements \JsonSerializable, EntityInterface
         return $entity;
     }
 
-    public function hasAttr($attr)
-    {
-        $self = get_called_class();
-        return isset($self::$attributes[$attr]);
-    }
-
-    public function getAttrConfig($attr)
-    {
-        $self = get_called_class();
-        return $self::$attributes[$attr] ?? null;
-    }
 
     /**
      * 从数组中获取值，生成Entity, 该方法会假设row是从数据库查询
@@ -491,6 +494,50 @@ class Entity implements \JsonSerializable, EntityInterface
             throw new EntityNotFoundException(get_called_class(), $id);
         }
         return $entity;
+    }
+
+    public static function getForeignKeyName($attr)
+    {
+        $self = get_called_class();
+        $table_name = $self::$foreign[$attr]['entity']::$table;
+        return $self::$table . '_' . $attr . '_' . $table_name . '_fk';
+    }
+
+    protected function handleException(\Exception $e)
+    {
+        $self = get_called_class();
+        if ($e instanceof \PDOException) {
+            $cks = $this->getKeyToConstraint();
+            foreach ($cks as $key => $field) {
+                if (!strpos($key, $e->getMessage())) {
+                    continue;
+                }
+                if ($field['type'] == 'unique') {
+                    throw new UniqueException($self, $field['name']);
+                }
+                if ($field['type'] == 'foreign') {
+                    throw new ForeignException($self, $field['name']);
+                }
+            }
+        }
+        throw $e;
+    }
+
+    private function getKeyToConstraint()
+    {
+        $self = get_called_class();
+        $unqiue = $self::$unique ?? [];
+        $foreign = $self::$foreign ?? [];
+        $ret = [];
+        foreach ($unique as $name => $field) {
+            $ret[$self::$table . '_' . $name . '_uk'] = [
+                'type' => 'unique', 'name' => $field
+            ];
+        }
+        foreach ($foreign as $name => $config) {
+            $ret[$self::getForeignKeyName($name)] = $config['local_key'];
+        }
+        return $ret;
     }
 
     protected function beforeSave() { }

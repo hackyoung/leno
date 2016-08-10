@@ -15,6 +15,7 @@ $start = microtime(true);
 
 $author = Author::find('1bc79ae4-98a9-6d58-732d-6f90cf76f5f1');
 var_dump($author->getBookIds());
+var_dump($author->getBook());
 // $books = Book::selector()->find();
 // foreach ($books as $book) {
 //     $author->addBook($book);

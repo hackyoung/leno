@@ -83,7 +83,7 @@ class Build extends \Leno\Shell
             $foreign = $re->getStaticPropertyValue('foreign');
             $table = $re->getStaticPropertyValue('table');
             if (is_array($foreign)) {
-                (new Foreign($table, $this->normalizeForeign($foreign, $table)))->save();
+                (new Foreign($table, $this->normalizeForeign($foreign, $entity_name)))->save();
                 $this->info('为<keyword>'.$entity_name.'</keyword>创建外键');
                 continue;
             }
@@ -130,7 +130,7 @@ class Build extends \Leno\Shell
         return $this->entities;
     }
 
-    private function normalizeForeign($foreign, $table_name)
+    private function normalizeForeign($foreign, $entity_class)
     {
         $the_foreign = [];
         foreach ($foreign as $key => $config) {
@@ -139,7 +139,8 @@ class Build extends \Leno\Shell
             }
             $table = $config['entity']::$table;
             $relation_foreign = $config['foreign_key'];
-            $the_key = $table_name . '_' . $key.'_'.$table.'_fk';
+            //$the_key = $table_name . '_' . $key.'_'.$table.'_fk';
+            $the_key = $entity_class::getForeignKeyName($key);
             $the_foreign[$the_key] = [
                 'foreign_table' => $table,
                 'relation' => []

@@ -12,16 +12,13 @@ class Author extends \Leno\ORM\Entity
         'name' => ['type' => 'string', 'extra' => [
             'max_length' => 32
         ]],
-        'book_ids' => ['type' => 'array', 'is_nullable' => true],
         'created' => ['type' => 'datetime']
     ];
 
-    public static $foreign = [
+    public static $foreign_by = [
         'book' => [
             'entity' => '\\Test\\Model\\Book',
-            'local_key' => 'book_ids',
-            'foreign_key' => 'book_id',
-            'is_array' => true
+            'attr' => 'author',
         ]
     ];
 
