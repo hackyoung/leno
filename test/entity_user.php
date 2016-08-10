@@ -7,20 +7,24 @@ use \Test\Model\User;
 use \Test\Model\Author;
 use \Test\Model\Book;
 
-$start = microtime(true);
+// $start = microtime(true);
 // $author = new Author;
 // $author->setName('hello world')
 //     ->setCreated(new \Datetime)
 //     ->save();
+$author = Author::selector()->byIdNotNull()->findOne();
 
-$author = Author::find('1bc79ae4-98a9-6d58-732d-6f90cf76f5f1');
-var_dump($author->getBookIds());
-var_dump($author->getBook());
 // $books = Book::selector()->find();
-// foreach ($books as $book) {
-//     $author->addBook($book);
-// }
-// $author->save();
+$books = [
+    (new Book)->setName('js')->setPublished(new \Datetime),
+    (new Book)->setName('as')->setPublished(new \Datetime),
+    (new Book)->setName('ls')->setPublished(new \Datetime),
+    (new Book)->setName('ws')->setPublished(new \Datetime)
+];
+foreach ($books as $book) {
+    $author->addBook($book);
+}
+$author->save();
 
 // $i = 10;
 // Author::selector()->byIdNotNull()->find();

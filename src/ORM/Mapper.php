@@ -34,7 +34,7 @@ class Mapper implements MapperInterface
             $updator->set($field, $value);
         }
         foreach($data->id() as $field => $value) {
-            $updator->by('eq', $field, $value);
+            $updator->by($field, $value);
             break;
         }
         return $updator->update();
@@ -44,7 +44,7 @@ class Mapper implements MapperInterface
     {
         $deletor = new RowDeletor($this->table_name);
         foreach($data->id() as $field => $value) {
-            $deletor->by('eq', $field, $value);
+            $deletor->by($field, $value);
             break;
         }
         return $deletor->delete();
@@ -54,7 +54,7 @@ class Mapper implements MapperInterface
     {
         $selector = new RowSelector($this->table_name);
         foreach($id as $field => $value) {
-            $selector->by('eq', $field, $value);
+            $selector->by($field, $value);
         }
         return $selector->setEntityClass($entity)->findOne();
     }

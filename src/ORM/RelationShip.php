@@ -274,7 +274,7 @@ class RelationShip
         }
         $selector = $ferc->getMethod('selector')->invoke(null);
         $selector->by(
-            RowSelector::EXP_EQ, $config['local_key'],
+            $config['local_key'],
             $this->primary_entity->get($config['foreign_key'])
         );
         if (is_callable($callback)) {
@@ -292,7 +292,7 @@ class RelationShip
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $selector->by(
-                    RowSelector::EXP_EQ, $config['foreign_key'][$local],
+                    $config['foreign_key'][$local],
                     $this->primary_entity->get($local)
                 );
             }
@@ -302,7 +302,7 @@ class RelationShip
             if (is_array($value)) {
                 $expr = RowSelector::EXP_IN;
             }
-            $selector->by($expr, $config['foreign_key'], $value);
+            $selector->by($config['foreign_key'], $value, $expr);
         }
         if (is_callable($callback)) {
             $selector = call_user_func($callback, $selector);
@@ -321,26 +321,26 @@ class RelationShip
         if (is_array($config['local_key'])) {
             foreach ($config['local_key'] as $local) {
                 $bridge_selector->by(
-                    RowSelector::EXP_EQ, $bridge['local'][$local],
+                    $bridge['local'][$local],
                     $this->primary_entity->get($local)
                 );
             }
         } else {
             $bridge_selector->by(
-                RowSelector::EXP_EQ, $bridge['local'],
+                $bridge['local'],
                 $this->primary_entity->get($config['local_key'])
             );
         }
         if (is_array($config['foreign_key'])) {
             foreach ($config['foreign_key'] as $foreign) {
                 $bridge_selector->on(
-                    RowSelector::EXP_EQ, $bridge['foreign'][$foreign],
+                    $bridge['foreign'][$foreign],
                     $selector->getFieldExpr($foreign)
                 );
             }
         } else {
             $bridge_selector->on(
-                RowSelector::EXP_EQ, $bridge['foreign'],
+                $bridge['foreign'],
                 $selector->getFieldExpr($config['foreign_key'])
             );
         }

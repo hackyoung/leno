@@ -215,7 +215,7 @@ abstract class Row
      *
      * $updator = new Updator('hello'); 
      * $updator->setName('young')
-     *      ->byEqName('young')     // 简单写法
+     *      ->byNameEq('young')     // 简单写法
      *      ->update();
      *
      * $selector = new Selector('hello');
@@ -223,7 +223,7 @@ abstract class Row
      *      ->find();
      *
      */
-    public function by($expr, $field, $value = null)
+    public function by($field, $value = null, $expr = self::EXP_EQ)
     {
         $Entity = \baseClass($this->entityClass);
         if ($this->entityClass && $value instanceof $Entity) {
@@ -253,7 +253,7 @@ abstract class Row
      *
      * @return this
      */
-    public function on($expr, $field, $value = null)
+    public function on($field, $value = null, $expr = self::EXP_EQ)
     {
         $this->attachAdd(self::TYPE_CONDI_ON);
         $this->on[] = [
@@ -475,7 +475,11 @@ abstract class Row
             throw new \Leno\Exception('不支持的表达式:'.$expr);
         }
         $field = implode('_', $series) ?? null;
-        array_unshift($args, $expr, $field);
+        if (count($args) == 0) {
+            $args = [null];
+        }
+        array_unshift($args, $field);
+        $args[] = $expr;
         if (self::TYPE_CONDI_BY === $type) {
             return call_user_func_array([$this, 'by'], $args);
         } 
