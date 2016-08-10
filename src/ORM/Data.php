@@ -3,6 +3,7 @@ namespace Leno\ORM;
 
 use \Leno\ORM\DataInterface;
 use \Leno\Type;
+use \Leno\ORM\Exception\FieldException;
 
 /**
  * Data是一个数据集，通过mapper，可以将它持久化存储，所有数据在写入Data的时候会通过
@@ -80,10 +81,14 @@ class Data implements DataInterface
     {
         foreach($this->config as $field => $config) {
             $type = Type::get($config['type']);
-            $type->setRequried($config['is_nullable'] ?? true)
-                ->setAllowEmpty(true)
-                ->setExtra($config['extra'])
-                ->check($this->data[$field]['value'] ?? null);
+            try {
+                $type->setRequried($config['is_nullable'] ?? true)
+                    ->setAllowEmpty(true)
+                    ->setExtra($config['extra'])
+                    ->check($this->data[$field]['value'] ?? null);
+            } catch (\Exception $ex) {
+                throw new FieldException($table, $field);
+            }
         }
         return true;
     }
