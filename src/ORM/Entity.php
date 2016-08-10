@@ -509,7 +509,7 @@ class Entity implements \JsonSerializable, EntityInterface
         if ($e instanceof \PDOException) {
             $cks = $this->getKeyToConstraint();
             foreach ($cks as $key => $field) {
-                if (!strpos($key, $e->getMessage())) {
+                if (strpos($key, $e->getMessage()) == -1) {
                     continue;
                 }
                 if ($field['type'] == 'unique') {
@@ -526,11 +526,11 @@ class Entity implements \JsonSerializable, EntityInterface
     private function getKeyToConstraint()
     {
         $self = get_called_class();
-        $unqiue = $self::$unique ?? [];
+        $unique = $self::$unique ?? [];
         $foreign = $self::$foreign ?? [];
         $ret = [];
         foreach ($unique as $name => $field) {
-            $ret[$self::$table . '_' . $name . '_uk'] = [
+            $ret[$name . '_' . $self::$table . '_uk'] = [
                 'type' => 'unique', 'name' => $field
             ];
         }
