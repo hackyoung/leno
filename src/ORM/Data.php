@@ -149,9 +149,10 @@ class Data implements DataInterface
             $exists_value = [ $exists_value ];
         }
         if(!in_array($value, $exists_value)) {
+            $exists_value[] = $value;
             $this->data[$attr] = [
                 'dirty' => true,
-                'value' => $exists_value + $value
+                'value' => $exists_value
             ];
         }
         return $this;

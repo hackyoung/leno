@@ -134,7 +134,7 @@ class Build extends \Leno\Shell
     {
         $the_foreign = [];
         foreach ($foreign as $key => $config) {
-            if (isset($config['bridge'])) {
+            if (isset($config['bridge']) || ($config['is_array'] ?? false)) {
                 continue;
             }
             $table = $config['entity']::$table;

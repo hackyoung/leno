@@ -185,6 +185,10 @@ class RelationShip
             }
         } elseif (!($value instanceof $config['entity'])) {
             throw new \Leno\Exception ('value is not a instance of '.$config['entity']);
+        } elseif ($config['is_array'] ?? false) {
+            foreach ($value as $v) {
+                $this->primary_entity->add($config['local_key'], $v->get($config['foreign_key']));
+            }
         } else {
             $value_key = $value->get($config['foreign_key']);
             $this->primary_entity->set($config['local_key'], $value_key);
@@ -213,8 +217,10 @@ class RelationShip
             } else {
                 $value->set($config['local_key'], $this->primary_entity->get($config['foreign_key']));
             }
-        } elseif(!($value instanceof $config['entity'])) {
+        } elseif (!($value instanceof $config['entity'])) {
             throw new \Leno\Exception ('value is not a Entity');
+        } elseif ($config['is_array'] ?? false) {
+            $this->primary_entity->add($config['local_key'], $value->get($config['foreign_key']));
         } else {
             $value->set($config['foreign_key'], $this->primary_entity->get($config['local_key']));
         }

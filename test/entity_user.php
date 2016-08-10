@@ -13,11 +13,19 @@ $start = microtime(true);
 //     ->setCreated(new \Datetime)
 //     ->save();
 
-$i = 10;
-Author::selector()->byIdNotNull()->find();
-while($i--) {
-    var_dump(Author::find('479dfc05-7403-f1e2-d69c-b5b6f25a825c'));
-}
+$author = Author::find('1bc79ae4-98a9-6d58-732d-6f90cf76f5f1');
+var_dump($author->getBookIds());
+// $books = Book::selector()->find();
+// foreach ($books as $book) {
+//     $author->addBook($book);
+// }
+// $author->save();
+
+// $i = 10;
+// Author::selector()->byIdNotNull()->find();
+// while($i--) {
+//     var_dump(Author::find('479dfc05-7403-f1e2-d69c-b5b6f25a825c'));
+// }
 // var_dump();
 // $author = Author::findOrFail('479dfc05-7403-f1e2-d69c-b5b6f25a825c');
 // 

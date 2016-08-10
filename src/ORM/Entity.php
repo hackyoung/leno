@@ -144,6 +144,12 @@ class Entity implements \JsonSerializable, EntityInterface
      *          ]
      *      ],
      *      'name' => [
+     *          'entity' => EntityClass,          
+     *          'local_key' => 'self_field_name',
+     *          'foreign_key' => 'entity_field_name'
+     *          'is_array' => true
+     *      ],
+     *      'name' => [
      *          'entity' => EntityClass,
      *          'local_key' => ['local_key_1', 'local_key_2'],
      *          'foreign_key' => 'foreign_key',
@@ -170,7 +176,7 @@ class Entity implements \JsonSerializable, EntityInterface
     /**
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
      */
-    protected $fresh;
+    protected $fresh = false;
 
     /**
      * 构造函数，设置主键值，设置默认值,
@@ -433,6 +439,18 @@ class Entity implements \JsonSerializable, EntityInterface
         return $entity;
     }
 
+    public function hasAttr($attr)
+    {
+        $self = get_called_class();
+        return isset($self::$attributes[$attr]);
+    }
+
+    public function getAttrConfig($attr)
+    {
+        $self = get_called_class();
+        return $self::$attributes[$attr] ?? null;
+    }
+
     /**
      * 从数组中获取值，生成Entity, 该方法会假设row是从数据库查询
      * 的结果，请不要直接使用该方法，通过Entity::selector()->find()
@@ -445,7 +463,7 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function newFromDB(array $row)
     {
         $self = get_called_class();
-        $entity = new $self(true);
+        $entity = new $self(false);
         foreach($self::$attributes as $field => $attr) {
             $value = Type::get($attr['type'])->toPHP(
                 $row[$field] ?? $attr['default'] ?? null
