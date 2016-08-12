@@ -80,14 +80,16 @@ class Data implements DataInterface
     public function validate() : bool
     {
         foreach($this->config as $field => $config) {
-            $type = Type::get($config['type']);
-            try {
-                $type->setRequried($config['is_nullable'] ?? true)
+            $type = Type::get($config['type'])
+                    ->setRequired(!($config['is_nullable'] ?? true))
+                    ->setValueName($field)
                     ->setAllowEmpty(true)
-                    ->setExtra($config['extra'])
-                    ->check($this->data[$field]['value'] ?? null);
+                    ->setExtra($config['extra'] ?? []);
+            $value = $this->data[$field]['value'] ?? null;
+            try {
+                $type->check($value);
             } catch (\Exception $ex) {
-                throw new FieldException($table, $field);
+                throw new FieldException($field, $type->toDB($value));
             }
         }
         return true;
@@ -95,6 +97,7 @@ class Data implements DataInterface
 
     public function getDirty() : array
     {
+        $this->validate();
         $dirty_data = [];
         foreach($this->data as $field => $value_info) {
             if(!$value_info['dirty']) {
@@ -120,10 +123,6 @@ class Data implements DataInterface
 
     public function setForcely (string $attr, $value, bool $dirty = true)
     {
-        $exists_value = $this->data[$attr]['value'] ?? null;
-        if($value == $exists_value) {
-            return $this;
-        }
         $this->data[$attr] = [
             'dirty' => $dirty,
             'value' => $value

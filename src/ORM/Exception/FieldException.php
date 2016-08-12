@@ -7,10 +7,10 @@ class FieldException extends \Leno\Exception
 
     private $field;
 
-    public function __construct($table, $field)
+    public function __construct($field)
     {
         $this->field = $field;
-        parent::__construct($table . ':' . $field);
+        parent::__construct($field);
     }
 
     public function getField()
