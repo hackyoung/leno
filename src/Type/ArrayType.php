@@ -57,7 +57,7 @@ abstract class ArrayType extends \Leno\Type implements TypeStorageInterface
         return $this->_toPHP($value);
     }
 
-    public function toDB($value) : string
+    public function toDB($value)
     {
         if($value === null) {
             return null;

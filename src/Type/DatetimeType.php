@@ -33,7 +33,7 @@ abstract class DatetimeType extends \Leno\Type implements TypeStorageInterface
         return new \Datetime($value);
     }
 
-    public function toDB($value) : string
+    public function toDB($value)
     {
         if($value === null) {
             return null;

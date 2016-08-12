@@ -43,7 +43,7 @@ class StringType extends \Leno\Type implements TypeStorageInterface
         return $value;
     }
 
-    public function toDB($value) : string
+    public function toDB($value)
     {
         return $value;
     }

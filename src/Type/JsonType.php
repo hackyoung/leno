@@ -14,7 +14,7 @@ class JsonType extends ArrayType implements TypeStorageInterface
         return parent::_check($value);
     }
 
-    public function toDB($value) : string
+    public function toDB($value)
     {
         if(!is_string($value)) {
             return json_encode($value);

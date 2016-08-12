@@ -18,7 +18,7 @@ abstract class BoolType extends \Leno\Type implements TypeStorageInterface
         return $this->_toDbType();
     }
 
-    public function toDB($value) : string
+    public function toDB($value)
     {
         return $this->_toDB($value);
     }
@@ -28,9 +28,9 @@ abstract class BoolType extends \Leno\Type implements TypeStorageInterface
         return $this->_toPHP($value);
     }
 
-    abstract protected function _toDbType() : string;
+    abstract protected function _toDbType();
 
-    abstract protected function _toDB($value) : string
+    abstract protected function _toDB($value);
 
     abstract protected function _toPHP($value);
 }

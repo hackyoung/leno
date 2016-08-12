@@ -8,7 +8,7 @@ class BoolType extends \Leno\Type\BoolType
         return 'TINYINT(1)';
     }
 
-    protected function _toDB($value) : string 
+    protected function _toDB($value) 
     {
         return ($value === true) ? 1 : 0;
     }
