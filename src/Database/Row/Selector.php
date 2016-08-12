@@ -348,9 +348,10 @@ class Selector extends Row
         if(empty($this->limit)) {
             return '';
         }
-        return sprintf('LIMIT %s, %s',
-            $this->limit['row'] ?? 1,
-            $this->limit['limit'] ?? -1
-        );
+        $limit = 'LIMIT ' . ($this->limit['limit'] ?? -1);
+        if ($this->limit['row'] > 0) {
+            $limit .= ' OFFSET ' . ($this->limit['row'] - 1);
+        }
+        return $limit;
     }
 }

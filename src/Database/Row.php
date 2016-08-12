@@ -219,7 +219,7 @@ abstract class Row
      *      ->update();
      *
      * $selector = new Selector('hello');
-     * $selector->by('like', 'name', 'you') // 原生写法
+     * $selector->by('name', 'you', Row::EXP_LIKE) // 原生写法
      *      ->find();
      *
      */
