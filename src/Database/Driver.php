@@ -3,11 +3,13 @@ namespace Leno\Database;
 
 abstract class Driver implements DriverInterface
 {
+    public static $cache = [];
+
     protected $max = 5;
 
     protected $busy = 0;
 
-    protected $warning = 500*1000;
+    protected $warning = 100*1000;
 
     protected static $driver_map = [
         'pdo' => '\\Leno\\Database\\Driver\\PdoDriver'
@@ -30,10 +32,18 @@ abstract class Driver implements DriverInterface
 
     public function execute(string $sql, array $params = null)
     {
+        $cache_sour = $sql;
+        if (is_array($params)) {
+            $cache_sour .= implode(',', $params);
+        }
+        $cache_key = md5($cache_sour);
+        if (isset(self::$cache[$cache_key])) {
+            return self::$cache[$cache_key];
+        }
         $start_time = microtime(true);
         $this->busy++;
         try {
-            $result = $this->_execute($sql, $params);
+            self::$cache[$cache_key] = $this->_execute($sql, $params);
         } catch (\Exception $e) {
             $this->busy--;
             throw $e;
@@ -43,7 +53,7 @@ abstract class Driver implements DriverInterface
             self::logger()->warn($sql.' executed use '.($user_time/1000).' Ms');
         }
         $this->busy--;
-        return $result;
+        return self::$cache[$cache_key];
     }
 
     public function addWeight(int $weight)
