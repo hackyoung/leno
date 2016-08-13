@@ -506,6 +506,7 @@ class Entity implements \JsonSerializable, EntityInterface
     protected function handleException(\Exception $e)
     {
         $self = get_called_class();
+        logger()->err((string)$e);
         if ($e instanceof \PDOException) {
             $cks = $this->getKeyToConstraint();
             foreach ($cks as $key => $field) {

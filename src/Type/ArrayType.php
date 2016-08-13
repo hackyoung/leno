@@ -26,7 +26,7 @@ abstract class ArrayType extends \Leno\Type implements TypeStorageInterface
 
     protected function _check($value) : bool
     {
-        if(is_array($value)) {
+        if(!is_array($value)) {
             throw new ValueNotArrayException($this->value_name, $value);
         }
         $keys_config = $this->config['extra'] ?? [];

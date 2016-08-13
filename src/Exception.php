@@ -8,7 +8,6 @@ class Exception extends \Exception
     public function __construct($message = '', $code = null)
     {
         $message = sprintf($this->messageTemplate, $message);
-        logger()->err(get_called_class() .': ' . $message);
         parent::__construct($message, $code);
     }
 }

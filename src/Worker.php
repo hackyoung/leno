@@ -104,6 +104,7 @@ class Worker
             return $this->response->withStatus(500)
                 ->write($e->getMessage());
         }
+        logger()->err((string)$e);
         throw $e;
     }
 
