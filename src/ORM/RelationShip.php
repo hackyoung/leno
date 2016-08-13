@@ -141,7 +141,7 @@ class RelationShip
         }
         $foreign = $this->config[$attr] ?? false;
         if (!$foreign) {
-            $foreign_by = $this->getForeiginBy($attr);
+            $foreign_by = $this->getForeignBy($attr);
             $ferc = new \ReflectionClass($foreign_by['entity']);
             $this->secondary_entities[$attr] = $this->getBy($ferc, $foreign_by['attr'], $callback);
             return $this->secondary_entities[$attr];
@@ -167,7 +167,7 @@ class RelationShip
     {
         $config = $this->config[$attr] ?? false;
         if (!$config) {
-            $foreign_by = $this->getForeiginBy($attr);
+            $foreign_by = $this->getForeignBy($attr);
             if (!($value instanceof $foreign_by['entity'])) {
                 throw new \Leno\Exception ('value is not a '.$foreign_by['entity']);
             }
@@ -201,7 +201,7 @@ class RelationShip
     {
         $config = $this->config[$attr] ?? false;
         if (!$config) {
-            $foreign_by = $this->getForeiginBy($attr);
+            $foreign_by = $this->getForeignBy($attr);
             if (!($value instanceof $foreign_by['entity'])) {
                 throw new \Leno\Exception ('value is not a instance of '.$foreign_by['entity']);
             }
@@ -375,7 +375,7 @@ class RelationShip
         $this->bridge_entities[] = $bridge;
     }
 
-    private function getForeiginBy (string $attr)
+    private function getForeignBy (string $attr)
     {
         $foreign_by = $this->foreign_by[$attr] ?? false;
         if (!$foreign_by) {

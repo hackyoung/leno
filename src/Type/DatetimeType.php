@@ -11,10 +11,10 @@ abstract class DatetimeType extends \Leno\Type implements TypeStorageInterface
 
     protected function _check($value) : bool
     {
-        if($val instanceof \Datetime) {
+        if($value instanceof \Datetime) {
             return true;
         }
-        if(!preg_match($this->regexp, $val)) {
+        if(!preg_match($this->regexp, $value)) {
             throw new \Exception($this->value_name . ' Not A Valid Datetime');
         }
         return true;
