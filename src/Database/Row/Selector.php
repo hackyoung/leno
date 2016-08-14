@@ -75,7 +75,10 @@ class Selector extends Row
      */
     public function order($field, $order = self::ORDER_ASC)
     {
-        $this->order[$field] = $order;
+        $this->order[] = [
+            'field' => $field,
+            'order' => $order
+        ];
         return $this;
     }
 
@@ -218,8 +221,12 @@ class Selector extends Row
     public function getOrder()
     {
         $ret = [];
-        foreach($this->order as $field=>$order) {
-            $ret[] = $this->getFieldExpr($field) . ' ' . $order;
+        foreach($this->order as $order_field) {
+            $field = (string)$order_field['field'];
+            if (!($order_field['field'] instanceof Expr)) {
+                $field = $this->getFieldExpr($order_field['field']);
+            }
+            $ret[] = $field . ' ' . $order_field['order'];
         }
         return $ret;
     }

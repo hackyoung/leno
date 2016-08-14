@@ -83,7 +83,7 @@ class Data implements DataInterface
             $type = Type::get($config['type'])
                     ->setRequired(!($config['is_nullable'] ?? true))
                     ->setValueName($field)
-                    ->setAllowEmpty(true)
+                    ->setAllowEmpty(false)
                     ->setExtra($config['extra'] ?? []);
             $value = $this->data[$field]['value'] ?? null;
             try {

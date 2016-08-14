@@ -342,7 +342,7 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         try {
             return $this->relation_ship->get($attr, $cached, $callback);
-        } catch (\Exception $ex) {
+        } catch (\Leno\Exception $ex) {
             return $this->data->get($attr);
         }
     }
@@ -364,7 +364,7 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         try {
             $this->relation_ship->set($attr, $value);
-        } catch (\Exception $ex) {
+        } catch (\Leno\Exception $ex) {
             $this->data->set($attr, $value);
         }
         return $this;
@@ -381,7 +381,7 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         try {
             $this->relation_ship->add($attr, $value);
-        } catch (\Exception $ex) {
+        } catch (\Leno\Exception $ex) {
             $this->data->add($attr, $value);
         }
         return $this;
