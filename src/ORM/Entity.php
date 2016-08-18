@@ -126,7 +126,6 @@ class Entity implements \JsonSerializable, EntityInterface
      *          'entity' => EntityClass,
      *          'foreign_key' => 'entity_field_name',
      *          'local_key' => 'self_field_name',
-     *          'get_one' => true   // 返回一个对象而不是一个数组
      *      ],
      *      'name' => [
      *          'entity' => EntityClass,
@@ -464,7 +463,7 @@ class Entity implements \JsonSerializable, EntityInterface
      * $total_like_number = $article->getLikeNumber();      // 获取PublishedArticleEntity的属性值
      *```
      *
-     * 这样我们可以通过标准的get方法取值，我们把这种通过left join抓取的值称只为伪属性
+     * 这样我们可以通过标准的get方法取值，我们把这种通过left join抓取的值称之为伪属性
      *
      * @param array row 从数据库中查询出来的row信息
      *
