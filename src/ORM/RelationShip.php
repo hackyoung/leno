@@ -289,18 +289,18 @@ class RelationShip
     private function getNoBridge ($config, $callback)
     {
         $selector = $config['entity']::selector();
-        if (is_array($config['local_key'])) {
-            foreach ($config['local_key'] as $local) {
-                $selector->by(
-                    $config['foreign_key'][$local],
-                    $this->primary_entity->get($local)
-                );
-            }
-        } else {
+        $one = true;
+        $is_array = is_array($config['local_key']) && array_map(function($local) use ($config, &$selector) {
+            $foreign_key = $config['foreign_key'][$local];
+            $selector->by($foreign_key, $this->primary_entity->get($local));
+            return $local;
+        }, $config['local_key']);
+        if (!$is_array) {
             $value = $this->primary_entity->get($config['local_key']);
             $expr = RowSelector::EXP_EQ;
             if (is_array($value)) {
                 $expr = RowSelector::EXP_IN;
+                $one = false;
             }
             $selector->by($config['foreign_key'], $value, $expr);
         }
@@ -310,6 +310,9 @@ class RelationShip
         if (!($selector instanceof RowSelector)) {
             return $selector;
         }
+        if ($one) {
+            return $selector->findOne();
+        }
         return $selector->find();
     }
 
@@ -318,31 +321,22 @@ class RelationShip
         $selector = $config['entity']::selector();
         $bridge = $config['bridge'];
         $bridge_selector = $bridge['entity']::selector();
-        if (is_array($config['local_key'])) {
-            foreach ($config['local_key'] as $local) {
-                $bridge_selector->by(
-                    $bridge['local'][$local],
-                    $this->primary_entity->get($local)
-                );
-            }
-        } else {
-            $bridge_selector->by(
-                $bridge['local'],
-                $this->primary_entity->get($config['local_key'])
-            );
+        $is_array = is_array($config['local_key']) && array_map(function($local) use ($config, &$bridge_selector) {
+            $value = $this->primary_entity->get($local);
+            $bridge_selector->by( $bridge['local'][$local], $value);
+            return $local;
+        }, $config['local_key']);
+        if (!$is_array) {
+            $value = $this->primary_entity->get($config['local_key']);
+            $bridge_selector->by( $bridge['local'], $value);
         }
-        if (is_array($config['foreign_key'])) {
-            foreach ($config['foreign_key'] as $foreign) {
-                $bridge_selector->on(
-                    $bridge['foreign'][$foreign],
-                    $selector->getFieldExpr($foreign)
-                );
-            }
-        } else {
-            $bridge_selector->on(
-                $bridge['foreign'],
-                $selector->getFieldExpr($config['foreign_key'])
-            );
+        $is_array = is_array($config['foreign_key']) && array_map(function($foreign) use ($config, &$bridge_selector) {
+            $value = $selector->getFieldExpr($foreign);
+            $bridge_selector->on($bridge['foreign'][$foreign], $value);
+        }, $config['foreign_key']);
+        if (!$is_array) {
+            $value = $selector->getFieldExpr($config['foreign_key']);
+            $bridge_selector->on($bridge['foreign'], $value);
         }
         $selector = $selector->join($bridge_selector);
         if (is_callable($callback)) {

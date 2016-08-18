@@ -100,10 +100,10 @@ class Data implements DataInterface
         $this->validate();
         $dirty_data = [];
         foreach($this->data as $field => $value_info) {
-            if(!$value_info['dirty']) {
+            $attr = $this->config[$field] ?? false;
+            if(!$attr || !$value_info['dirty']) {
                 continue;
             }
-            $attr = $this->config[$field];
             $type = Type::get($attr['type']);
             $dirty_data[$field] = $type->toDB($value_info['value']);
         }
@@ -192,5 +192,10 @@ class Data implements DataInterface
             $this->data[$field]['dirty'] = $dirty;
         }
         return $this;
+    }
+
+    public function hasAttr($attr)
+    {
+        return isset($this->config[$attr]);
     }
 }
