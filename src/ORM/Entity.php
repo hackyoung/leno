@@ -243,7 +243,7 @@ class Entity implements \JsonSerializable, EntityInterface
         }
         $type = array_splice($series, 0, 1)[0];
         array_unshift($args, implode('_', $series));
-        $supports = ['set', 'get', 'add'];
+        $supports = ['set', 'get', 'add', 'inc', 'dec'];
         if (in_array($type, $supports)) {
             return call_user_func_array([$this, $type], $args);
         }
@@ -365,6 +365,18 @@ class Entity implements \JsonSerializable, EntityInterface
         } catch (\Leno\Exception $ex) {
             $this->data->add($attr, $value);
         }
+        return $this;
+    }
+
+    public function inc(string $attr, int $num = 1)
+    {
+        $this->data->set($attr, $this->data->get($attr) + $num);
+        return $this;
+    }
+
+    public function dec(string $attr, int $num = 1)
+    {
+        $this->data->set($attr, $this->data->get($attr) - $num);
         return $this;
     }
 
