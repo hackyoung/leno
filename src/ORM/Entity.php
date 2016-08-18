@@ -574,9 +574,6 @@ class Entity implements \JsonSerializable, EntityInterface
 
     private function update()
     {
-        if ($this->fresh) {
-            return false;
-        }
         RowSelector::beginTransaction();
         try {
             if ($this->beforeUpdate() === false) {
