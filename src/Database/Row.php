@@ -583,7 +583,7 @@ abstract class Row
         $expr = $in[$item['expr']];
         if ($item['value'] instanceof self) {
             $selector = clone $item['value'];
-            $item['value'] = '('.$selector->getSql().')';
+            $item['value'] = $selector->getSql();
             $this->params += $selector->getParams();
         } elseif (is_array($item['value'])) {
             $item['value'] = implode(',', array_map(function($it) use ($item) {
