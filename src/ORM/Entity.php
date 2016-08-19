@@ -226,7 +226,7 @@ class Entity implements \JsonSerializable, EntityInterface
 
     /**
      * 魔术方法定义可以方便的使用set，get，add方法,该方法有一些性能开销，那么请直接使用
-     * set，get，add方法
+     * set，get，add, inc, dec方法
      *
      * ### example
      *

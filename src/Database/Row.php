@@ -575,24 +575,22 @@ abstract class Row
 
     private function exprIn($item)
     {
-        $in = [ 'in' => 'IN', 'not_in' => 'NOT IN', ];
+        $in = [ 'in' => 'IN', 'not_in' => 'NOT IN' ];
         if (!isset($in[$item['expr']])) {
             return;
         }
         $field = $this->getFieldExpr($item['field']);
         $expr = $in[$item['expr']];
         if ($item['value'] instanceof self) {
-            $value = $item['value']->getSql();
-            $this->params = array_merge($this->params, $item['value']->getParams());
+            $selector = clone $item['value'];
+            $item['value'] = '('.$selector->getSql().')';
+            $this->params += $selector->getParams();
         } elseif (is_array($item['value'])) {
-            $value = implode(',', array_map(function($it) use ($item) {
-                $param_idx = $this->setParam($item['field'], $it);
-                return $param_idx;
+            $item['value'] = implode(',', array_map(function($it) use ($item) {
+                return $this->setParam($item['field'], $it);
             }, $item['value']));
-        } else {
-            $value = $item['value'];
         }
-        return sprintf('%s %s (%s)', $field, $expr, $value);
+        return sprintf('%s %s (%s)', $field, $expr, $item['value']);
     }
 
     private function exprLike($item)
@@ -619,11 +617,15 @@ abstract class Row
         }
         if(!($item['value'] instanceof \Leno\Database\Expr)) {
             $item['value'] = $this->setParam($item['field'], $item['value']);
+        } elseif ($item['value'] instanceof self) {
+            $selector = clone $item['value'];
+            $item['value'] = '('.$selector->getSql().')';
+            $this->params += $selector->getParams();
         }
         return sprintf('%s %s %s',
-                $this->getFieldExpr($item['field']),
-                $expr[$item['expr']],
-                $item['value']
+            $this->getFieldExpr($item['field']),
+            $expr[$item['expr']],
+            $item['value']
         );
     }
 
