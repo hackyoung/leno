@@ -2,6 +2,10 @@
 namespace Leno\ORM;
 
 use \Leno\Database\Row\Selector as RowSelector;
+use \Leno\Database\Row\Deletor as RowDeletor;
+use \Leno\Database\Row\Updator as RowUpdator;
+use \Leno\Database\Row\Creator as RowCreator;
+
 use \Leno\Database\Adapter;
 use \Leno\ORM\Data;
 use \Leno\ORM\Mapper;
@@ -414,6 +418,24 @@ class Entity implements \JsonSerializable, EntityInterface
         return (new RowSelector($self::$table))->setEntityClass($self);
     }
 
+    public static function updator()
+    {
+        $self = get_called_class();
+        return new RowUpdator($self::$table);
+    }
+
+    public static function deletor()
+    {
+        $self = get_called_class();
+        return new RowDeletor($self::$table);
+    }
+
+    public static function creator()
+    {
+        $self = get_called_class();
+        return new RowCreator($self::$table);
+    }
+
     /**
      * 通过id值查找Entity
      *
@@ -566,7 +588,7 @@ class Entity implements \JsonSerializable, EntityInterface
             RowSelector::commitTransaction();
         } catch (\Exception $ex) {
             RowSelector::rollback();
-            $this->handleException($e);
+            $this->handleException($ex);
             return false;
         }
         return true;

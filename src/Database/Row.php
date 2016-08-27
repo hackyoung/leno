@@ -634,7 +634,6 @@ abstract class Row
      *
      * @param string|null sql 如果为null，则尝试生成sql
      *
-     * @return self
      */
     public function execute($sql = null)
     {
