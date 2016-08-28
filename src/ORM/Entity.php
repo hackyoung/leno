@@ -121,7 +121,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *      'unique_key_name' => [field_1, field_2],
      * ]
      */
-    public static $unique;
+    protected static $unique;
 
     /**
      * 外键定义，该键不是关联到具体的表，而是关联到Entity, 格式如下
@@ -170,14 +170,9 @@ class Entity implements \JsonSerializable, EntityInterface
      *      ]
      * ]
      */
-    public static $foreign;
+    protected static $foreign;
 
-    public static $foreign_by = [];
-
-    /**
-     * 索引定义
-     */
-    public static $index;
+    protected static $foreign_by = [];
 
     /**
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
@@ -202,8 +197,10 @@ class Entity implements \JsonSerializable, EntityInterface
         if(!isset($Entity::$primary)) {
             throw new PrimaryMissingException($Entity);
         }
-        $this->data = new Data($Entity::$attributes, $Entity::$primary);
-        $this->relation_ship = new RelationShip($Entity::$foreign, $this, $Entity::$foreign_by);
+        $this->data = new Data($Entity::getAttributes(), $Entity::$primary);
+        $this->relation_ship = new RelationShip(
+            $Entity::getForeign(), $this, $Entity::getForeignBy()
+        );
     }
 
     /**
@@ -219,7 +216,9 @@ class Entity implements \JsonSerializable, EntityInterface
             $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
             return;
         }
-        $this->relation_ship = new RelationShip($Entity::$foreign, $this, $Entity::$foreign_by);
+        $this->relation_ship = new RelationShip(
+            $Entity::getForeign(), $this, $Entity::getForeignBy()
+        );
     }
 
     public function cloneAll($all = true)
@@ -229,8 +228,8 @@ class Entity implements \JsonSerializable, EntityInterface
     }
 
     /**
-     * 魔术方法定义可以方便的使用set，get，add方法,该方法有一些性能开销，那么请直接使用
-     * set，get，add, inc, dec方法
+     * 魔术方法定义可以方便的使用set，get，add, inc, dec方法,该方法有一些性能开销，
+     * 那么请直接使用 set，get，add, inc, dec方法
      *
      * ### example
      *
@@ -393,12 +392,6 @@ class Entity implements \JsonSerializable, EntityInterface
         return $this->data->dirty();
     }
 
-    public function getAttrConfig($attr)
-    {
-        $self = get_called_class();
-        return $self::$attributes[$attr] ?? null;
-    }
-
     public function toArray() : array
     {
         return $this->data->toArray();
@@ -412,7 +405,7 @@ class Entity implements \JsonSerializable, EntityInterface
     /**
      * 返回一个绑定该Entity的selector
      */
-    public static function selector ()
+    public static function selector()
     {
         $self = get_called_class();
         return (new RowSelector($self::$table))->setEntityClass($self);
@@ -421,19 +414,19 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function updator()
     {
         $self = get_called_class();
-        return new RowUpdator($self::$table);
+        return new RowUpdator($self::$table)->setEntityClass($self);
     }
 
     public static function deletor()
     {
         $self = get_called_class();
-        return new RowDeletor($self::$table);
+        return new RowDeletor($self::$table)->setEntityClass($self);
     }
 
     public static function creator()
     {
         $self = get_called_class();
-        return new RowCreator($self::$table);
+        return new RowCreator($self::$table)->setEntityClass($self);
     }
 
     /**
@@ -466,6 +459,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *
      * 有时候我们需要关联其他表获取某些字段，我们允许将这些字段附带到这个entity上面
      * 这样我们能够获取到更多的灵活性
+     *
      * ###example
      *
      * ArticleEntity 拥有属性
@@ -495,10 +489,10 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         $self = get_called_class();
         $entity = new $self(false);
+        $attrs = $self::getAttributes();
         foreach($row as $field => $value) {
-            $attr = $self::$attributes[$field] ?? false;
-            if ($attr) {
-                $value = Type::get($attr['type'])->toPHP($value);
+            if ($attrs[$field] ?? false) {
+                $value = Type::get($attr[$field]['type'])->toPHP($value);
             }
             $entity->setForcely($field, $value, false);
         }
@@ -528,7 +522,8 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function getForeignKeyName($attr)
     {
         $self = get_called_class();
-        $table_name = $self::$foreign[$attr]['entity']::$table;
+        $foreigns = $self::getForeign();
+        $table_name = $foreigns[$attr]['entity']::$table;
         return $self::$table . '_' . $attr . '_' . $table_name . '_fk';
     }
 
@@ -536,28 +531,55 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         $self = get_called_class();
         logger()->err((string)$e);
-        if ($e instanceof \PDOException) {
-            $cks = $this->getKeyToConstraint();
-            foreach ($cks as $key => $field) {
-                if (strpos($key, $e->getMessage()) == -1) {
-                    continue;
-                }
-                if ($field['type'] == 'unique') {
-                    throw new UniqueException($self, $field['name']);
-                }
-                if ($field['type'] == 'foreign') {
-                    throw new ForeignException($self, $field['name']);
-                }
+        if (!($e instanceof \PDOException)) {
+            throw $e;
+        }
+        $cks = $this->getKeyToConstraint();
+        foreach ($cks as $key => $field) {
+            if (strpos($key, $e->getMessage()) == -1) {
+                continue;
+            }
+            if ($field['type'] == 'unique') {
+                throw new UniqueException($self, $field['name']);
+            }
+            if ($field['type'] == 'foreign') {
+                throw new ForeignException($self, $field['name']);
             }
         }
-        throw $e;
+    }
+
+    /**
+     * 以方法的形式获取属性，让子类可以重写这个方法
+     */
+    public static function getAttributes()
+    {
+        $self = get_called_class();
+        return $self::$attributes ?? null;
+    }
+
+    public static function getUnique()
+    {
+        $self = get_called_class();
+        return $self::$unique ?? null;
+    }
+
+    public static function getForeign()
+    {
+        $self = get_called_class();
+        return $self::$foreign ?? null;
+    }
+
+    public static function getForeignBy()
+    {
+        $self = get_called_class();
+        return $self::$foreign_by ?? null;
     }
 
     private function getKeyToConstraint()
     {
         $self = get_called_class();
-        $unique = $self::$unique ?? [];
-        $foreign = $self::$foreign ?? [];
+        $unique = $self::getUnique() ?? [];
+        $foreign = $self::getForeign() ?? [];
         $ret = [];
         foreach ($unique as $name => $field) {
             $ret[$name . '_' . $self::$table . '_uk'] = [
@@ -575,19 +597,19 @@ class Entity implements \JsonSerializable, EntityInterface
         if (!$this->fresh) {
             return;
         }
-        RowSelector::beginTransaction();
+        RowCreator::beginTransaction();
         try {
             if ($this->beforeInsert() === false) {
-                RowSelector::rollback();
+                RowCreator::rollback();
                 return false;
             }
             $this->relation_ship->save();
             $Entity = get_called_class();
             (new Mapper())->selectTable($Entity::$table)->insert($this->data);
             $this->relation_ship->saveBridge();
-            RowSelector::commitTransaction();
+            RowCreator::commitTransaction();
         } catch (\Exception $ex) {
-            RowSelector::rollback();
+            RowCreator::rollback();
             $this->handleException($ex);
             return false;
         }
@@ -596,19 +618,19 @@ class Entity implements \JsonSerializable, EntityInterface
 
     private function update()
     {
-        RowSelector::beginTransaction();
+        RowUpdator::beginTransaction();
         try {
             if ($this->beforeUpdate() === false) {
-                RowSelector::rollback();
+                RowUpdator::rollback();
                 return false;
             }
             $this->relation_ship->save();
             $Entity = get_called_class();
             (new Mapper())->selectTable($Entity::$table)->update($this->data);
             $this->relation_ship->saveBridge();
-            RowSelector::commitTransaction();
+            RowUpdator::commitTransaction();
         } catch (\Exception $ex) {
-            RowSelector::rollback();
+            RowUpdator::rollback();
             $this->handleException($e);
             return false;
         }

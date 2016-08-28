@@ -249,7 +249,7 @@ class Selector extends Row
     {
         $Entity = $this->entityClass;
         if ($Entity) {
-            $attrs = $Entity::$attributes;
+            $attrs = $Entity::getAttributes();
             foreach($attrs as $field => $attr) {
                 $this->field($field);
             }

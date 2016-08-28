@@ -58,13 +58,14 @@ class Build extends \Leno\Shell
             $this->info('同步Entity:<keyword>'.$entity_name.'</keyword>');
             $table_name = $re->getStaticPropertyValue('table');
             $table = new Table($table_name);
-            foreach($re->getStaticPropertyValue('attributes') as $field => $info) {
+            $attrs = $re->getMethod('getAttributes')->invoke();
+            foreach($attrs as $field => $info) {
                 $attr = $info;
                 $attr['type'] = Type::get($info['type'])->setExtra($info['extra'] ?? [])->toDbType();
                 $table->setField($field, $attr);
             }
             $table->setPrimaryKey($re->getStaticPropertyValue('primary'));
-            $unique = $re->getStaticPropertyValue('unique');
+            $unique = $re->getMethod('getUnique')->invoke(null);
             if (is_array($unique)) {
                 $the_unique = [];
                 foreach ($unique as $key => $config) {
@@ -80,7 +81,7 @@ class Build extends \Leno\Shell
     {
         $this->info('----------------------开始同步外键-----------------------------');
         foreach ($entities as $entity_name=>$re) {
-            $foreign = $re->getStaticPropertyValue('foreign');
+            $foreign = $re->getMethod('getForeign')->invoke(null);
             $table = $re->getStaticPropertyValue('table');
             if (is_array($foreign)) {
                 (new Foreign($table, $this->normalizeForeign($foreign, $entity_name)))->save();
@@ -120,7 +121,7 @@ class Build extends \Leno\Shell
                 }
                 $re = new \ReflectionClass($className);
                 $table = $re->hasProperty('table') && ($re->getStaticPropertyValue('table') ?? null);
-                $attr = $re->hasProperty('attributes') && ($re->getStaticPropertyValue('attributes') ?? null);
+                $attr = $re->getMethod('getAttributes')->invoke(null);
                 if(!$table || !$attr) {
                     continue;
                 }
