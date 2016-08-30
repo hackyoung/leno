@@ -99,7 +99,7 @@ abstract class Type implements TypeCheckInterface
     {
         $type = self::$types[self::$adapter][$idx] ?? self::$types[$idx] ?? null;
         if($type == null) {
-            throw new TypeMissingException($idx);
+            throw new TypeMissingException($idx, $idx);
         }
         return new $type;
     }

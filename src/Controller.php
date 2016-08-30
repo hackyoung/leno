@@ -1,8 +1,6 @@
 <?php
 namespace Leno;
 
-use \Leno\View;
-use \Leno\View\Template;
 use \Leno\Type;
 use \Leno\Exception\MethodNotFoundException;
 
@@ -12,9 +10,9 @@ abstract class Controller
 
     protected $response;
     
-    protected $view_dir = ROOT . '/View';
-
     protected $title = 'leno';
+
+    protected $view_class = "\\Leno\\View";
 
     protected $keywords = '';
 
@@ -86,18 +84,19 @@ abstract class Controller
      */
     protected function render($view, $data=[])
     {
-        $this->beforeRender();
-        !isset($data['__head__']) && $data['__head__'] = [];
-        $head = &$data['__head__'];
+        $view = new $this->view_class($view);
+        $this->beforeRender($view);
+        $head = [];
         !empty($this->title) && $head['title'] = $this->title;
         !empty($this->description) && $head['description'] = $this->description;
         !empty($this->keywords) && $head['keywords'] = $this->keywords;
         !empty($this->js) && $head['js'] = $this->js;
         !empty($this->css) && $head['css'] = $this->css;
+        $view->set('__head__', $head);
         foreach($this->data as $k=>$d) {
-            $data[$k] = $d;
+            $view->set($k, $d);
         }
-        (new View($view, $data))->render();
+        $view->render();
     }
 
     /**
