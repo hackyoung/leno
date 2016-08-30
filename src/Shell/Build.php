@@ -56,7 +56,7 @@ class Build extends \Leno\Shell
         $this->info('---------------------开始同步表结构----------------------------');
         foreach ($entities as $entity_name => $re) {
             $this->info('同步Entity:<keyword>'.$entity_name.'</keyword>');
-            $table_name = $re->getStaticPropertyValue('table');
+            $table_name = $re->getMethod('getTableName')->invoke();
             $table = new Table($table_name);
             $attrs = $re->getMethod('getAttributes')->invoke();
             foreach($attrs as $field => $info) {
@@ -81,8 +81,8 @@ class Build extends \Leno\Shell
     {
         $this->info('----------------------开始同步外键-----------------------------');
         foreach ($entities as $entity_name=>$re) {
-            $foreign = $re->getMethod('getForeign')->invoke(null);
-            $table = $re->getStaticPropertyValue('table');
+            $foreign = $re->getMethod('getForeign')->invoke();
+            $table = $re->getMethod('getTableName')->invoke();
             if (is_array($foreign)) {
                 (new Foreign($table, $this->normalizeForeign($foreign, $entity_name)))->save();
                 $this->info('为<keyword>'.$entity_name.'</keyword>创建外键');
@@ -120,8 +120,8 @@ class Build extends \Leno\Shell
                     continue;
                 }
                 $re = new \ReflectionClass($className);
-                $table = $re->hasProperty('table') && ($re->getStaticPropertyValue('table') ?? null);
-                $attr = $re->getMethod('getAttributes')->invoke(null);
+                $table = $re->getMethod('getTableName')->invoke();
+                $attr = $re->getMethod('getAttributes')->invoke();
                 if(!$table || !$attr) {
                     continue;
                 }
@@ -138,9 +138,8 @@ class Build extends \Leno\Shell
             if (isset($config['bridge']) || ($config['is_array'] ?? false)) {
                 continue;
             }
-            $table = $config['entity']::$table;
+            $table = $config['entity']::getTableName();
             $relation_foreign = $config['foreign_key'];
-            //$the_key = $table_name . '_' . $key.'_'.$table.'_fk';
             $the_key = $entity_class::getForeignKeyName($key);
             $the_foreign[$the_key] = [
                 'foreign_table' => $table,

@@ -92,9 +92,14 @@ use \Leno\Exception\MethodNotFoundException;
 class Entity implements \JsonSerializable, EntityInterface
 {
     /**
+     * 主键定义, 仅支持单主键 比如 user_id
+     */
+    public static $primary;
+
+    /**
      * 表名, 标识该Entity对应存储的哪一张表
      */
-    public static $table;
+    protected static $table;
 
     /**
      * 表属性定义, 该属性应该完整的定义表属性结构及类型约束
@@ -108,12 +113,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *      ]
      * ]
      */
-    public static $attributes = [];
-
-    /**
-     * 主键定义, 仅支持单主键 比如 user_id
-     */
-    public static $primary;
+    protected static $attributes = [];
 
     /**
      * 唯一键定义，其格式如下
@@ -292,7 +292,7 @@ class Entity implements \JsonSerializable, EntityInterface
             return false;
         }
         $Entity = get_called_class();
-        $mapper = (new Mapper())->selectTable($Entity::$table);
+        $mapper = (new Mapper())->selectTable($Entity::getTableName());
         return $mapper->remove($this->data);
     }
 
@@ -408,25 +408,25 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function selector()
     {
         $self = get_called_class();
-        return (new RowSelector($self::$table))->setEntityClass($self);
+        return (new RowSelector($self::getTableName()))->setEntityClass($self);
     }
 
     public static function updator()
     {
         $self = get_called_class();
-        return new RowUpdator($self::$table)->setEntityClass($self);
+        return (new RowUpdator($self::getTableName()))->setEntityClass($self);
     }
 
     public static function deletor()
     {
         $self = get_called_class();
-        return new RowDeletor($self::$table)->setEntityClass($self);
+        return (new RowDeletor($self::getTableName()))->setEntityClass($self);
     }
 
     public static function creator()
     {
         $self = get_called_class();
-        return new RowCreator($self::$table)->setEntityClass($self);
+        return (new RowCreator($self::getTableName()))->setEntityClass($self);
     }
 
     /**
@@ -438,11 +438,11 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         $self = get_called_class();
         $entity_pool = EntityPool::instance();
-        $cache_key = $entity_pool->getKey($self::$table, $id);
+        $cache_key = $entity_pool->getKey($self::getTableName(), $id);
         if ($entity_pool->is($cache_key)) {
             return $entity_pool->get($cache_key);
         }
-        $entity = (new Mapper)->selectTable($self::$table)->find([
+        $entity = (new Mapper)->selectTable($self::getTableName())->find([
             $self::$primary => $id
         ], $self);
         if ($entity) {
@@ -497,7 +497,7 @@ class Entity implements \JsonSerializable, EntityInterface
             $entity->setForcely($field, $value, false);
         }
         $entity_pool = EntityPool::instance();
-        $key = $entity_pool->getKey($self::$table, $entity->id());
+        $key = $entity_pool->getKey($self::getTableName(), $entity->id());
         $entity_pool->set($key, $entity);
         return $entity;
     }
@@ -523,7 +523,7 @@ class Entity implements \JsonSerializable, EntityInterface
     {
         $self = get_called_class();
         $foreigns = $self::getForeign();
-        $table_name = $foreigns[$attr]['entity']::$table;
+        $table_name = $foreigns[$attr]['entity']::getTableName();
         return $self::$table . '_' . $attr . '_' . $table_name . '_fk';
     }
 
@@ -557,6 +557,12 @@ class Entity implements \JsonSerializable, EntityInterface
         return $self::$attributes ?? null;
     }
 
+    public static function getTableName()
+    {
+        $self = get_called_class();
+        return $self::$table ?? null;
+    }
+
     public static function getUnique()
     {
         $self = get_called_class();
@@ -582,7 +588,7 @@ class Entity implements \JsonSerializable, EntityInterface
         $foreign = $self::getForeign() ?? [];
         $ret = [];
         foreach ($unique as $name => $field) {
-            $ret[$name . '_' . $self::$table . '_uk'] = [
+            $ret[$name . '_' . $self::getTableName() . '_uk'] = [
                 'type' => 'unique', 'name' => $field
             ];
         }
@@ -605,7 +611,7 @@ class Entity implements \JsonSerializable, EntityInterface
             }
             $this->relation_ship->save();
             $Entity = get_called_class();
-            (new Mapper())->selectTable($Entity::$table)->insert($this->data);
+            (new Mapper())->selectTable($Entity::getTableName())->insert($this->data);
             $this->relation_ship->saveBridge();
             RowCreator::commitTransaction();
         } catch (\Exception $ex) {
@@ -626,7 +632,7 @@ class Entity implements \JsonSerializable, EntityInterface
             }
             $this->relation_ship->save();
             $Entity = get_called_class();
-            (new Mapper())->selectTable($Entity::$table)->update($this->data);
+            (new Mapper())->selectTable($Entity::getTableName())->update($this->data);
             $this->relation_ship->saveBridge();
             RowUpdator::commitTransaction();
         } catch (\Exception $ex) {

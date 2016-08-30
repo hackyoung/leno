@@ -282,7 +282,7 @@ class Selector extends Row
     {
         $Entity = $this->entityClass;
         if($Entity) {
-            $field = $this->quote($Entity::$table.'.'.$Entity::$primary);
+            $field = $this->quote($Entity::getTableName().'.'.$Entity::$primary);
         } else {
             $field = '*';
         }
