@@ -56,9 +56,9 @@ class Build extends \Leno\Shell
         $this->info('---------------------开始同步表结构----------------------------');
         foreach ($entities as $entity_name => $re) {
             $this->info('同步Entity:<keyword>'.$entity_name.'</keyword>');
-            $table_name = $re->getMethod('getTableName')->invoke();
+            $table_name = $re->getMethod('getTableName')->invoke(null);
             $table = new Table($table_name);
-            $attrs = $re->getMethod('getAttributes')->invoke();
+            $attrs = $re->getMethod('getAttributes')->invoke(null);
             foreach($attrs as $field => $info) {
                 $attr = $info;
                 $attr['type'] = Type::get($info['type'])->setExtra($info['extra'] ?? [])->toDbType();
@@ -81,8 +81,8 @@ class Build extends \Leno\Shell
     {
         $this->info('----------------------开始同步外键-----------------------------');
         foreach ($entities as $entity_name=>$re) {
-            $foreign = $re->getMethod('getForeign')->invoke();
-            $table = $re->getMethod('getTableName')->invoke();
+            $foreign = $re->getMethod('getForeign')->invoke(null);
+            $table = $re->getMethod('getTableName')->invoke(null);
             if (is_array($foreign)) {
                 (new Foreign($table, $this->normalizeForeign($foreign, $entity_name)))->save();
                 $this->info('为<keyword>'.$entity_name.'</keyword>创建外键');
@@ -120,12 +120,14 @@ class Build extends \Leno\Shell
                     continue;
                 }
                 $re = new \ReflectionClass($className);
-                $table = $re->getMethod('getTableName')->invoke();
-                $attr = $re->getMethod('getAttributes')->invoke();
-                if(!$table || !$attr) {
+                $re->hasMethod('getTableName') && $table = $re->getMethod('getTableName')->invoke(null);
+                $re->hasMethod('getAttributes') && $attr = $re->getMethod('getAttributes')->invoke(null);
+                if(!($table ?? false) || !($attr ?? false)) {
                     continue;
                 }
                 $this->entities[$className] = $re;
+                $table = null;
+                $attr = null;
             }
         }
         return $this->entities;
