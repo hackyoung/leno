@@ -181,7 +181,7 @@ abstract class Controller
         return \Leno\Service::getService($name, $args);
     }
 
-    protected function beforeRender()
+    protected function beforeRender(&$view)
     {
     }
 

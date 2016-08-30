@@ -267,7 +267,8 @@ class RelationShip
 
     private function getBy ($ferc, $attr, $callback = null)
     {
-        $foreign = $ferc->getStaticPropertyValue('foreign');
+        $foreign = [];
+        $ferc->hasMethod('foreign') && $foreign = $ferc->getMethod('getForeign')->invoke(null);
         $config = $foreign[$attr] ?? false;
         if (!$config) {
             throw new \Leno\Exception ($attr.'\'s config not found');

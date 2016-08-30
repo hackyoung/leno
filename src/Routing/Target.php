@@ -90,6 +90,7 @@ class Target extends \ReflectionClass
                 ->setMethod($action)
                 ->setParameters($parameters);
         } catch(\Exception $ex) {
+            logger()->error((string)$ex);
             throw new \Leno\Http\Exception(404);
         }
     }

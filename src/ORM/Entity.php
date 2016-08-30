@@ -492,7 +492,7 @@ class Entity implements \JsonSerializable, EntityInterface
         $attrs = $self::getAttributes();
         foreach($row as $field => $value) {
             if ($attrs[$field] ?? false) {
-                $value = Type::get($attr[$field]['type'])->toPHP($value);
+                $value = Type::get($attrs[$field]['type'])->toPHP($value);
             }
             $entity->setForcely($field, $value, false);
         }
