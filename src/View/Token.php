@@ -24,7 +24,7 @@ abstract class Token
     protected function attrValue($name, $line) 
     {
         preg_match(
-            '/\s+'.$name.'\=[\'\"].{1,}[\'\"]/U',
+            '/\s+'.$name.'\=\".{0,}\"/U',
             $line, $attrarr
         );
         if(!isset($attrarr[0])) {

@@ -228,7 +228,7 @@ abstract class Row
         $Entity = \baseClass($this->entityClass);
         if ($this->entityClass && $value instanceof $Entity) {
             $reflection_entity = new \ReflectionClass($this->entityClass);
-            $foreign = $reflection_entity->getStaticPropertyValue('foreign');
+            $foreign = $reflection_entity->getMethod('getForeign')->invoke(null);
             if (!isset($foreign[$field])) {
                 throw new \Leno\Exception ('Can\'t filter by entity without foreign setting');
             }

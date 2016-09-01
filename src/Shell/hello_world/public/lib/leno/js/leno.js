@@ -764,7 +764,7 @@ var leno = leno || {};
         }
         var screenHeight = parseInt($(window).height());
         var begin = parseInt($(window).scrollTop());
-        var    end = y - relate;
+        var end = y - relate;
         var path = end-begin;
         var max = path*2/timeout - 1;
         var step = (max-1)/(timeout - 1);
