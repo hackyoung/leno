@@ -53,9 +53,6 @@ class Data implements DataInterface
     {
         $this->config = $config;
         $this->primary = $primary;
-        if ($this->config[$primary]['type'] == 'uuid') {
-            $this->set($primary, uuid());
-        }
         foreach ($this->config as $field => $attr) {
             if (($attr['default'] ?? null) === null) {
                 continue;
@@ -66,9 +63,6 @@ class Data implements DataInterface
 
     public function __clone()
     {
-        if ($this->config[$this->primary]['type'] == 'uuid') {
-            $this->set($this->primary, uuid());
-        }
         $this->setAllDirty();
     }
 

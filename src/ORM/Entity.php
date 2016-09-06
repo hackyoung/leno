@@ -198,19 +198,22 @@ class Entity implements \JsonSerializable, EntityInterface
             throw new PrimaryMissingException($Entity);
         }
         $this->data = new Data($Entity::getAttributes(), $Entity::$primary);
+        $this->data->set($Entity::$primary, $Entity::createPrimaryValue());
         $this->relation_ship = new RelationShip(
             $Entity::getForeign(), $this, $Entity::getForeignBy()
         );
     }
 
     /**
-     * clone一个Entity会将其关系，数据都复制成另一个Entity对象.注意，如果clone_relation_ship为true，则关系也会被复制一份出来，如果在clone之前其已经有 Entity关系存在，如果对clone出来的Entity进行save，那么这 些关系也会save进数据库，慎行
+     * clone一个Entity会将其关系，数据都复制成另一个Entity对象.注意，如果clone_relation_ship为true，则关系也会被复制一份出来，
+     * 如果在clone之前其已经有Entity关系存在，如果对clone出来的Entity进行save，那么这些关系也会save进数据库，慎行
      */
     public function __clone()
     {
         $this->fresh = true;
         $Entity = get_called_class();
         $this->data = clone $this->data;
+        $this->data->set($Entity::$primary, $Entity::createPrimaryValue());
         if ($this->clone_relation_ship) {
             $this->clone_relation_ship = false;
             $this->relation_ship = (clone $this->relation_ship)->setPrimaryEntity($this);
@@ -546,6 +549,14 @@ class Entity implements \JsonSerializable, EntityInterface
                 throw new ForeignException($self, $field['name']);
             }
         }
+    }
+
+    /**
+     * 创建主键值
+     */
+    public static function createPrimaryValue()
+    {
+        return uuid();
     }
 
     /**
