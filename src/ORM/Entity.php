@@ -354,11 +354,20 @@ class Entity implements \JsonSerializable, EntityInterface
     }
 
     /**
+     * 设置多个属性
+     */
+    public function setMulti(array $multiple) : EntityInterface
+    {
+        array_walk($multiple, function($value, $attr) {
+            $this->set($attr, $value);
+        });
+        return $this;
+    }
+    /**
      * 有两种类型的属性值可以通过add方法添加
      *
      *  1. 属性的类型为array类型的
      *  2. value为Entity类型，且与this是一对多关系
-     *
      */
     public function add (string $attr, $value) : EntityInterface
     {
