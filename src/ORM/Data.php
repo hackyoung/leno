@@ -192,4 +192,9 @@ class Data implements DataInterface
     {
         return isset($this->config[$attr]);
     }
+
+    public function getAttrConfig()
+    {
+        return $this->config;
+    }
 }

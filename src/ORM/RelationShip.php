@@ -121,6 +121,16 @@ class RelationShip
         $this->foreign_by = $foreign_by;
     }
 
+    public function getForeignConfig()
+    {
+        return $this->config;
+    }
+
+    public function getForeignByConfig()
+    {
+        return $this->foreign_by;
+    }
+
     /**
      * 通过primary_entity和配置查找secondary_entities
      *

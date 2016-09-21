@@ -358,7 +358,15 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function setMulti(array $multiple) : EntityInterface
     {
-        array_walk($multiple, function($value, $attr) {
+        $valid = array_merge(
+            array_keys($this->relation_ship->getForeignConfig()),
+            array_keys($this->relation_ship->getForeignByConfig()),
+            array_keys($this->data->getAttrConfig()
+        );
+        array_walk($multiple, function($value, $attr) use ($valid) {
+            if (!in_array($attr, $valid)) {
+                return;
+            }
             $this->set($attr, $value);
         });
         return $this;
