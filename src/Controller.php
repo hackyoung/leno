@@ -105,19 +105,20 @@ abstract class Controller
     protected function input($key, $rule=null, $message = null)
     {
         $source = $this->getInputSource();
-        if(!empty($rule)) {
-            $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
-            if(isset($rule['required'])) {
-                $type->setRequired($rule['required']);
-            }
-            if(isset($rule['allow_empty'])) {
-                $type->setAllowEmpty($rule['allow_empty']);
-            }
-            try {
-                $type->check($source[$key] ?? null);
-            } catch(\Exception $e) {
-                throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
-            }
+        if(empty($rule)) {
+            return $source[$key] ?? null;
+        }
+        $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
+        if(isset($rule['required'])) {
+            $type->setRequired($rule['required']);
+        }
+        if(isset($rule['allow_empty'])) {
+            $type->setAllowEmpty($rule['allow_empty']);
+        }
+        try {
+            $type->check($source[$key] ?? null);
+        } catch(\Exception $e) {
+            throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
         }
         return $source[$key] ?? null;
     }
@@ -131,9 +132,12 @@ abstract class Controller
      *      'password'=> ['type' => 'password'] // 通过规则检查其可用性
      * ];
      */
-    protected function inputs($rules)
+    protected function inputs($rules = null)
     {
         $source = $this->getInputSource();
+        if ($rules === null) {
+            return $source;
+        }
         $ret = [];
         foreach($rules as $k=>$rule) {
             if(is_int($k)) {
