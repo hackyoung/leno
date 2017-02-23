@@ -6,6 +6,12 @@ use \Leno\Exception\MethodNotFoundException;
 
 abstract class Controller
 {
+    const RENDER_HTML = 'html';
+
+    const RENDER_JSON = 'json';
+
+    const RENDER_XML = 'xml';
+
     protected $request;
 
     protected $response;
@@ -23,6 +29,8 @@ abstract class Controller
     protected $css = [];
 
     protected $data = [];
+
+    protected $render_type = self::RENDER_HTML;
 
     public function __construct($request, $response)
     {
@@ -79,10 +87,23 @@ abstract class Controller
         return $this;
     }
 
+    protected function render($view, $data=[])
+    {
+        $this->data = array_merge($this->data, $data);
+        switch ($this->render_type) {
+            case self::RENDER_HTML:
+                return $this->renderHtml($view);
+            case self::RENDER_JSON:
+                return $this->renderJson();
+            case self::RENDER_XML:
+                return $this->renderXml();
+        }
+    }
+
     /**
      * 呈现一个HTML页面
      */
-    protected function render($view, $data=[])
+    protected function renderHtml($view)
     {
         $view = new $this->view_class($view);
         $this->beforeRender($view);
@@ -93,10 +114,23 @@ abstract class Controller
         !empty($this->js) && $head['js'] = $this->js;
         !empty($this->css) && $head['css'] = $this->css;
         $view->set('__head__', $head);
-        foreach($this->data as $k=>$d) {
+        foreach ($this->data as $k=>$d) {
             $view->set($k, $d);
         }
         $view->render();
+    }
+
+    protected function renderJson()
+    {
+        if ($this->data) {
+            return json_encode($this->data);
+        }
+
+        return '[]';
+    }
+
+    protected function renderXml()
+    {
     }
 
     /**
@@ -105,20 +139,20 @@ abstract class Controller
     protected function input($key, $rule=null, $message = null)
     {
         $source = $this->getInputSource();
-        if(empty($rule)) {
+        if (empty($rule)) {
             return $source[$key] ?? null;
         }
         $type = Type::get($rule['type'])->setExtra($rule['extra'] ?? []);
-        if(isset($rule['required'])) {
+        if (isset($rule['required'])) {
             $type->setRequired($rule['required']);
         }
-        if(isset($rule['allow_empty'])) {
+        if (isset($rule['allow_empty'])) {
             $type->setAllowEmpty($rule['allow_empty']);
         }
         try {
             $type->check($source[$key] ?? null);
-        } catch(\Exception $e) {
-            throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());   
+        } catch (\Exception $e) {
+            throw new \Leno\Http\Exception(400, $message ?? $e->getMessage());
         }
         return $source[$key] ?? null;
     }
@@ -139,22 +173,22 @@ abstract class Controller
             return $source;
         }
         $ret = [];
-        foreach($rules as $k=>$rule) {
-            if(is_int($k)) {
+        foreach ($rules as $k=>$rule) {
+            if (is_int($k)) {
                 $ret[$rule] = $source[$rule] ?? null;
                 continue;
             }
             $type = Type::get($rule['type'])->setValueName($k)
                 ->setExtra($rule['extra'] ?? []);
-            if(isset($rule['required'])) {
+            if (isset($rule['required'])) {
                 $type->setRequired($rule['required']);
             }
-            if(isset($rule['allow_empty'])) {
+            if (isset($rule['allow_empty'])) {
                 $type->setAllowEmpty($rule['allow_empty']);
             }
             try {
                 $type->check($source[$k]);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $message = $rule['message'] ?? $e->getMessage();
                 throw new \Leno\Http\Exception(400, $message);
             }

@@ -41,6 +41,7 @@ abstract class Adapter implements AdapterInterface
     public function beginTransaction() : bool
     {
         if (!$this->transaction_counter++) {
+            logger()->err('hello');
             return $this->driver()->beginTransaction();
         }
         $this->execute('SAVEPOINT trans'.$this->transaction_counter);
