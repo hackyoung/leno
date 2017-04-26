@@ -33,13 +33,13 @@ class Target extends \ReflectionClass
 
     public function invoke($method = null, $instance=null)
     {
-        if($method == null) {
+        if ($method == null) {
             $method = $this->method;
         }
-        if($instance == null) {
+        if ($instance == null) {
             $instance = $this->getInstance();
         }
-        if(!$this->hasMethod($method)) {
+        if (!$this->hasMethod($method)) {
             throw new \Leno\Http\Exception(404);
         }
         return $this->getMethod($method)->invokeArgs(
@@ -49,7 +49,7 @@ class Target extends \ReflectionClass
 
     public function getInstance()
     {
-        if(!$this->the_instance) {
+        if (!$this->the_instance) {
             $this->the_instance = $this->newInstanceArgs($this->constructParameters);
         }
         return $this->the_instance;
@@ -59,8 +59,8 @@ class Target extends \ReflectionClass
     {
         $mode = $router->getMode();
         $parameters = [];
-        $path = preg_replace_callback('/\/\${.*}/U', 
-        function($matches) use (&$parameters) {
+        $path = preg_replace_callback('/\/\${.*}/U',
+        function ($matches) use (&$parameters) {
             $parameters[] = preg_replace('/\/|\$|\{|\}/', '', $matches[0]);
             return '';
         }, $router->getPath());
@@ -68,19 +68,19 @@ class Target extends \ReflectionClass
             explode('/', $router->getBase()),
             explode('/', $path)
         );
-        $path = array_filter(array_map(function($p) {
+        $path = array_filter(array_map(function ($p) {
             return \camelCase($p, true, '-');
         }, $patharr));
-        if($mode === Router::MOD_RESTFUL) {
+        if ($mode === Router::MOD_RESTFUL) {
             $request = $router->getRequest();
             $method = strtoupper($_POST['_method'] ?? $request->getMethod());
             $action = $router->getActionOfRestful($method);
-            if($action === null) {
+            if ($action === null) {
                 throw new \Leno\Http\Exception(501);
             }
         } else {
-            $action = preg_replace_callback('/^[A-Z]/', function($matches) {
-                if(isset($matches[0])) {
+            $action = preg_replace_callback('/^[A-Z]/', function ($matches) {
+                if (isset($matches[0])) {
                     return strtolower($matches[0]);
                 }
             }, preg_replace('/\..*$/', '', array_pop($path)));
@@ -89,7 +89,7 @@ class Target extends \ReflectionClass
             return (new self(implode('\\', $path)))
                 ->setMethod($action)
                 ->setParameters($parameters);
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             throw new \Leno\Http\Exception(404);
         }
     }
