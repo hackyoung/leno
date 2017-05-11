@@ -10,17 +10,17 @@ class BlobType extends \Leno\Type implements TypeStorageInterface
         return $value === $value;
     }
 
-    protected function toDbType() : string
+    public function toDbType() : string
     {
         return 'BLOB';
     }
 
-    protected function toPHP($value)
+    public function toPHP($value)
     {
         return $value;
     }
 
-    protected function toDB($value)
+    public function toDB($value)
     {
         return $value;
     }
