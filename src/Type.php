@@ -12,14 +12,15 @@ abstract class Type implements TypeCheckInterface
 
     protected static $types = [
         'mysql' => [
-            'array' => '\\Leno\\Type\\Mysql\\ArrayType', 
+            'array' => '\\Leno\\Type\\Mysql\\ArrayType',
             'datetime' => '\\Leno\\Type\\Mysql\\DatetimeType',
             'uuid' => '\\Leno\\Type\\Mysql\\UuidType',
             'int' => '\\Leno\\Type\\Mysql\\IntegerType',
             'integer' => '\\Leno\\Type\\Mysql\\IntegerType',
             'number' => '\\Leno\\Type\\Mysql\\NumberType',
             'bool' => '\\Leno\\Type\\Mysql\\BoolType',
-            'boolean' => '\\Leno\\Type\\Mysql\\BoolType'
+            'boolean' => '\\Leno\\Type\\Mysql\\BoolType',
+            'blob' => '\\Leno\\Type\Mysql\\BlobType'
         ],
         'pgsql' => [
             'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
@@ -56,14 +57,14 @@ abstract class Type implements TypeCheckInterface
 
     public function check($val) : bool
     {
-        if($val === null) {
-            if($this->required) {
+        if ($val === null) {
+            if ($this->required) {
                 throw new ValueRequiredException($this->value_name, $val);
             }
             return false;
         }
-        if(($val === '' || $val === [])) {
-            if(!$this->allow_empty) {
+        if (($val === '' || $val === [])) {
+            if (!$this->allow_empty) {
                 throw new ValueNotAllowEmptyException($this->value_name, $val);
             }
             return false;
@@ -98,7 +99,7 @@ abstract class Type implements TypeCheckInterface
     public static function get($idx)
     {
         $type = self::$types[self::$adapter][$idx] ?? self::$types[$idx] ?? null;
-        if($type == null) {
+        if ($type == null) {
             throw new TypeMissingException($idx, $idx);
         }
         return new $type;
@@ -106,7 +107,7 @@ abstract class Type implements TypeCheckInterface
 
     public static function register($type, $class, $adapter = null)
     {
-        if($adapter !== null) {
+        if ($adapter !== null) {
             self::$types[$adapter][$type] = $class;
         }
         self::$types[$type] = $class;
