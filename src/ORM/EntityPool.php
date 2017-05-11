@@ -9,9 +9,13 @@ class EntityPool
 
     private $entities = [];
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
-    private function __clone() {}
+    private function __clone()
+    {
+    }
 
     public function set(string $key, Entity &$entity)
     {
@@ -31,6 +35,9 @@ class EntityPool
 
     public function getKey($table_name, $primary_key)
     {
+        if (is_array($primary_key)) {
+            $primary_key = implode('', $primary_key);
+        }
         return $table_name . '-' . $primary_key;
     }
 }

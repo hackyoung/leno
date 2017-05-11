@@ -7,6 +7,7 @@ use \Leno\Database\Row\Updator as RowUpdator;
 use \Leno\Database\Row\Deletor as RowDeletor;
 use \Leno\Database\Row\Selector as RowSelector;
 use \Leno\Database\Expr;
+
 /*
     CREATE TABLE user_test (
         id CHAR(36) NOT NULL,
@@ -22,6 +23,30 @@ use \Leno\Database\Expr;
     );
 
  */
+class TestTable extends \Leno\ORM\Entity
+{
+    protected static $table = 'test_table';
+
+    public static $primary = 'ids';
+
+    protected static $attributes = [
+        'ids' => ['type' => 'array']
+    ];
+}
+
+// $test_table = new TestTable;
+// $test_table->addIds('1')
+//     ->addIds('2')
+//     ->addIds('3')
+//     ->save();
+// $test_table = new TestTable;
+// $test_table->setIds(['4', '5'])
+//     ->save();
+$result = TestTable::selector()
+    ->byIdsNotInclude('3')
+    ->find();
+
+var_dump($result);
 /*
 (new RowCreator('user_test'))
       ->setId(uuid())
@@ -52,12 +77,12 @@ $ret = (new RowSelector('user_test'))->field([
     'id'
 ])->execute()->fetchAll();
  */
-$ret = (new RowSelector('user_test'))
-    ->fieldName('user_name')
-    ->fieldAge('user_age')
-    ->fieldId()
-    ->byExpr(new Expr('id = hello'))
-    ->execute()->fetchAll();
+// $ret = (new RowSelector('user_test'))
+//     ->fieldName('user_name')
+//     ->fieldAge('user_age')
+//     ->fieldId()
+//     ->byExpr(new Expr('id = hello'))
+//     ->execute()->fetchAll();
 /*
 $ret = (new RowSelector('user_test'))
     ->field('name', 'user_name')
