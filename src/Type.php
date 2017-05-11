@@ -20,7 +20,8 @@ abstract class Type implements TypeCheckInterface
             'number' => '\\Leno\\Type\\Mysql\\NumberType',
             'bool' => '\\Leno\\Type\\Mysql\\BoolType',
             'boolean' => '\\Leno\\Type\\Mysql\\BoolType',
-            'blob' => '\\Leno\\Type\Mysql\\BlobType'
+            'blob' => '\\Leno\\Type\Mysql\\BlobType',
+            'text' => '\\Leno\\Type\Mysql\\TextType'
         ],
         'pgsql' => [
             'array' => '\\Leno\\Type\\Pgsql\\ArrayType',
