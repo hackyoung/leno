@@ -24,7 +24,7 @@ class Connection
         $this->config = Configure::read('database');
     }
 
-    public function config ($config)
+    public function config($config)
     {
         $this->config = $config;
         return $this;
@@ -37,10 +37,10 @@ class Connection
      */
     public function select() : DriverInterface
     {
-        if(empty($this->drivers)) {
+        if (empty($this->drivers)) {
             return $this->drivers[] = $this->newDriver();
         }
-        $drivers = array_map(function($driver) {
+        $drivers = array_map(function ($driver) {
             $weight = $driver->getWeight();
             return [
                 'weight' => $weight,
@@ -48,7 +48,7 @@ class Connection
             ];
         }, $this->drivers);
         array_multisort(array_column($drivers, 'weight'), SORT_DESC, $drivers);
-        foreach($drivers as $driver_info) {
+        foreach ($drivers as $driver_info) {
             if ($driver_info['weight'] <= 0) {
                 // 如果第一个driver的weight都为0,说明已经没有driver可用
                 return $this->drivers[] = $this->newDriver();
@@ -59,6 +59,6 @@ class Connection
 
     private function newDriver()
     {
-        return Driver::get(($this->config['driver'] ?? 'pdo'), $this->config);   
+        return Driver::get(($this->config['driver'] ?? 'pdo'), $this->config);
     }
 }
