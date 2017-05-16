@@ -27,8 +27,7 @@ abstract class Configure
     public function __construct($pathfile)
     {
         $this->pathfile = $pathfile;
-        $this->base_dir = self::DEFAULT_BASE;
-        $this->config = $this->parse($pathfile);
+        $this->setBase(self::DEFAULT_BASE);
     }
 
     public function readKey($key)
@@ -66,6 +65,7 @@ abstract class Configure
     public function setBase($base)
     {
         $this->base_dir = $base;
+        $this->config = $this->parse($this->pathfile);
 
         return $this;
     }
