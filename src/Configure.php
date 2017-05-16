@@ -67,7 +67,11 @@ abstract class Configure
     {
         $this->base_dir = $base;
         $pathfile = $this->base_dir . '/' . $this->pathfile;
-        $this->config = $this->parse($pathfile);
+        if (is_file($pathfile)) {
+            $this->config = $this->parse($pathfile);
+        } else {
+            $this->config = [];
+        }
 
         return $this;
     }
@@ -105,7 +109,7 @@ abstract class Configure
 
     public static function getConfig($file)
     {
-        return self::$instances[$file];
+        return self::$instances[$file] ?? null;
     }
 
     public static function init($default_base = null)

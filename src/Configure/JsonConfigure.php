@@ -1,11 +1,12 @@
 <?php
 namespace Leno\Configure;
 
-class IniConfigure extends \Leno\Configure
+class JsonConfigure extends \Leno\Congifure
 {
     protected function parse($file) : array
     {
-        return [];
+        $content = file_get_contents($file);
+        return json_decode($content, true);
     }
 
     protected function store() : string
