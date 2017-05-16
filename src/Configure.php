@@ -12,6 +12,7 @@ abstract class Configure
     protected static $parser_map = [
         'php' => '\\Leno\\Configure\\PhpConfigure',
         'ini' => '\\Leno\\Configure\\IniConfigure',
+        'json' => '\\Leno\\Configure\\JsonConfigure'
     ];
 
     protected $config;
@@ -65,7 +66,8 @@ abstract class Configure
     public function setBase($base)
     {
         $this->base_dir = $base;
-        $this->config = $this->parse($this->pathfile);
+        $pathfile = $this->base_dir . '/' . $this->pathfile;
+        $this->config = $this->parse($pathfile);
 
         return $this;
     }

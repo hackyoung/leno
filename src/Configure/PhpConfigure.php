@@ -5,10 +5,8 @@ class PhpConfigure extends \Leno\Configure
 {
     protected function parse($file) : array
     {
-        $pathfile = $this->base_dir .'/'. $file;
-
-        if (is_file($pathfile)) {
-            return include $pathfile;
+        if (is_file($file)) {
+            return include $file;
         }
 
         return [];
