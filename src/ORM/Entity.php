@@ -92,16 +92,22 @@ use \Leno\Exception\MethodNotFoundException;
 class Entity implements \JsonSerializable, EntityInterface
 {
     /**
+     * @type string
+     *
      * 主键定义, 仅支持单主键 比如 user_id
      */
     public static $primary;
 
     /**
+     * @type string
+     *
      * 表名, 标识该Entity对应存储的哪一张表
      */
     protected static $table;
 
     /**
+     * @type array
+     *
      * 表属性定义, 该属性应该完整的定义表属性结构及类型约束
      * 其数据结构如下
      * [
@@ -116,6 +122,8 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $attributes = [];
 
     /**
+     * @type array
+     *
      * 唯一键定义，其格式如下
      * [
      *      'unique_key_name' => [field_1, field_2],
@@ -124,6 +132,8 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $unique;
 
     /**
+     * @type array
+     *
      * 外键定义，该键不是关联到具体的表，而是关联到Entity, 格式如下
      * [
      *      'name' => [
@@ -175,10 +185,16 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $foreign_by = [];
 
     /**
+     * @type boolean
+     *
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
      */
     protected $fresh = false;
 
+    /**
+     * @type Data
+     */
+    protected $data;
     /**
      * 构造函数，设置主键值，设置默认值,
      * 标记该Entity在数据库中时候有对应的存储存在
