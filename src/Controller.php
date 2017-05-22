@@ -87,9 +87,10 @@ abstract class Controller
         return $this;
     }
 
-    protected function render($view, $data=[])
+    protected function render($view = '', $data = [])
     {
         $this->data = array_merge($this->data, $data);
+        $this->beforeRender($view);
         switch ($this->render_type) {
             case self::RENDER_HTML:
                 return $this->renderHtml($view);
@@ -106,7 +107,6 @@ abstract class Controller
     protected function renderHtml($view)
     {
         $view = new $this->view_class($view);
-        $this->beforeRender($view);
         $head = [];
         !empty($this->title) && $head['title'] = $this->title;
         !empty($this->description) && $head['description'] = $this->description;

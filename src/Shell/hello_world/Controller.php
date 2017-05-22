@@ -17,7 +17,7 @@ class Controller extends \Leno\Controller
     {
     }
 
-    protected function beforeRender()
+    protected function beforeRender(&$view)
     {
     }
 

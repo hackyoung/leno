@@ -401,10 +401,7 @@ class Entity implements \JsonSerializable, EntityInterface
 
     public function id()
     {
-        $primary_pair = $this->data->id();
-        foreach ($primary_pair as $id) {
-            return $id;
-        }
+        return array_values($this->data->id())[0];
     }
 
     public function dirty () : bool
@@ -465,9 +462,7 @@ class Entity implements \JsonSerializable, EntityInterface
         $entity = (new Mapper)->selectTable($self::getTableName())->find([
             $self::$primary => $id
         ], $self);
-        if ($entity) {
-            $entity_pool->set($cache_key, $entity);
-        }
+        $entity && $entity_pool->set($cache_key, $entity);
         return $entity;
     }
 
