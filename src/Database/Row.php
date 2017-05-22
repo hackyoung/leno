@@ -4,13 +4,14 @@ namespace Leno\Database;
 use \Leno\Database\Expr;
 use \Leno\Database\Adapter;
 use \Leno\ORM\EntityInterface;
+use \Leno\Type;
 
 abstract class Row
 {
     /**
      * 用于查询条件的OR关系
      */
-    const R_OR = 'OR'; 
+    const R_OR = 'OR';
 
     /**
      * 用于查询条件的AND关系
@@ -63,8 +64,10 @@ abstract class Row
     const EXP_LTE = 'lte';
     const EXP_EQ = 'eq';
     const EXP_NOT_EQ = 'not_eq';
-    const EXP_IN = 'in';    
+    const EXP_IN = 'in';
     const EXP_NOT_IN = 'not_in';
+    const EXP_INCLUDE = 'include';
+    const EXP_NOT_INCLUDE  = 'not_include';
     const EXP_LIKE = 'like';
     const EXP_NOT_LIKE = 'not_like';
     const EXP_EXPR = 'expr';
@@ -125,7 +128,7 @@ abstract class Row
     public function __call($method, array $args = [])
     {
         $series = explode('_', unCamelCase($method, '_'));
-        if(!isset($series[0])) {
+        if (!isset($series[0])) {
             throw new \Exception(get_called_class() . '::' . $method . ' Not Found');
         }
         $first = array_splice($series, 0, 1)[0];
@@ -135,8 +138,8 @@ abstract class Row
             return call_user_func_array([$this, $first], $args);
         }
         $condi = [self::TYPE_CONDI_BY, self::TYPE_CONDI_ON];
-        if(in_array($first, $condi) && $ret = $this->callCondition($series, $args, $first)) {
-           return $ret;
+        if (in_array($first, $condi) && $ret = $this->callCondition($series, $args, $first)) {
+            return $ret;
         }
         throw new \Exception(get_class() . '::' . $method . ' Not Found');
     }
@@ -213,7 +216,7 @@ abstract class Row
      *
      * ### example
      *
-     * $updator = new Updator('hello'); 
+     * $updator = new Updator('hello');
      * $updator->setName('young')
      *      ->byNameEq('young')     // 简单写法
      *      ->update();
@@ -230,7 +233,7 @@ abstract class Row
             $reflection_entity = new \ReflectionClass($this->entityClass);
             $foreign = $reflection_entity->getMethod('getForeign')->invoke(null);
             if (!isset($foreign[$field])) {
-                throw new \Leno\Exception ('Can\'t filter by entity without foreign setting');
+                throw new \Leno\Exception('Can\'t filter by entity without foreign setting');
             }
             $value = $value->get($foreign[$field]['foreign_key']);
             $field = $foreign[$field]['local_key'];
@@ -340,7 +343,7 @@ abstract class Row
 
     public function quote($val)
     {
-        $quoted = implode('.', array_map(function($item) {
+        $quoted = implode('.', array_map(function ($item) {
             return self::getAdapter()->keyQuote($item);
         }, explode('.', $val)));
         return new Expr($quoted);
@@ -379,7 +382,7 @@ abstract class Row
         return $this->quote($this->table . '.' . $field);
     }
 
-    public static function beginTransaction() 
+    public static function beginTransaction()
     {
         self::getAdapter()->beginTransaction();
     }
@@ -407,12 +410,12 @@ abstract class Row
     protected function useWhere()
     {
         $ret = $this->getWhere();
-        if(empty($ret)) {
+        if (empty($ret)) {
             $ret = ['1 = 1'];
         }
-        foreach($this->joins as $join) {
+        foreach ($this->joins as $join) {
             $joinWhere = $join['row']->getWhere();
-            if(!empty($joinWhere)) {
+            if (!empty($joinWhere)) {
                 $ret[] = self::R_AND;
             }
             $ret = array_merge($ret, $joinWhere);
@@ -430,8 +433,8 @@ abstract class Row
             self::JOIN_OUTER => 'OUTER JOIN',
         ];
         $ret = [];
-        foreach($this->joins as $join) {
-            $ret[] = sprintf('%s %s ON %s', 
+        foreach ($this->joins as $join) {
+            $ret[] = sprintf('%s %s ON %s',
                 $map[$join['type']],
                 $join['row']->getName(),
                 $join['row']->useOn()
@@ -443,7 +446,7 @@ abstract class Row
 
     protected function getMapper()
     {
-        if(!isset($this->mapper)) {
+        if (!isset($this->mapper)) {
             throw new \Exception('Mapper Not Set');
         }
         return $this->mapper;
@@ -460,7 +463,8 @@ abstract class Row
             self::EXP_GT, self::EXP_LT, self::EXP_GTE, self::EXP_LTE,
             self::EXP_IN, self::EXP_EQ, self::EXP_LIKE, self::EXP_EXPR,
             self::EXP_NOT_IN, self::EXP_NOT_LIKE, self::EXP_NOT_EQ,
-            self::EXPR_NULL, self::EXPR_NOT_NULL
+            self::EXPR_NULL, self::EXPR_NOT_NULL,
+            self::EXP_INCLUDE, self::EXP_NOT_INCLUDE
         ];
         $expr = end($series);
         if (!in_array($expr, $exprs)) {
@@ -482,7 +486,7 @@ abstract class Row
         $args[] = $expr;
         if (self::TYPE_CONDI_BY === $type) {
             return call_user_func_array([$this, 'by'], $args);
-        } 
+        }
         return call_user_func_array([$this, 'on'], $args);
     }
 
@@ -491,7 +495,7 @@ abstract class Row
      */
     private function attachAdd($type)
     {
-        switch($type) {
+        switch ($type) {
             case self::TYPE_CONDI_ON:
                 $where = &$this->on;
                 break;
@@ -505,7 +509,7 @@ abstract class Row
             self::EXP_QUOTE_BEGIN,
         ];
         $len = count($where);
-        if($len > 0 && !in_array($where[$len - 1], $map)) {
+        if ($len > 0 && !in_array($where[$len - 1], $map)) {
             $this->and();
         }
     }
@@ -535,7 +539,7 @@ abstract class Row
             self::R_OR, self::R_AND,
         ];
         foreach ($where as $item) {
-            if(in_array($item, $eq_arr)) {
+            if (in_array($item, $eq_arr)) {
                 $ret[] = $item;
                 continue;
             }
@@ -557,10 +561,34 @@ abstract class Row
      */
     private function expr($item)
     {
-        if($item['expr'] == 'expr') {
+        if ($item['expr'] == 'expr') {
             return $item['value'];
         }
-        return $this->exprR($item) ?? $this->exprLike($item) ?? $this->exprIn($item) ?? $this->exprNull($item);
+        return $this->exprR($item)
+            ?? $this->exprLike($item)
+            ?? $this->exprIn($item)
+            ?? $this->exprInclude($item)
+            ?? $this->exprNull($item);
+    }
+
+    private function exprInclude($item)
+    {
+        $in = ['include', 'not_include'];
+        if (!in_array($item['expr'], $in)) {
+            return;
+        }
+        $entityClass = $this->entityClass;
+        if (!$entityClass || $entityClass::getAttributes()[$item['field']]['type'] !== 'array') {
+            throw new \Exception('不能对非数组类型变量进行include操作');
+        }
+        $expr = Type::get('array')->in(
+            $item['value'], $this->getFieldExpr($item['field'])
+        );
+        if ($item['expr'] == 'not_include') {
+            $expr = '!' . $expr;
+        }
+
+        return $expr;
     }
 
     private function exprNull($item)
@@ -586,7 +614,7 @@ abstract class Row
             $item['value'] = $selector->getSql();
             $this->params += $selector->getParams();
         } elseif (is_array($item['value'])) {
-            $item['value'] = implode(',', array_map(function($it) use ($item) {
+            $item['value'] = implode(',', array_map(function ($it) use ($item) {
                 return $this->setParam($item['field'], $it);
             }, $item['value']));
         }
@@ -596,10 +624,10 @@ abstract class Row
     private function exprLike($item)
     {
         $like = [ 'like' => 'LIKE', 'not_like' => 'NOT LIKE', ];
-        if(!isset($like[$item['expr']])) {
+        if (!isset($like[$item['expr']])) {
             return;
         }
-        return sprintf('%s %s %s', 
+        return sprintf('%s %s %s',
             $this->getFieldExpr($item['field']),
             $like[$item['expr']],
             $this->setParam($item['field'], '%'.$item['value'].'%')
@@ -615,7 +643,7 @@ abstract class Row
         if (!isset($expr[$item['expr']])) {
             return;
         }
-        if(!($item['value'] instanceof \Leno\Database\Expr)) {
+        if (!($item['value'] instanceof \Leno\Database\Expr)) {
             $item['value'] = $this->setParam($item['field'], $item['value']);
         } elseif ($item['value'] instanceof self) {
             $selector = clone $item['value'];
@@ -637,10 +665,10 @@ abstract class Row
      */
     public function execute($sql = null)
     {
-        if($sql === null) {
+        if ($sql === null) {
             $sql = $this->getSql();
         }
-        if(!$sql || empty($sql)) {
+        if (!$sql || empty($sql)) {
             return false;
         }
         return self::getAdapter()->execute($sql, $this->params);

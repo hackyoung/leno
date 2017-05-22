@@ -46,7 +46,7 @@ use \Leno\Exception\MethodNotFoundException;
  *      public static $primary = 'user_id';
  * }
  * ```
- * 
+ *
  * 定义一个Book实体，该实体有id，name和author_id, book_id为其primay
  * 定义了一个外键依赖关系author
  * ```php
@@ -92,16 +92,22 @@ use \Leno\Exception\MethodNotFoundException;
 class Entity implements \JsonSerializable, EntityInterface
 {
     /**
+     * @type string
+     *
      * 主键定义, 仅支持单主键 比如 user_id
      */
     public static $primary;
 
     /**
+     * @type string
+     *
      * 表名, 标识该Entity对应存储的哪一张表
      */
     protected static $table;
 
     /**
+     * @type array
+     *
      * 表属性定义, 该属性应该完整的定义表属性结构及类型约束
      * 其数据结构如下
      * [
@@ -116,6 +122,8 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $attributes = [];
 
     /**
+     * @type array
+     *
      * 唯一键定义，其格式如下
      * [
      *      'unique_key_name' => [field_1, field_2],
@@ -124,6 +132,8 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $unique;
 
     /**
+     * @type array
+     *
      * 外键定义，该键不是关联到具体的表，而是关联到Entity, 格式如下
      * [
      *      'name' => [
@@ -140,7 +150,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *          ]
      *      ],
      *      'name' => [
-     *          'entity' => EntityClass,          
+     *          'entity' => EntityClass,
      *          'local_key' => 'self_field_name',
      *          'foreign_key' => 'entity_field_name'
      *          'bridge' => [
@@ -150,7 +160,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *          ]
      *      ],
      *      'name' => [
-     *          'entity' => EntityClass,          
+     *          'entity' => EntityClass,
      *          'local_key' => 'self_field_name',
      *          'foreign_key' => 'entity_field_name'
      *          'is_array' => true
@@ -165,7 +175,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *                  'local_key_1' => 'bridge_local_1',
      *                  'local_key_2' => 'bridge_local_2',
      *              ],
-     *              'foreign' => 'foreign' 
+     *              'foreign' => 'foreign'
      *          ]
      *      ]
      * ]
@@ -175,10 +185,16 @@ class Entity implements \JsonSerializable, EntityInterface
     protected static $foreign_by = [];
 
     /**
+     * @type boolean
+     *
      * 该Entity在数据库中有没有对应的存储记录，如果有，该字段为true
      */
     protected $fresh = false;
 
+    /**
+     * @type Data
+     */
+    protected $data;
     /**
      * 构造函数，设置主键值，设置默认值,
      * 标记该Entity在数据库中时候有对应的存储存在
@@ -190,11 +206,11 @@ class Entity implements \JsonSerializable, EntityInterface
 
     protected $clone_relation_ship = false;
 
-    public function __construct ($fresh = true)
+    public function __construct($fresh = true)
     {
         $this->fresh = $fresh;
         $Entity = get_called_class();
-        if(!isset($Entity::$primary)) {
+        if (!isset($Entity::$primary)) {
             throw new PrimaryMissingException($Entity);
         }
         $this->data = new Data($Entity::getAttributes(), $Entity::$primary);
@@ -245,7 +261,7 @@ class Entity implements \JsonSerializable, EntityInterface
     public function __call($method, array $args = [])
     {
         $series = array_filter(explode('_', unCamelCase($method, '_')));
-        if(!isset($series[0])) {
+        if (!isset($series[0])) {
             throw new MethodNotFoundException(get_called_class() . '::' . $method);
         }
         $type = array_splice($series, 0, 1)[0];
@@ -262,6 +278,16 @@ class Entity implements \JsonSerializable, EntityInterface
         return json_encode($this);
     }
 
+    public function __get($attr)
+    {
+        return $this->get($attr);
+    }
+
+    public function __set($attr, $value)
+    {
+        return $this->set($attr, $value);
+    }
+
     /**
      * save将Entity进行持久化存储，该方法有几个回调会调用
      *
@@ -274,7 +300,7 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function save()
     {
-        if($this->beforeSave() === false) {
+        if ($this->beforeSave() === false) {
             return false;
         }
         if ($this->insert() ?? $this->update()) {
@@ -291,7 +317,7 @@ class Entity implements \JsonSerializable, EntityInterface
      */
     public function remove()
     {
-        if($this->beforeRemove() === false) {
+        if ($this->beforeRemove() === false) {
             return false;
         }
         $Entity = get_called_class();
@@ -322,7 +348,7 @@ class Entity implements \JsonSerializable, EntityInterface
      * $user->getAddressId() == $user->get('address_id');
      * ```
      */
-    public function get (string $attr, $cached = true, callable $callback = null)
+    public function get(string $attr, $cached = true, callable $callback = null)
     {
         if ($this->data->hasAttr($attr)) {
             return $this->data->get($attr);
@@ -333,7 +359,7 @@ class Entity implements \JsonSerializable, EntityInterface
     /**
      * 强制设置属性值，该方法会忽略sensitive，直接设置value
      */
-    public function setForcely (string $attr, $value, bool $dirty = true) : EntityInterface
+    public function setForcely(string $attr, $value, bool $dirty = true) : EntityInterface
     {
         $this->data->setForcely($attr, $value, $dirty);
         return $this;
@@ -343,7 +369,7 @@ class Entity implements \JsonSerializable, EntityInterface
      * 如果attr的属性sensitive为真，则表明这是个敏感属性
      * set会忽略它
      */
-    public function set (string $attr, $value, bool $dirty = true) : EntityInterface
+    public function set(string $attr, $value, bool $dirty = true) : EntityInterface
     {
         if ($this->data->hasAttr($attr)) {
             $this->data->set($attr, $value, $dirty);
@@ -363,7 +389,7 @@ class Entity implements \JsonSerializable, EntityInterface
             array_keys($this->relation_ship->getForeignByConfig()),
             array_keys($this->data->getAttrConfig())
         );
-        array_walk($multiple, function($value, $attr) use ($valid) {
+        array_walk($multiple, function ($value, $attr) use ($valid) {
             if (!in_array($attr, $valid)) {
                 return;
             }
@@ -377,7 +403,7 @@ class Entity implements \JsonSerializable, EntityInterface
      *  1. 属性的类型为array类型的
      *  2. value为Entity类型，且与this是一对多关系
      */
-    public function add (string $attr, $value) : EntityInterface
+    public function add(string $attr, $value) : EntityInterface
     {
         if ($this->data->hasAttr($attr)) {
             $this->data->add($attr, $value);
@@ -404,7 +430,7 @@ class Entity implements \JsonSerializable, EntityInterface
         return array_values($this->data->id())[0];
     }
 
-    public function dirty () : bool
+    public function dirty() : bool
     {
         return $this->data->dirty();
     }
@@ -505,7 +531,7 @@ class Entity implements \JsonSerializable, EntityInterface
         $self = get_called_class();
         $entity = new $self(false);
         $attrs = $self::getAttributes();
-        foreach($row as $field => $value) {
+        foreach ($row as $field => $value) {
             if ($attrs[$field] ?? false) {
                 $value = Type::get($attrs[$field]['type'])->toPHP($value);
             }
@@ -528,7 +554,7 @@ class Entity implements \JsonSerializable, EntityInterface
     public static function findOrFail($id)
     {
         $entity = self::find($id);
-        if(!$entity) {
+        if (!$entity) {
             throw new EntityNotFoundException(get_called_class(), $id);
         }
         return $entity;
@@ -666,11 +692,19 @@ class Entity implements \JsonSerializable, EntityInterface
         return true;
     }
 
-    protected function beforeSave() { }
+    protected function beforeSave()
+    {
+    }
 
-    protected function beforeInsert() { }
+    protected function beforeInsert()
+    {
+    }
 
-    protected function beforeUpdate() { }
+    protected function beforeUpdate()
+    {
+    }
 
-    protected function beforeRemove() { }
+    protected function beforeRemove()
+    {
+    }
 }

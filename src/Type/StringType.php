@@ -10,20 +10,20 @@ class StringType extends \Leno\Type implements TypeStorageInterface
 {
     protected function _check($value) : bool
     {
-        if(!is_string($value)) {
+        if (!is_string($value)) {
             throw new ValueNotStringException($this->value_name, $value);
         }
         $regexp = $this->extra['regexp'] ?? null;
-        if($regexp && !preg_match($regexp, $value)) {
+        if ($regexp && !preg_match($regexp, $value)) {
             throw new ValueNotMatchedRegexpException($this->value_name, $value, $regexp);
         }
         $len = mb_strlen($value);
         $max_length = $this->extra['max_length'] ?? null;
-        if($max_length && $len > $max_length) {
+        if ($max_length && $len > $max_length) {
             throw new ValueLengthException($this->value_name, $value);
         }
         $min_length = $this->extra['min_length'] ?? null;
-        if($min_length && $len < $min_length) {
+        if ($min_length && $len < $min_length) {
             throw new ValueLengthException($this->value_name, $value);
         }
         return true;
@@ -31,11 +31,14 @@ class StringType extends \Leno\Type implements TypeStorageInterface
 
     public function toDbType() : string
     {
-        $max_length = $this->extra['max_length'] ?? null;
-        if($max_length === null) {
-            throw new \Leno\Exception ('need max length');
+        if ($length = $this->extra['length'] ?? null) {
+            return 'CHAR('.$length.')';
         }
-        return 'VARCHAR('.$max_length.')';
+        if ($max_length = $this->extra['max_length'] ?? null) {
+            return 'VARCHAR('.$max_length.')';
+        }
+
+        return 'TEXT';
     }
 
     public function toPHP($value)

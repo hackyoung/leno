@@ -3,16 +3,16 @@ namespace Leno\Type\Mysql;
 
 use \Leno\Type\TypeStorageInterface;
 
-class BlobType extends \Leno\Type implements TypeStorageInterface
+class TextType extends \Leno\Type implements TypeStorageInterface
 {
     protected function _check($value) : bool
     {
-        return $value === $value;
+        return $value == $value;
     }
 
     public function toDbType() : string
     {
-        return 'BLOB';
+        return 'TEXT';
     }
 
     public function toPHP($value)

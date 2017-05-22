@@ -8,7 +8,7 @@ class JsonType extends ArrayType implements TypeStorageInterface
 {
     protected function _check($value) : bool
     {
-        if(is_string($value)) {
+        if (is_string($value)) {
             $value = json_decode($value, true);
         }
         return parent::_check($value);
@@ -16,7 +16,7 @@ class JsonType extends ArrayType implements TypeStorageInterface
 
     public function toDB($value)
     {
-        if(!is_string($value)) {
+        if (!is_string($value)) {
             return json_encode($value);
         }
         return $value;
@@ -24,7 +24,7 @@ class JsonType extends ArrayType implements TypeStorageInterface
 
     public function toPHP($value)
     {
-        if(is_string($value)) {
+        if (is_string($value)) {
             return json_decode($value, true);
         }
         return $value;

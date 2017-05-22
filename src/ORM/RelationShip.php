@@ -13,7 +13,7 @@ use \Leno\Database\Row\Selector as RowSelector;
  *
  * 一对多
  * table_1|          |table_2
- * -------|          |-------          
+ * -------|          |-------
  *        | ---------|key_2
  *   key_1|/_|-------|key_2
  *        |\         |
@@ -22,7 +22,7 @@ use \Leno\Database\Row\Selector as RowSelector;
  * 多对多
  * table_1|    |table_3    |    |table_2
  * -------|    |-----|-----|    |-------
- *   key_1|----|key_1|key_2|----| key_2 
+ *   key_1|----|key_1|key_2|----| key_2
  * -------| |  |-----|-----|  | |-------
  *   key_1|----|key_1|key_2|----| key_2
  * -------|    |-----|-----|    |-------
@@ -91,7 +91,7 @@ class RelationShip
      * ];
      *
      * 这样我们就可以通过P_Entity::getF()来查询到所有F_Entity了
-     */        
+     */
     protected $foreign_by = [];
 
     /**
@@ -135,12 +135,12 @@ class RelationShip
      * 通过primary_entity和配置查找secondary_entities
      *
      * @param string attr 配置名
-     * @param callable\bool cached 
+     * @param callable\bool cached
      * @param callbale callback
      *
      * @return array
      */
-    public function get (string $attr, $cached = true, $callback = null)
+    public function get(string $attr, $cached = true, $callback = null)
     {
         if (is_callable($cached)) {
             $callback = $cached;
@@ -173,19 +173,19 @@ class RelationShip
     /**
      * 通过config和primary_entity设置secondary_entities
      */
-    public function set (string $attr, $value)
+    public function set(string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
         if (!$config) {
             $foreign_by = $this->getForeignBy($attr);
             if (!($value instanceof $foreign_by['entity'])) {
-                throw new \Leno\Exception ('value is not a '.$foreign_by['entity']);
+                throw new \Leno\Exception('value is not a '.$foreign_by['entity']);
             }
             $ferc = new \ReflectionClass($foreign_by['entity']);
             $configs = $ferc->getMethod('getForeign')->invoke(null);
             $config = $configs[$foreign_by['attr']] ?? false;
             if (!$config) {
-                throw new \Leno\Exception ($attr.'\'s config of '.$foreign_by['entity']. ' not found');
+                throw new \Leno\Exception($attr.'\'s config of '.$foreign_by['entity']. ' not found');
             }
             if (is_array($config['local_key'])) {
                 foreach ($config['local_key'] as $key) {
@@ -196,7 +196,7 @@ class RelationShip
                 $value->set($config['local_key'], $this->primary_entity->get($config['foreign_key']));
             }
         } elseif (!($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ('value is not a instance of '.$config['entity']);
+            throw new \Leno\Exception('value is not a instance of '.$config['entity']);
         } elseif ($config['is_array'] ?? false) {
             foreach ($value as $v) {
                 $this->primary_entity->add($config['local_key'], $v->get($config['foreign_key']));
@@ -210,19 +210,19 @@ class RelationShip
         return $this;
     }
 
-    public function add (string $attr, $value)
+    public function add(string $attr, $value)
     {
         $config = $this->config[$attr] ?? false;
         if (!$config) {
             $foreign_by = $this->getForeignBy($attr);
             if (!($value instanceof $foreign_by['entity'])) {
-                throw new \Leno\Exception ('value is not a instance of '.$foreign_by['entity']);
+                throw new \Leno\Exception('value is not a instance of '.$foreign_by['entity']);
             }
             $ferc = new \ReflectionClass($foreign_by['entity']);
             $configs = $ferc->getMethod('getForeign')->invoke(null);
             $config = $configs[$foreign_by['attr']] ?? false;
             if (!$config) {
-                throw new \Leno\Exception ($attr.'\'s config of '.$foreign_by['entity']. ' not found');
+                throw new \Leno\Exception($attr.'\'s config of '.$foreign_by['entity']. ' not found');
             }
             if (is_array($config['local_key'])) {
                 foreach ($config['local_key'] as $key) {
@@ -233,7 +233,7 @@ class RelationShip
                 $value->set($config['local_key'], $this->primary_entity->get($config['foreign_key']));
             }
         } elseif (!($value instanceof $config['entity'])) {
-            throw new \Leno\Exception ('value is not a Entity');
+            throw new \Leno\Exception('value is not a Entity');
         } elseif ($config['is_array'] ?? false) {
             !isset($config['foreign_key']) && $config['foreign_key'] = $config['local_key'];
             $this->primary_entity->add($config['local_key'], $value->get($config['foreign_key']));
@@ -247,20 +247,20 @@ class RelationShip
             return $this;
         }
         if (is_array($exists)) {
-            $this->secondary_entities[$attr][] = $value; 
+            $this->secondary_entities[$attr][] = $value;
             return $this;
         }
         $this->secondary_entities[$attr] = [$exists, $value];
         return $this;
     }
 
-    public function save (array $entities = null)
+    public function save(array $entities = null)
     {
         if ($entities === null) {
             $entities = $this->secondary_entities;
         }
         foreach ($entities as $attr=>$entity) {
-            if (!is_array ($entity)) {
+            if (!is_array($entity)) {
                 $this->saveEntity($attr, $entity);
                 continue;
             }
@@ -282,16 +282,16 @@ class RelationShip
         return $this;
     }
 
-    private function getBy ($ferc, $attr, $callback = null)
+    private function getBy($ferc, $attr, $callback = null)
     {
         $foreign = [];
         $ferc->hasMethod('getForeign') && $foreign = $ferc->getMethod('getForeign')->invoke(null);
         $config = $foreign[$attr] ?? false;
         if (!$config) {
-            throw new \Leno\Exception ($attr.'\'s config not found');
+            throw new \Leno\Exception($attr.'\'s config not found');
         }
         $selector = $ferc->getMethod('selector')->invoke(null);
-        !isset($config['foreign_key']) && $config['foreign_key'] = $config['local_key']; 
+        !isset($config['foreign_key']) && $config['foreign_key'] = $config['local_key'];
         $selector->by(
             $config['local_key'],
             $this->primary_entity->get($config['foreign_key'])
@@ -305,11 +305,11 @@ class RelationShip
         return $selector;
     }
 
-    private function getNoBridge ($config, $callback)
+    private function getNoBridge($config, $callback)
     {
         $selector = $config['entity']::selector();
         $one = true;
-        $is_array = is_array($config['local_key']) && array_map(function($local) use ($config, &$selector) {
+        $is_array = is_array($config['local_key']) && array_map(function ($local) use ($config, &$selector) {
             $foreign_key = $config['foreign_key'][$local];
             $selector->by($foreign_key, $this->primary_entity->get($local));
             return $local;
@@ -336,22 +336,22 @@ class RelationShip
         return $selector->find();
     }
 
-    private function getBridge ($config, $callback)
+    private function getBridge($config, $callback)
     {
         $selector = $config['entity']::selector();
         $bridge = $config['bridge'];
         $bridge_selector = $bridge['entity']::selector();
-        $is_array = is_array($config['local_key']) && array_map(function($local) use ($config, &$bridge_selector) {
+        $is_array = is_array($config['local_key']) && array_map(function ($local) use ($config, &$bridge_selector) {
             $value = $this->primary_entity->get($local);
-            $bridge_selector->by( $bridge['local'][$local], $value);
+            $bridge_selector->by($bridge['local'][$local], $value);
             return $local;
         }, $config['local_key']);
         if (!$is_array) {
             $value = $this->primary_entity->get($config['local_key']);
-            $bridge_selector->by( $bridge['local'], $value);
+            $bridge_selector->by($bridge['local'], $value);
         }
         !isset($config['foreign_key']) && $config['foreign_key'] = $config['local_key'];
-        $is_array = is_array($config['foreign_key']) && array_map(function($foreign) use ($config, &$bridge_selector) {
+        $is_array = is_array($config['foreign_key']) && array_map(function ($foreign) use ($config, &$bridge_selector) {
             $value = $selector->getFieldExpr($foreign);
             $bridge_selector->on($bridge['foreign'][$foreign], $value);
         }, $config['foreign_key']);
@@ -369,7 +369,7 @@ class RelationShip
         return $selector;
     }
 
-    private function saveEntity (string $attr, Entity $entity)
+    private function saveEntity(string $attr, Entity $entity)
     {
         if ($entity->dirty()) {
             $entity->save();
@@ -393,11 +393,11 @@ class RelationShip
         $this->bridge_entities[] = $bridge;
     }
 
-    private function getForeignBy (string $attr)
+    private function getForeignBy(string $attr)
     {
         $foreign_by = $this->foreign_by[$attr] ?? false;
         if (!$foreign_by) {
-            throw new \Leno\Exception ($attr.'\'s foreign_by not found');
+            throw new \Leno\Exception($attr.'\'s foreign_by not found');
         }
         return $foreign_by;
     }
